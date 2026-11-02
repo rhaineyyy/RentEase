@@ -853,14 +853,7 @@ function activity(text: string) {
   });
 }
 function escapeMessage(text: string): string {
-  const entities: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
-  };
-  return text.replace(/[&<>"']/g, character => entities[character]);
+  return text;
 }
 type OwnerNotice = { title: string; detail: string; tone: 'success' | 'error' | 'info' };
 const currentNotice = ref<OwnerNotice | null>(null);
@@ -2197,7 +2190,7 @@ async function logout() {
           <template v-if="section === 'properties'">
             <div v-if="propertiesLoading" class="notice">Loading your properties and rental units…</div>
             <div v-else-if="rentalLoaded && !state.properties.length" class="notice">No properties in your account yet. Click Add Property to create one.</div>
-            <button type="button" class="button secondary" :disabled="propertiesLoading" @click="refreshRentalCatalog">Refresh properties</button>
+            <div class="section-toolbar"><button type="button" class="button secondary" :disabled="propertiesLoading" @click="refreshRentalCatalog">Refresh properties</button></div>
             <div class="property-list premium-property-list">
               <article v-for="property in filteredProperties" :key="property.id" class="property-card owner-property-card">
                 <div class="property-cover">
@@ -2349,22 +2342,24 @@ async function logout() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        v-if="app.status === 'APPROVED' && !applicationHasOpenLease(app)"
-                        type="button"
-                        class="button primary"
-                        :disabled="savingLease"
-                        @click="createLeaseFromApplication(app)"
-                      >
-                        Create Lease
-                      </button>
-                      <button
-                        type="button"
-                        class="text-button"
-                        @click="openDialog('application', app.id)"
-                      >
-                        View application
-                      </button>
+                      <div class="row-actions">
+                        <button
+                          v-if="app.status === 'APPROVED' && !applicationHasOpenLease(app)"
+                          type="button"
+                          class="button primary"
+                          :disabled="savingLease"
+                          @click="createLeaseFromApplication(app)"
+                        >
+                          Create Lease
+                        </button>
+                        <button
+                          type="button"
+                          class="text-button"
+                          @click="openDialog('application', app.id)"
+                        >
+                          View application
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   <tr v-if="!filteredApps.length">
@@ -2621,7 +2616,7 @@ async function logout() {
               </table>
             </div>
           </section>
-          <div v-if="section === 'maintenance'" class="heading-actions" style="margin-bottom:16px"><button type="button" class="button secondary" :disabled="maintenanceLoading" @click="refreshOwnerMaintenance">Refresh Maintenance</button></div>
+          <div v-if="section === 'maintenance'" class="section-toolbar"><button type="button" class="button secondary" :disabled="maintenanceLoading" @click="refreshOwnerMaintenance">Refresh Maintenance</button></div>
           <div v-if="section === 'maintenance' && maintenanceError" class="notice" role="alert">{{ maintenanceError }}</div>
           <div
             v-if="section === 'maintenance'"
@@ -5055,17 +5050,7 @@ tbody tr:hover {background:#eef5ff}
 @media(max-width:520px){.lease-modal-hero{padding:22px 18px}.lease-modal-body{padding:18px}.lease-summary{grid-template-columns:1fr}.lease-summary>div:last-child{grid-column:auto}.lease-modal-actions{flex-direction:column-reverse;align-items:stretch}.lease-modal-actions .button{width:100%}}
 
 /* Consistent Ionic confirmation dialogs, including approval and payment review. */
-:global(ion-alert.rentease-messagebox) {--background:#fff;--color:#1a365e;--backdrop-opacity:.52}
-:global(ion-alert.rentease-messagebox .alert-wrapper) {border-radius:22px;overflow:hidden;box-shadow:0 25px 72px rgba(11,38,85,.26);background:#fff;min-width:min(390px,calc(100vw - 28px));max-width:calc(100vw - 28px)}
-:global(ion-alert.rentease-messagebox .alert-head) {padding:22px 24px 14px;background:linear-gradient(115deg,#174caa,#187fc4)}
-:global(ion-alert.rentease-messagebox .alert-title) {color:#fff;font-size:19px;font-weight:800}
-:global(ion-alert.rentease-messagebox .alert-message) {padding:20px 24px 14px;color:#536c8b;font-size:13px;line-height:1.6;max-height:40vh}
-:global(ion-alert.rentease-messagebox .alert-input-group) {padding:12px 24px}
-:global(ion-alert.rentease-messagebox .alert-input) {border:1px solid #d5e3f7;border-radius:10px;padding:11px;color:#18375e;background:#fff}
-:global(ion-alert.rentease-messagebox .alert-button-group) {padding:10px 18px 18px;gap:8px;justify-content:flex-end}
-:global(ion-alert.rentease-messagebox .alert-button) {min-width:90px;min-height:40px;border-radius:10px;color:#185bb8;background:#eff5ff;font-weight:800;margin:0}
-:global(ion-alert.rentease-messagebox .alert-button:last-child) {background:linear-gradient(115deg,#1c5ed1,#178bd1);color:#fff}
-:global(ion-alert.rentease-messagebox .alert-button-inner) {justify-content:center}
+:global(ion-alert.rentease-messagebox .alert-button-inner) { justify-content: center; text-transform: none; }
 
 /* Security deposit education and clear financial inputs */
 .lease-deposit-explainer{padding:15px 17px;border:1px solid #c9dffc;border-radius:14px;background:linear-gradient(145deg,#f1f7ff,#f9fcff);color:#3c5679}
@@ -5081,8 +5066,8 @@ tbody tr:hover {background:#eef5ff}
   .topbar { --min-height: 54px; }
   .owner-brand-mark { width: 32px; height: 32px; font-size: 16px; border-radius: 10px; }
   .owner-brand-text strong { font-size: 16px; }
-  .layout { padding: 8px; gap: 10px; grid-template-columns: 228px minmax(0, 1fr); }
-  .sidebar { top: 8px; width: 228px; max-height: calc(100dvh - 78px); padding: 10px; border-radius: 16px; }
+  .layout { padding: 8px; gap: 10px; grid-template-columns: 268px minmax(0, 1fr); }
+  .sidebar { top: 8px; width: 268px; max-height: calc(100dvh - 78px); padding: 10px; border-radius: 16px; }
   .owner { padding: 8px; margin-bottom: 6px; }
   .avatar { width: 34px; height: 34px; border-radius: 10px; }
   .nav-label { margin: 8px 8px 4px; }

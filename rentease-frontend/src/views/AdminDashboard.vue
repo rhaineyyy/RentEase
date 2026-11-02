@@ -360,11 +360,15 @@ onMounted(async () => {
 const section = ref('overview');
 const portalContent = ref<{ $el?: { getScrollElement?: () => Promise<HTMLElement> } } | null>(null);
 const mobileMenuOpen = ref(false);
-const globalSearch = ref('');
 const todayLabel = new Intl.DateTimeFormat('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date());
 
+const overviewQuery = ref('');
 const userSearch = ref('');
 const propertySearch = ref('');
+const billSearch = ref('');
+const maintenanceSearch = ref('');
+const leaseSearch = ref('');
+const auditSearch = ref('');
 const propertyLocationFilter = ref('ALL');
 
 const propertyFormOpen = ref(false);
@@ -461,6 +465,11 @@ const filteredUsers = computed(() => {
   });
 });
 
+const filteredBills = computed(() => state.bills.filter(bill => includesQuery(billSearch.value, [bill.id, bill.tenant, bill.unit, bill.period, bill.amount, bill.status])));
+const filteredMaintenance = computed(() => state.maintenance.filter(item => includesQuery(maintenanceSearch.value, [item.id, item.unit, item.category, item.description, item.status])));
+const filteredLeases = computed(() => state.leases.filter(lease => includesQuery(leaseSearch.value, [lease.id, lease.tenant, lease.unit, lease.start, lease.end, lease.status])));
+const filteredLogs = computed(() => state.logs.filter(log => includesQuery(auditSearch.value, [log.id, log.text, log.actorRole, log.actorUserId, log.eventType, log.outcome, log.time])));
+
 const filteredProperties = computed(() => {
   const query = propertySearch.value.trim().toLowerCase();
 
@@ -510,12 +519,42 @@ const maintenanceStatusMix = computed(() => {
   const statuses = ['PENDING', 'ASSIGNED', 'IN PROGRESS', 'COMPLETED', 'CANCELLED'];
   return statuses.map(status => ({ status, count: state.maintenance.filter(m => m.status === status).length }));
 });
-function searchEverywhere() {
-  const q = globalSearch.value.trim();
+function includesQuery(query: string, parts: unknown[]) {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return parts.some(part => String(part ?? '').toLowerCase().includes(q));
+}
+function searchFromOverview() {
+  const q = overviewQuery.value.trim();
   if (!q) return;
+  const lowered = q.toLowerCase();
+  if (state.users.some(user => includesQuery(lowered, [user.name, user.email, user.id, user.role]))) {
+    userSearch.value = q;
+    void visit('users');
+    return;
+  }
+  if (state.properties.some(property => includesQuery(lowered, [property.name, property.owner, property.location, property.id]))) {
+    propertySearch.value = q;
+    void visit('properties');
+    return;
+  }
+  if (state.bills.some(bill => includesQuery(lowered, [bill.tenant, bill.unit, bill.period, bill.status, bill.id]))) {
+    billSearch.value = q;
+    void visit('billing');
+    return;
+  }
+  if (state.leases.some(lease => includesQuery(lowered, [lease.tenant, lease.unit, lease.status, lease.id]))) {
+    leaseSearch.value = q;
+    void visit('leases');
+    return;
+  }
+  if (state.maintenance.some(item => includesQuery(lowered, [item.unit, item.category, item.description, item.status, item.id]))) {
+    maintenanceSearch.value = q;
+    void visit('maintenance');
+    return;
+  }
   userSearch.value = q;
-  propertySearch.value = q;
-  if (section.value !== 'users') void visit('users');
+  void visit('users');
 }
 
 const userCounts = computed(() => ({
@@ -790,18 +829,12 @@ async function logout() {
           <span class="brand-mark"><IonIcon :icon="homeOutline" /></span>
           <div class="brand-wordmark"><strong>RentEase<span class="brand-dot">.</span></strong><small>ADMIN CONSOLE</small></div>
         </div>
-        <div class="global-search">
-          <IonIcon :icon="searchOutline" />
-          <input v-model="globalSearch" type="search" placeholder="Find users or properties..." aria-label="Search registered users and properties" @keydown.enter="searchEverywhere" />
-          <button type="button" title="Search" @click="searchEverywhere">Search</button>
-        </div>
         <IonButtons slot="end" class="topbar-actions">
-          <span class="topbar-date">{{ todayLabel }}</span>
           <NotificationCenter />
           <IonButton class="header-icon" aria-label="View audit activity" @click="visit('security')">
             <IonIcon :icon="shieldCheckmarkOutline" />
           </IonButton>
-          <button type="button" class="topbar-profile" aria-label="Open administrator profile" @click="navigate('profile')">{{ initials }}</button>
+          <button type="button" class="topbar-profile" aria-label="Open administrator profile" @click="navigate('profile')"><img v-if="state.profile.avatar" :src="state.profile.avatar" alt="" /><span v-else>{{ initials }}</span></button>
         </IonButtons>
       </IonToolbar>
     </IonHeader>
@@ -869,6 +902,7 @@ async function logout() {
             </div>
 
             <div class="heading-actions">
+              <span class="heading-date">{{ todayLabel }}</span>
               <button
                 v-if="backLabel"
                 type="button"
@@ -904,6 +938,11 @@ async function logout() {
           <div v-if="overviewLoading" role="status" style="margin-bottom:12px">Loading platform data from PostgreSQL...</div>
           <!-- DASHBOARD OVERVIEW -->
           <section v-if="section === 'overview'" class="section-content">
+            <label class="record-search">
+              <IonIcon :icon="searchOutline" />
+              <input v-model="overviewQuery" type="search" placeholder="Search users, properties, bills, leases, or requests" aria-label="Search the admin portal" @keydown.enter="searchFromOverview" />
+              <button type="button" @click="searchFromOverview">Search</button>
+            </label>
             <div class="welcome-banner">
               <div class="welcome-copy">
                 <h2>Welcome back, {{ state.profile.name?.split(' ')[0] || 'Admin' }} <span class="wave">✦</span></h2>
@@ -914,7 +953,6 @@ async function logout() {
                 </div>
               </div>
               <div class="welcome-visual" aria-hidden="true"><div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div><IonIcon :icon="businessOutline" /></div>
-              <div class="hero-date"><IonIcon :icon="timeOutline" /><span>{{ todayLabel }}<small>System administrator</small></span></div>
             </div>
             <div class="section-mini-heading"><div><h2>Platform performance</h2></div><span class="mini-date"><IonIcon :icon="timeOutline" /> Live PostgreSQL data</span></div>
             <div class="stats-grid overview-stats">
@@ -1177,12 +1215,15 @@ async function logout() {
                 <div><h2>Billing Records</h2><p>Review tenant charges and payment status</p></div>
                 <button type="button" class="button secondary" :disabled="overviewLoading" @click="fetchPlatformOverview"><IonIcon :icon="refreshOutline" /> Refresh Bills</button>
               </div>
-
+              <label class="record-search">
+                <IonIcon :icon="searchOutline" />
+                <input v-model="billSearch" type="search" placeholder="Search tenant, unit, period, or bill ID" aria-label="Search billing records" />
+              </label>
               <div class="table-wrap">
                 <table>
                   <thead><tr><th>Bill ID</th><th>Tenant</th><th>Unit</th><th>Billing Period</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody>
-                    <tr v-for="bill in state.bills" :key="bill.id">
+                    <tr v-for="bill in filteredBills" :key="bill.id">
                       <td>#{{ bill.id }}</td><td>{{ bill.tenant }}</td><td>{{ bill.unit }}</td><td>{{ bill.period }}</td>
                       <td>₱{{ Number(bill.amount).toLocaleString() }}</td>
                       <td><span class="status-badge" :class="badgeClass(bill.status)">{{ bill.status }}</span></td>
@@ -1190,7 +1231,7 @@ async function logout() {
                         <button class="text-button" @click="viewDetails(bill)">View</button>
                       </div></td>
                     </tr>
-                    <tr v-if="state.bills.length === 0"><td colspan="7" class="empty-cell">No billing records available.</td></tr>
+                    <tr v-if="filteredBills.length === 0"><td colspan="7" class="empty-cell">No billing records match this search.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1211,19 +1252,22 @@ async function logout() {
                 <div><h2>Maintenance Requests</h2><p>Monitor reported property issues</p></div>
                 <button type="button" class="button secondary" :disabled="overviewLoading" @click="fetchPlatformOverview"><IonIcon :icon="refreshOutline" /> Refresh Maintenance</button>
               </div>
-
+              <label class="record-search">
+                <IonIcon :icon="searchOutline" />
+                <input v-model="maintenanceSearch" type="search" placeholder="Search unit, category, or description" aria-label="Search maintenance requests" />
+              </label>
               <div class="table-wrap">
                 <table>
                   <thead><tr><th>Request ID</th><th>Unit</th><th>Category</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody>
-                    <tr v-for="item in state.maintenance" :key="item.id">
+                    <tr v-for="item in filteredMaintenance" :key="item.id">
                       <td>#{{ item.id }}</td><td>{{ item.unit }}</td><td>{{ item.category }}</td><td>{{ item.description }}</td>
                       <td><span class="status-badge" :class="badgeClass(item.status)">{{ item.status }}</span></td>
                       <td><div class="table-actions">
                         <button class="text-button" @click="viewDetails(item)">View</button>
                       </div></td>
                     </tr>
-                    <tr v-if="state.maintenance.length === 0"><td colspan="6" class="empty-cell">No maintenance requests recorded.</td></tr>
+                    <tr v-if="filteredMaintenance.length === 0"><td colspan="6" class="empty-cell">No maintenance requests match this search.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1243,19 +1287,22 @@ async function logout() {
                 <div><h2>Lease Register</h2><p>Review lease details and contract periods</p></div>
                 <button type="button" class="button secondary" :disabled="overviewLoading" @click="fetchPlatformOverview"><IonIcon :icon="refreshOutline" /> Refresh Leases</button>
               </div>
-
+              <label class="record-search">
+                <IonIcon :icon="searchOutline" />
+                <input v-model="leaseSearch" type="search" placeholder="Search tenant, unit, or lease ID" aria-label="Search lease agreements" />
+              </label>
               <div class="table-wrap">
                 <table>
                   <thead><tr><th>Lease ID</th><th>Tenant</th><th>Rental Unit</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody>
-                    <tr v-for="lease in state.leases" :key="lease.id">
+                    <tr v-for="lease in filteredLeases" :key="lease.id">
                       <td>#{{ lease.id }}</td><td>{{ lease.tenant }}</td><td>{{ lease.unit }}</td><td>{{ lease.start }}</td><td>{{ lease.end }}</td>
                       <td><span class="status-badge" :class="badgeClass(lease.status)">{{ lease.status }}</span></td>
                       <td><div class="table-actions">
                         <button class="text-button" @click="viewDetails(lease)">View</button>
                       </div></td>
                     </tr>
-                    <tr v-if="state.leases.length === 0"><td colspan="7" class="empty-cell">No lease agreements available.</td></tr>
+                    <tr v-if="filteredLeases.length === 0"><td colspan="7" class="empty-cell">No lease agreements match this search.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1277,20 +1324,24 @@ async function logout() {
               <div class="audit-filters">
                 <label>Event Type<select v-model="auditType" @change="fetchAuditEvents(1)"><option value="all">All events</option><option value="LOGIN">Login attempts</option><option value="LOGOUT">Sign-outs</option><option value="ACCOUNT_REGISTRATION">Registrations</option><option value="ACCOUNT_APPROVED">Account approvals</option><option value="ACCOUNT_REJECTED">Account rejections</option><option value="ACCOUNT_DELETED">Account deletions</option><option value="LEASE_PREPARED">Leases prepared</option><option value="LEASE_CONFIRMED">Leases confirmed</option><option value="LEASE_COMPLETED">Leases completed</option><option value="BILL_CREATED">Bills created</option><option value="PAYMENT_SUBMITTED">Payments submitted</option><option value="PAYMENT_REVIEWED">Payment decisions</option><option value="MAINTENANCE_CREATED">Maintenance submitted</option><option value="MAINTENANCE_UPDATED">Maintenance updates</option></select></label>
                 <label>Result<select v-model="auditOutcome" @change="fetchAuditEvents(1)"><option value="all">All results</option><option value="success">Successful</option><option value="failure">Unsuccessful</option></select></label>
+                <label class="record-search audit-record-search">
+                  <IonIcon :icon="searchOutline" />
+                  <input v-model="auditSearch" type="search" placeholder="Search activity on this page" aria-label="Search audit events on this page" />
+                </label>
               </div>
               <p v-if="auditError" class="audit-error" role="alert">{{ auditError }}</p>
               <div class="table-wrap">
                 <table>
                   <thead><tr><th>Event</th><th>Activity</th><th>Actor</th><th>Result</th><th>Date &amp; Time</th></tr></thead>
                   <tbody>
-                    <tr v-for="log in state.logs" :key="log.id">
+                    <tr v-for="log in filteredLogs" :key="log.id">
                       <td><strong>#{{ log.id }}</strong><small class="audit-event-type">{{ log.eventType.replaceAll('_', ' ') }}</small></td>
                       <td>{{ log.text }}</td>
                       <td>{{ log.actorRole }} <span v-if="log.actorUserId">#{{ log.actorUserId }}</span></td>
                       <td><span class="status-badge" :class="log.outcome === 'success' ? 'good' : 'bad'">{{ log.outcome === 'success' ? 'Successful' : 'Unsuccessful' }}</span></td>
                       <td>{{ log.time }}</td>
                     </tr>
-                    <tr v-if="!auditLoading && !auditError && state.logs.length === 0"><td colspan="5" class="empty-cell">No matching activity yet. Audit recording starts after the backend integration is installed.</td></tr>
+                    <tr v-if="!auditLoading && !auditError && filteredLogs.length === 0"><td colspan="5" class="empty-cell">No matching activity on this page.</td></tr>
                     <tr v-if="auditLoading"><td colspan="5" class="empty-cell">Loading security events...</td></tr>
                   </tbody>
                 </table>
@@ -2467,7 +2518,7 @@ tbody tr:last-child td {
   .header-icon { width: 34px; height: 34px; }
   .topbar-profile { width: 32px; height: 32px; }
   .global-search { height: 34px; }
-  .sidebar { width: 228px; position: sticky; top: 8px; align-self: flex-start; max-height: calc(100dvh - 78px); overflow-y: auto; padding: 10px 10px 12px; }
+  .sidebar { width: 268px; position: sticky; top: 8px; align-self: flex-start; max-height: calc(100dvh - 78px); overflow-y: auto; padding: 10px 10px 12px; }
   .sidebar-profile { padding: 8px; gap: 8px; }
   .sidebar-profile .avatar { width: 34px; height: 34px; }
   .nav-label { margin: 8px 8px 4px; }

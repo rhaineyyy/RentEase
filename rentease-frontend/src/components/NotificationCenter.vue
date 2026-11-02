@@ -1,10 +1,11 @@
 <template>
   <div class="notice-center">
-    <button type="button" class="notice-bell" :class="tone" aria-label="Open notifications" :aria-expanded="open" @click="toggle">
+    <button ref="bell" type="button" class="notice-bell" :class="tone" aria-label="Open notifications" :aria-expanded="open" @click.stop="toggle">
       <IonIcon :icon="notificationsOutline" />
       <span v-if="unread" class="notice-count">{{ unread > 9 ? '9+' : unread }}</span>
     </button>
-    <div v-if="open" class="notice-panel" role="dialog" aria-label="Notifications">
+    <Teleport to="body">
+    <div v-if="open" class="notice-panel" :style="panelStyle" role="dialog" aria-label="Notifications" @click.stop>
       <div class="notice-head">
         <strong>Notifications</strong>
         <button type="button" :disabled="!unread || busy" @click="markAll">Mark all read</button>
@@ -21,11 +22,12 @@
         </li>
       </ul>
     </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { IonIcon } from '@ionic/vue';
 import { notificationsOutline } from 'ionicons/icons';
 import api from '@/services/api';
@@ -38,7 +40,35 @@ const busy = ref(false);
 const error = ref('');
 const unread = ref(0);
 const items = ref<Notice[]>([]);
+const bell = ref<HTMLButtonElement | null>(null);
+const panelStyle = ref<Record<string, string>>({});
 let timer = 0;
+
+function place() {
+  const node = bell.value;
+  if (!node) return;
+  const rect = node.getBoundingClientRect();
+  const width = Math.min(360, window.innerWidth - 16);
+  panelStyle.value = {
+    position: 'fixed',
+    top: `${Math.round(rect.bottom + 8)}px`,
+    right: `${Math.max(8, Math.round(window.innerWidth - rect.right))}px`,
+    width: `${width}px`,
+    zIndex: '4000',
+  };
+}
+
+function onDocumentClick(event: MouseEvent) {
+  if (!open.value) return;
+  const target = event.target;
+  if (target instanceof Node && bell.value?.contains(target)) return;
+  if (target instanceof Element && target.closest('.notice-panel')) return;
+  open.value = false;
+}
+
+function onKey(event: KeyboardEvent) {
+  if (event.key === 'Escape') open.value = false;
+}
 
 async function load() {
   try {
@@ -53,7 +83,10 @@ async function load() {
 
 async function toggle() {
   open.value = !open.value;
-  if (open.value) await load();
+  if (!open.value) return;
+  await nextTick();
+  place();
+  await load();
 }
 
 async function markOne(item: Notice) {
@@ -89,8 +122,16 @@ function when(value: string) {
 onMounted(() => {
   void load();
   timer = window.setInterval(() => { void load(); }, 30000);
+  document.addEventListener('click', onDocumentClick);
+  document.addEventListener('keydown', onKey);
+  window.addEventListener('resize', place);
 });
-onUnmounted(() => window.clearInterval(timer));
+onUnmounted(() => {
+  window.clearInterval(timer);
+  document.removeEventListener('click', onDocumentClick);
+  document.removeEventListener('keydown', onKey);
+  window.removeEventListener('resize', place);
+});
 </script>
 
 <style scoped>
@@ -99,7 +140,7 @@ onUnmounted(() => window.clearInterval(timer));
 .notice-bell.light { color: white; }
 .notice-bell ion-icon { font-size: 20px; }
 .notice-count { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 99px; background: #e23b4a; color: white; font-size: 10px; font-weight: 800; line-height: 16px; }
-.notice-panel { position: absolute; right: 0; top: 44px; z-index: 30; width: min(360px, 80vw); max-height: 420px; overflow: auto; padding: 12px; border: 1px solid #d7e3f2; border-radius: 16px; background: white; color: #17324f; box-shadow: 0 18px 40px rgba(16, 42, 82, .16); }
+.notice-panel { max-height: min(420px, 70vh); overflow: auto; padding: 12px; border: 1px solid #d7e3f2; border-radius: 16px; background: #ffffff; color: #17324f; box-shadow: 0 18px 40px rgba(16, 42, 82, .16); }
 .notice-head, .notice-head button, li button { font: inherit; }
 .notice-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .notice-head button { border: 0; background: transparent; color: #1766bd; font-size: 12px; font-weight: 700; cursor: pointer; }

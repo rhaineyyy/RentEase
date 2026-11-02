@@ -60,29 +60,87 @@ ion-alert.rentease-messagebox {
   color-scheme: light;
 
   --background: #ffffff;
-  --min-width: 280px;
-  --width: min(460px, calc(100vw - 32px));
-  --max-width: 460px;
-  --backdrop-opacity: 0.45;
+  --min-width: 320px;
+  --width: min(480px, calc(100vw - 32px));
+  --max-width: 480px;
+  --backdrop-opacity: 0.48;
 }
 
 ion-alert.rentease-messagebox .alert-wrapper {
   background: #ffffff;
-  border: 1px solid #dce5ef;
-  border-radius: 20px;
-  box-shadow: 0 24px 70px rgb(15 35 55 / 25%);
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 22px 60px rgb(22 59 115 / 28%);
+}
+
+ion-alert.rentease-messagebox .alert-head {
+  padding: 14px 18px 12px;
+  background: linear-gradient(105deg, #163b73 0%, #1d56c4 72%, #17a7b8 130%);
 }
 
 ion-alert.rentease-messagebox .alert-title {
-  color: #142b49;
-  font-size: 20px;
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
   font-weight: 700;
+  line-height: 1.3;
+  text-transform: none;
 }
 
 ion-alert.rentease-messagebox .alert-sub-title,
 ion-alert.rentease-messagebox .alert-message {
-  color: #4b6078;
-  line-height: 1.6;
+  min-height: 0;
+  padding: 16px 18px 6px;
+  color: #1c334e;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-transform: none;
+}
+
+ion-alert.rentease-messagebox .alert-button-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 16px 14px;
+  border-top: 1px solid #d7e4f4;
+  background: #f3f8fd;
+}
+
+ion-alert.rentease-messagebox .alert-button {
+  flex: 0 0 auto;
+  width: auto;
+  height: 36px !important;
+  min-width: 92px;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid #d5deea;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #163b73;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 36px !important;
+  text-transform: none;
+}
+
+ion-alert.rentease-messagebox .alert-button-role-confirm,
+ion-alert.rentease-messagebox .alert-button:last-of-type {
+  border-color: transparent;
+  background: #236be1;
+  color: #ffffff;
+}
+
+ion-alert.rentease-messagebox .alert-button-inner {
+  justify-content: center;
+  text-transform: none;
 }
 
 ion-alert.rentease-messagebox .alert-input-group {

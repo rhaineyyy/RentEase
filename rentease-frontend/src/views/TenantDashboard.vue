@@ -480,7 +480,7 @@ onMounted(async () => {
       <div v-else class="layout">
         <button v-if="sidebarOpen" type="button" class="tenant-backdrop" aria-label="Close navigation" @click="sidebarOpen = false"></button>
         <aside id="tenant-navigation" class="sidebar" :class="{ 'sidebar-open': sidebarOpen }">
-          <div class="account" @click="navigate('profile')" role="button" tabindex="0" @keydown.enter="navigate('profile')"><div class="avatar">{{ initials }}</div><div class="account-name"><strong>{{ profile.name || 'Tenant' }}</strong><small>{{ hasLease ? `${lease?.property} · ${lease?.unit}` : 'Looking for a home' }}</small></div></div>
+          <div class="account" @click="navigate('profile')" role="button" tabindex="0" @keydown.enter="navigate('profile')"><div class="avatar"><img v-if="profile.avatar" :src="profile.avatar" alt="" /><span v-else>{{ initials }}</span></div><div class="account-name"><strong>{{ profile.name || 'Tenant' }}</strong><small>{{ hasLease ? `${lease?.property} · ${lease?.unit}` : 'Looking for a home' }}</small></div></div>
           <p class="nav-caption">YOUR WORKSPACE</p>
           <nav aria-label="Tenant navigation"><button v-for="item in menu" :key="item.id" :class="{ active: section === item.id }" @click="navigate(item.id)"><IonIcon :icon="item.icon" /><span>{{ item.title }}</span><span v-if="item.id === 'applications' && pendingApplications" class="nav-count">{{ pendingApplications }}</span></button></nav>
           <button type="button" class="tenant-logout" @click="logout"><IonIcon :icon="logOutOutline" /> <span>Logout</span><IonIcon :icon="chevronForwardOutline" /></button>
@@ -876,12 +876,12 @@ td {padding:15px;}
   .layout { padding: 8px; gap: 10px; }
   .sidebar {
     top: 8px;
-    width: 232px;
+    width: 268px;
     max-height: calc(100dvh - 78px);
     padding: 10px 10px 12px;
     border-radius: 18px;
   }
-  .layout { grid-template-columns: 232px minmax(0, 1fr); }
+  .layout { grid-template-columns: 268px minmax(0, 1fr); }
   .account { padding: 8px 10px; margin-bottom: 6px; border-radius: 12px; }
   .avatar { width: 36px; height: 36px; border-radius: 11px; font-size: 13px; }
   .account-name strong { font-size: 13px; }
