@@ -106,6 +106,7 @@ router.get(
         JOIN properties p
           ON p.property_id = u.property_id
         WHERE LOWER(u.status) = 'available'
+          AND lower(COALESCE(p.listing_status, 'active')) = 'active'
           AND NOT EXISTS (
             SELECT 1
             FROM leases l
@@ -157,6 +158,7 @@ router.get(
           p.address,
           p.city,
           p.property_type,
+          lower(COALESCE(p.listing_status, 'active')) AS listing_status,
           a.full_name AS owner_name,
           COUNT(u.unit_id)::int AS unit_count,
           COUNT(u.unit_id) FILTER (
@@ -168,7 +170,7 @@ router.get(
         LEFT JOIN units u
           ON u.property_id = p.property_id
         ${where}
-        GROUP BY p.property_id, a.full_name
+        GROUP BY p.property_id, p.listing_status, a.full_name
         ORDER BY p.property_id DESC
         `,
         params
@@ -482,6 +484,67 @@ router.patch(
     }
   }
 );
+
+// Owner can remove a property they still fully control.
+// Leases and maintenance stay on file, so those properties cannot be deleted.
+router.delete('/properties/:id', allow('owner'), async (req, res, next) => {
+  if (!positiveId(req.params.id)) {
+    return res.status(400).json({ success: false, message: 'Invalid property ID.' });
+  }
+  if (req.body?.confirm !== true) {
+    return res.status(400).json({ success: false, message: 'Confirm property deletion before it is completed.' });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const property = await client.query(
+      'SELECT property_id, property_name FROM properties WHERE property_id = $1 AND owner_id = $2 FOR UPDATE',
+      [Number(req.params.id), req.currentUser.id]
+    );
+    if (!property.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Property not found under your account.' });
+    }
+    const units = await client.query(
+      'SELECT unit_id FROM units WHERE property_id = $1 FOR UPDATE',
+      [Number(req.params.id)]
+    );
+    const unitIds = units.rows.map(row => row.unit_id);
+    if (unitIds.length) {
+      const leases = await client.query(
+        'SELECT 1 FROM leases WHERE unit_id = ANY($1::int[]) LIMIT 1',
+        [unitIds]
+      );
+      const maintenance = await client.query(
+        'SELECT 1 FROM maintenance_requests WHERE unit_id = ANY($1::int[]) LIMIT 1',
+        [unitIds]
+      );
+      if (leases.rowCount || maintenance.rowCount) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({
+          success: false,
+          message: 'This property has a lease or maintenance record, so it cannot be deleted. You can suspend the listing instead of removing the rental history.',
+        });
+      }
+      await client.query('DELETE FROM applications WHERE unit_id = ANY($1::int[])', [unitIds]);
+      await client.query('DELETE FROM units WHERE property_id = $1', [Number(req.params.id)]);
+    }
+    await client.query(
+      'DELETE FROM properties WHERE property_id = $1 AND owner_id = $2',
+      [Number(req.params.id), req.currentUser.id]
+    );
+    await client.query('COMMIT');
+    return res.json({
+      success: true,
+      message: 'Property deleted. Lease and maintenance records were not removed.',
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
+  }
+});
 
 // ============================================================
 // UPDATE RENTAL UNIT

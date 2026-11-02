@@ -10,7 +10,7 @@
                 <div><strong>RentEase<span>.</span></strong><small>RENT SMARTER · LIVE BETTER</small></div>
               </div>
               <div class="intro"><span class="eyebrow">WELCOME HOME</span><h1>Sign in to <em>RentEase.</em></h1><p>Pick up right where you left off. Your rental journey, all in one place.</p></div>
-              <div v-if="showRegistrationMessage" class="alert success" role="status"><span class="alert-icon" aria-hidden="true">✓</span><div><strong>Account created successfully</strong><p>Your registration is awaiting administrator approval. You can sign in once it's approved.</p></div><button type="button" class="dismiss" aria-label="Dismiss registration message" @click="registrationMessageDismissed = true">×</button></div>
+              <div v-if="showRegistrationMessage" class="alert success" role="status"><span class="alert-icon" aria-hidden="true">✓</span><div><strong>{{ registrationTitle }}</strong><p>{{ registrationDetail }}</p></div><button type="button" class="dismiss" aria-label="Dismiss registration message" @click="registrationMessageDismissed = true">×</button></div>
               <div v-if="route.query.serverUnavailable === '1'" class="alert error" role="alert"><span class="alert-icon" aria-hidden="true">!</span><div><strong>Connection issue</strong><p>Your session could not be verified. Check your backend connection, then try again.</p></div></div>
               <form @submit.prevent="handleLogin" :aria-busy="isLoading">
                 <div class="field"><label for="login-email">Email address</label><div class="input-wrap"><span class="field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span><input id="login-email" v-model="email" name="email" type="email" autocomplete="username" placeholder="you@example.com" maxlength="254" :disabled="isLoading" required /></div></div>
@@ -18,6 +18,7 @@
                 <div v-if="errorMessage" class="alert error" role="alert"><span class="alert-icon" aria-hidden="true">!</span><div><strong>Unable to sign in</strong><p>{{ errorMessage }}</p></div></div>
                 <button type="submit" class="sign-in" :disabled="isLoading"><span v-if="isLoading" class="spinner" aria-hidden="true"></span><span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span><span v-if="!isLoading" class="arrow" aria-hidden="true">→</span></button>
               </form>
+              <GoogleContinue :key="googleKey" intent="login" @error="message => errorMessage = message" @success="openDashboard" />
               <div class="secure-note"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Protected account access</span></div>
               <div class="register-link">New to RentEase? <RouterLink to="/signup">Create an account <span aria-hidden="true">↗</span></RouterLink></div>
               <div class="form-footer">© {{ new Date().getFullYear() }} RentEase · Your space, simplified.</div>
@@ -38,9 +39,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { IonPage, IonContent } from '@ionic/vue';
+import { IonPage, IonContent, onIonViewWillEnter } from '@ionic/vue';
 
-import { login, dashboardPath } from '@/services/auth';
+import { login, dashboardPath, type AuthUser } from '@/services/auth';
+import GoogleContinue from '@/components/auth/GoogleContinue.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -51,11 +53,39 @@ const isLoading = ref(false);
 const errorMessage = ref('');
 const showPassword = ref(false);
 const registrationMessageDismissed = ref(false);
+const googleKey = ref(0);
 
+function resetLoginForm() {
+  email.value = '';
+  password.value = '';
+  isLoading.value = false;
+  errorMessage.value = '';
+  showPassword.value = false;
+  registrationMessageDismissed.value = false;
+  googleKey.value += 1;
+}
+
+onIonViewWillEnter(resetLoginForm);
+
+const registrationKind = computed(() => String(route.query.registered || ''));
 const showRegistrationMessage = computed(() =>
-  route.query.registered === '1' &&
+  ['1', 'tenant', 'owner'].includes(registrationKind.value) &&
   !registrationMessageDismissed.value,
 );
+const registrationTitle = computed(() =>
+  registrationKind.value === 'owner'
+    ? 'Owner account submitted'
+    : 'Account created successfully',
+);
+const registrationDetail = computed(() =>
+  registrationKind.value === 'owner'
+    ? 'An administrator must verify your account before you can sign in and publish properties.'
+    : 'Your tenant account is ready. Sign in to browse rentals.',
+);
+
+async function openDashboard(user: AuthUser) {
+  await router.replace(dashboardPath(user.role));
+}
 
 async function handleLogin() {
   if (isLoading.value) return;
@@ -117,5 +147,26 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #74d8
 @media(max-width:960px){.login-shell{grid-template-columns:minmax(315px,.9fr) minmax(320px,1.1fr)}.visual-side{padding:29px 23px}.visual-copy h2{font-size:34px}.visual-illustration{height:240px;transform:scale(.85)}.form-inner{padding:34px 27px}.brand-row{margin-bottom:38px}}
 @media(max-width:700px){.login-stage{padding:0;display:block}.login-shell{display:flex;flex-direction:column-reverse;min-height:100dvh;border-radius:0;box-shadow:none}.visual-side{min-height:190px;padding:24px 22px 21px}.visual-top{margin-bottom:20px}.visual-illustration{display:none}.visual-copy h2{font-size:26px;max-width:390px;line-height:1.17;margin:9px 0}.visual-copy p,.feature-chips,.visual-footer{display:none}.visual-pill{display:none}.visual-kicker{font-size:9px}.form-inner{max-width:500px;padding:26px 22px calc(32px + env(safe-area-inset-bottom,0px))}.form-side{flex:1}.brand-row{margin-bottom:22px}.intro h1{font-size:31px}.intro p{margin-bottom:23px}.field{margin-bottom:15px}.form-footer{margin-top:24px}}
 @media(max-width:380px){.form-inner{padding-left:17px;padding-right:17px}.visual-side{padding:19px 17px}.brand-row strong{font-size:20px}.login-shell{min-height:100%}.form-inner{padding-bottom:28px}}
+@media (min-width: 701px) and (max-height: 1050px) {
+  .login-stage { padding: 12px; }
+  .login-shell { min-height: 0; height: calc(100dvh - 24px); }
+  .form-side { min-height: 0; overflow: auto; }
+  .form-inner { padding: 16px 32px; }
+  .brand-row { margin-bottom: 16px; }
+  .intro h1 { font-size: 34px; margin: 8px 0 6px; }
+  .intro p { margin: 0 0 14px; line-height: 1.5; }
+  .field { margin-bottom: 12px; }
+  .input-wrap, .sign-in { min-height: 46px; }
+  .input-wrap input { height: 44px; }
+  .secure-note { margin: 8px 0 10px; }
+  .register-link { padding-top: 10px; }
+  .form-footer { margin-top: 10px; }
+  .visual-side { padding: 16px 28px 12px; }
+  .visual-illustration { height: 150px; margin: 0; }
+  .visual-copy h2 { font-size: 30px; margin: 6px 0; }
+  .visual-copy p { line-height: 1.45; }
+  .feature-chips { margin-top: 10px; }
+  .visual-footer { margin-top: 10px; }
+}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style>

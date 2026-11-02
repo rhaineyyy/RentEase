@@ -7,4 +7,5 @@ export async function createBill(input:{lease_id:number;billing_period:string;du
 export async function listOwnerPayments():Promise<RentalPayment[]>{const {data}=await api.get('/owner/payments');return data.payments;}
 export async function listMyPayments():Promise<RentalPayment[]>{const {data}=await api.get('/payments/my');return data.payments;}
 export async function submitBillPayment(input:{bill_id:number;amount:number;payment_method:'gcash'|'cash'|'bank_transfer'|'other';reference_number:string}):Promise<RentalPayment>{const {data}=await api.post('/payments',input);return data.payment;}
+export async function startBillCheckout(input:{bill_id:number;amount:number}):Promise<string>{const {data}=await api.post('/payments/checkout',input);if(!data?.checkout_url)throw new Error('Checkout did not start.');return data.checkout_url;}
 export async function decidePayment(id:number,decision:'verified'|'rejected'):Promise<RentalPayment>{const {data}=await api.patch(`/owner/payments/${id}/decision`,{decision});return data.payment;}

@@ -9,6 +9,7 @@ export interface RentalProperty {
   address: string;
   city: string | null;
   property_type: string | null;
+  listing_status?: string;
   owner_name: string;
   unit_count: number;
   available_unit_count: number;
@@ -107,6 +108,10 @@ export async function updateProperty(
     input
   );
   return data.property;
+}
+
+export async function deleteProperty(propertyId: number): Promise<void> {
+  await api.delete(`/properties/${propertyId}`, { data: { confirm: true } });
 }
 
 // PATCH: Update existing rental unit

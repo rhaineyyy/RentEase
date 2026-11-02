@@ -10,7 +10,13 @@ async function auth(req,res,next){
 }
 const allow=role=>(req,res,next)=>req.actor.role===role?next():res.status(403).json({success:false,message:'Access denied.'});
 router.use(auth);
-const billQuery=`SELECT b.bill_id,b.lease_id,b.billing_period,b.rent_amount,b.water_charge,b.electricity_charge,b.other_charges,b.due_date,b.status,
+const billQuery=`SELECT b.bill_id,b.lease_id,b.billing_period,b.rent_amount,b.water_charge,b.electricity_charge,b.other_charges,b.due_date,
+ CASE
+  WHEN (b.rent_amount+COALESCE(b.water_charge,0)+COALESCE(b.electricity_charge,0)+COALESCE(b.other_charges,0))-COALESCE((SELECT SUM(py.amount) FROM payments py WHERE py.bill_id=b.bill_id AND py.status='verified'),0)<=0 THEN 'paid'
+  WHEN b.due_date<CURRENT_DATE THEN 'overdue'
+  WHEN COALESCE((SELECT SUM(py.amount) FROM payments py WHERE py.bill_id=b.bill_id AND py.status='verified'),0)>0 THEN 'partially_paid'
+  ELSE b.status
+ END AS status,
  l.tenant_id,l.unit_id,u.unit_number,p.property_name,p.owner_id,t.full_name AS tenant_name,
  (b.rent_amount+COALESCE(b.water_charge,0)+COALESCE(b.electricity_charge,0)+COALESCE(b.other_charges,0)) AS total_amount,
  COALESCE((SELECT SUM(py.amount) FROM payments py WHERE py.bill_id=b.bill_id AND py.status='verified'),0) AS verified_amount
@@ -26,6 +32,8 @@ router.post('/owner/bills',allow('owner'),async(req,res,next)=>{
  if(billing_period.slice(8)!=='01')return res.status(400).json({success:false,message:'Billing period must be the first day of its month (YYYY-MM-01).'});
  const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query(`SELECT l.lease_id,l.monthly_rent,l.status,p.owner_id FROM leases l JOIN units u ON u.unit_id=l.unit_id JOIN properties p ON p.property_id=u.property_id WHERE l.lease_id=$1 FOR UPDATE OF l`,[lease_id]);
  if(!r.rows.length||Number(r.rows[0].owner_id)!==req.actor.id){await client.query('ROLLBACK');return res.status(404).json({success:false,message:'Lease not found under your properties.'})}
+ const dueCheck=await client.query(`SELECT $1::date >= (NOW() AT TIME ZONE 'Asia/Manila')::date AS allowed`,[due_date]);
+ if(!dueCheck.rows[0].allowed){await client.query('ROLLBACK');return res.status(400).json({success:false,message:'Payment due date cannot be in the past.'})}
  if(String(r.rows[0].status).toLowerCase()!=='active'){await client.query('ROLLBACK');return res.status(409).json({success:false,message:'Bills can only be issued for active leases.'})}
  const insert=await client.query(`INSERT INTO billing(lease_id,billing_period,rent_amount,water_charge,electricity_charge,other_charges,due_date,status) VALUES($1,$2::date,$3,$4,$5,$6,$7::date,'unpaid') RETURNING bill_id`,[lease_id,billing_period,r.rows[0].monthly_rent,water_charge,electricity_charge,other_charges,due_date]);
  const bill=await client.query(`${billQuery} WHERE b.bill_id=$1`,[insert.rows[0].bill_id]);await client.query('COMMIT');res.status(201).json({success:true,bill:bill.rows[0]});

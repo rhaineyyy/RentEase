@@ -1,11 +1,27 @@
 import api from './api';
 import { currentUser } from './auth';
 
-export type UserProfile = { name: string; email: string; role: 'admin'|'owner'|'tenant'; mobile: string; avatar_url: string };
+export type UserProfile = { name: string; email: string; role: 'admin'|'owner'|'tenant'; mobile: string; avatar_url: string; google_sign_in?: boolean };
 export async function getMyProfile(): Promise<UserProfile> {
   const { data } = await api.get('/profile');
   return {...data.profile, avatar_url: avatarSrc(data.profile.avatar_url)};
 }
+export async function changeMyEmail(email: string, currentPassword: string): Promise<UserProfile> {
+  const { data } = await api.patch('/profile/email', {
+    email: email.trim().toLowerCase(),
+    currentPassword,
+  });
+  if (currentUser.value) currentUser.value = { ...currentUser.value, email: data.profile.email };
+  return { ...data.profile, mobile: '', avatar_url: '' };
+}
+
+export async function deleteMyAccount(proof: { currentPassword?: string; confirmEmail?: string }): Promise<string> {
+  const { data } = await api.delete('/profile/account', {
+    data: { confirm: true, ...proof },
+  });
+  return data.message || 'Your account has been deleted.';
+}
+
 export async function saveMyProfile(name: string, mobile: string, avatar?: string): Promise<UserProfile> {
   const { data } = await api.patch('/profile', {name, mobile});
   if (currentUser.value) currentUser.value = {...currentUser.value, name: data.profile.name};

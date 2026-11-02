@@ -51,11 +51,15 @@ router.post('/applications', requireRole('tenant'), async (req, res, next) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const unit = await client.query('SELECT unit_id, status FROM units WHERE unit_id = $1 FOR UPDATE', [unit_id]);
+    const unit = await client.query(`SELECT u.unit_id, u.status, lower(COALESCE(p.listing_status,'active')) AS listing
+      FROM units u JOIN properties p ON p.property_id = u.property_id WHERE u.unit_id = $1 FOR UPDATE OF u`, [unit_id]);
     if (!unit.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, message: 'Unit not found.' }); }
+    if (unit.rows[0].listing !== 'active') { await client.query('ROLLBACK'); return res.status(409).json({ success: false, message: 'This listing is not open for new applications.' }); }
     if (String(unit.rows[0].status).toLowerCase() !== 'available') { await client.query('ROLLBACK'); return res.status(409).json({ success: false, message: 'Unit is no longer available.' }); }
     const duplicate = await client.query("SELECT application_id FROM applications WHERE tenant_id = $1 AND unit_id = $2 AND LOWER(status) IN ('pending','approved') LIMIT 1", [req.currentUser.id, unit_id]);
     if (duplicate.rows.length) { await client.query('ROLLBACK'); return res.status(409).json({ success: false, message: 'You already have a pending or approved application for this unit.' }); }
+    const moveInCheck = await client.query(`SELECT $1::date >= (NOW() AT TIME ZONE 'Asia/Manila')::date AS allowed`, [moveIn]);
+    if (!moveInCheck.rows[0].allowed) { await client.query('ROLLBACK'); return res.status(400).json({ success: false, message: 'Move-in date cannot be in the past. Choose today or a future date.' }); }
     const created = await client.query(`INSERT INTO applications
       (tenant_id, unit_id, move_in_date, lease_duration_months, employment_details, contact_details, status)
       VALUES ($1,$2,$3,$4,$5,$6,'pending') RETURNING application_id`,

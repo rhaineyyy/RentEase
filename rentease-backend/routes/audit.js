@@ -11,8 +11,15 @@ function auditCapture(req, res, next) {
   if (method === 'POST' && path === '/login') eventType = 'LOGIN';
   else if (method === 'POST' && path === '/signup') eventType = 'ACCOUNT_REGISTRATION';
   else if (method === 'POST' && path === '/logout') eventType = 'LOGOUT';
-  else if (method === 'PATCH' && /^\/admin\/users\/\d+\/(approve|reject)$/.test(path)) {
-    eventType = path.endsWith('/approve') ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED';
+  else if (method === 'DELETE' && path === '/profile/account') eventType = 'ACCOUNT_DELETED';
+  else if (method === 'PATCH' && /^\/admin\/users\/\d+\/(approve|reject|deactivate|reactivate)$/.test(path)) {
+    const action = path.split('/').pop();
+    eventType = {
+      approve: 'ACCOUNT_APPROVED',
+      reject: 'ACCOUNT_REJECTED',
+      deactivate: 'ACCOUNT_DEACTIVATED',
+      reactivate: 'ACCOUNT_REACTIVATED',
+    }[action];
   }
   // Rental operation events are captured after the existing route returns.
   // Only explicit mutation routes are monitored; GET and unrelated requests are ignored.
@@ -24,7 +31,9 @@ function auditCapture(req, res, next) {
     { method: 'POST', re: /^\/payments$/, type: 'PAYMENT_SUBMITTED', resource: 'bill', source: 'bill_id', description: 'Tenant submitted payment details for verification.' },
     { method: 'PATCH', re: /^\/owner\/payments\/(\d+)\/decision$/, type: 'PAYMENT_REVIEWED', resource: 'payment', description: 'Property owner reviewed a payment submission.' },
     { method: 'POST', re: /^\/maintenance$/, type: 'MAINTENANCE_CREATED', resource: 'unit', source: 'unit_id', description: 'Tenant submitted a maintenance request.' },
-    { method: 'PATCH', re: /^\/owner\/maintenance\/(\d+)\/status$/, type: 'MAINTENANCE_UPDATED', resource: 'maintenance', description: 'Property owner changed a maintenance request status.' }
+    { method: 'PATCH', re: /^\/owner\/maintenance\/(\d+)\/status$/, type: 'MAINTENANCE_UPDATED', resource: 'maintenance', description: 'Property owner changed a maintenance request status.' },
+    { method: 'PATCH', re: /^\/admin\/properties\/(\d+)\/listing$/, type: 'LISTING_MODERATED', resource: 'property', description: 'Administrator changed a property listing status.' },
+    { method: 'DELETE', re: /^\/properties\/(\d+)$/, type: 'PROPERTY_DELETED', resource: 'property', description: 'Property owner deleted a property.' }
   ];
   const matched = actions.find(a => a.method === method && a.re.test(path));
   if (matched) {
@@ -59,13 +68,16 @@ function auditCapture(req, res, next) {
     const actorId = req.session?.user?.id ?? originalActorId ?? null;
     const actorRole = req.session?.user?.role ?? originalActorRole ?? null;
     const targetMatch = path.match(/^\/admin\/users\/(\d+)\//);
-    const targetId = targetMatch ? Number(targetMatch[1]) : null;
+    const targetId = targetMatch ? Number(targetMatch[1]) : eventType === 'ACCOUNT_DELETED' ? (originalActorId ?? null) : null;
     const descriptionMap = {
       LOGIN: success ? 'Account signed in.' : 'Sign-in attempt was unsuccessful.',
       ACCOUNT_REGISTRATION: success ? 'New account registration submitted.' : 'Account registration was unsuccessful.',
       LOGOUT: success ? 'Account signed out.' : 'Sign-out attempt was unsuccessful.',
       ACCOUNT_APPROVED: success ? 'Administrator approved an account.' : 'Account approval was unsuccessful.',
-      ACCOUNT_REJECTED: success ? 'Administrator rejected an account.' : 'Account rejection was unsuccessful.'
+      ACCOUNT_REJECTED: success ? 'Administrator rejected an account.' : 'Account rejection was unsuccessful.',
+      ACCOUNT_DEACTIVATED: success ? 'Administrator deactivated an account.' : 'Account deactivation was unsuccessful.',
+      ACCOUNT_REACTIVATED: success ? 'Administrator reactivated an account.' : 'Account reactivation was unsuccessful.',
+      ACCOUNT_DELETED: success ? 'Tenant deleted their own account.' : 'Tenant account deletion was unsuccessful.'
     };
     const rawIp = req.ip || req.socket?.remoteAddress || '';
     const ip = String(rawIp).slice(0, 64);
@@ -90,9 +102,9 @@ router.get('/admin/audit-events', async (req, res, next) => {
     }
     const type = String(req.query.type || 'all');
     const outcome = String(req.query.outcome || 'all');
-    const permitted = ['LOGIN','LOGOUT','ACCOUNT_REGISTRATION','ACCOUNT_APPROVED','ACCOUNT_REJECTED',
+    const permitted = ['LOGIN','LOGOUT','ACCOUNT_REGISTRATION','ACCOUNT_APPROVED','ACCOUNT_REJECTED','ACCOUNT_DELETED',
       'LEASE_PREPARED','LEASE_CONFIRMED','LEASE_COMPLETED','BILL_CREATED',
-      'PAYMENT_SUBMITTED','PAYMENT_REVIEWED','MAINTENANCE_CREATED','MAINTENANCE_UPDATED'];
+      'PAYMENT_SUBMITTED','PAYMENT_REVIEWED','MAINTENANCE_CREATED','MAINTENANCE_UPDATED','PROPERTY_DELETED'];
     if ((type !== 'all' && !permitted.includes(type)) || !['all','success','failure'].includes(outcome)) {
       return res.status(400).json({ success: false, message: 'Invalid audit filter.' });
     }

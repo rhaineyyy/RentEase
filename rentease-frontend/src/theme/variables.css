@@ -2,21 +2,21 @@
 :root {
   color-scheme: light;
 
-  --ion-color-primary: #142B49;
-  --ion-color-primary-rgb: 20, 43, 73;
+  --ion-color-primary: #163B73;
+  --ion-color-primary-rgb: 22, 59, 115;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
   --ion-color-primary-shade: #12253f;
   --ion-color-primary-tint: #2b4363;
 
-  --ion-color-secondary: #0B7068;
-  --ion-color-secondary-rgb: 11, 112, 104;
+  --ion-color-secondary: #17A7B8;
+  --ion-color-secondary-rgb: 23, 167, 184;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
   --ion-color-secondary-shade: #0a635c;
   --ion-color-secondary-tint: #238079;
 
-  --ion-background-color: #F4F7FB;
+  --ion-background-color: #F4F7FC;
   --ion-background-color-rgb: 244, 247, 251;
 
   --ion-card-background: #FFFFFF;

@@ -207,9 +207,13 @@
                   <span class="terms-mark"></span>
                   <span class="terms-copy">
                     I agree to the
-                    <a href="#" @click.prevent>terms of service</a>
-                    and understand that my account needs
-                    <strong>admin approval</strong> before login.
+                    <a href="#" @click.prevent>terms of service</a>.
+                    <template v-if="selectedRole === 'owner'">
+                      An administrator must verify an owner account before sign-in and property publishing.
+                    </template>
+                    <template v-else>
+                      A tenant account can sign in immediately after registration.
+                    </template>
                   </span>
                 </label>
 
@@ -240,6 +244,15 @@
                   </span>
                   <span v-if="!isLoading" class="submit-arrow">→</span>
                 </button>
+                <GoogleContinue
+                  :key="googleKey"
+                  intent="register"
+                  :role="selectedRole"
+                  :disabled="!agreeTerms || isLoading"
+                  @error="message => errorMessage = message"
+                  @pending="finishGoogleRegistration"
+                  @success="openDashboard"
+                />
 
                 <p class="login-note">
                   Already have an account?
@@ -343,7 +356,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { IonPage, IonContent } from '@ionic/vue';
+import { IonPage, IonContent, onIonViewWillEnter } from '@ionic/vue';
+import { dashboardPath, type AuthUser } from '@/services/auth';
+import GoogleContinue from '@/components/auth/GoogleContinue.vue';
 
 const router = useRouter();
 
@@ -357,6 +372,23 @@ const errorMessage = ref('');
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 const agreeTerms = ref(false);
+const googleKey = ref(0);
+
+function resetSignupForm() {
+  fullName.value = '';
+  email.value = '';
+  password.value = '';
+  confirmPassword.value = '';
+  selectedRole.value = 'tenant';
+  isLoading.value = false;
+  errorMessage.value = '';
+  showPassword.value = false;
+  showConfirmPassword.value = false;
+  agreeTerms.value = false;
+  googleKey.value += 1;
+}
+
+onIonViewWillEnter(resetSignupForm);
 
 const currentYear = new Date().getFullYear();
 
@@ -390,6 +422,12 @@ const passwordStrengthClass = computed(() => {
   return 'strength-strong';
 });
 
+const finishGoogleRegistration = async () => {
+  await router.replace({ path: '/login', query: { registered: selectedRole.value } });
+};
+const openDashboard = async (user: AuthUser) => {
+  await router.replace(dashboardPath(user.role));
+};
 const handleSignup = async () => {
   errorMessage.value = '';
 
@@ -448,7 +486,7 @@ const handleSignup = async () => {
     if (response.ok && data.success) {
       await router.replace({
         path: '/login',
-        query: { registered: '1' }
+        query: { registered: selectedRole.value }
       });
       return;
     }
@@ -1536,6 +1574,59 @@ a:focus-visible {
   .property-info h3 {
     font-size: 20px;
   }
+}
+
+@media (min-width: 681px) and (max-height: 1050px) {
+  .signup-wrapper {
+    height: 100%;
+    min-height: 0;
+    padding: 10px;
+    align-items: stretch;
+  }
+
+  .signup-card {
+    min-height: 0;
+    height: calc(100dvh - 20px);
+    max-height: calc(100dvh - 20px);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .form-panel,
+  .visual-panel {
+    min-height: 0;
+    max-height: 100%;
+  }
+
+  .form-panel {
+    overflow: auto;
+  }
+
+  .form-panel-inner {
+    padding: 14px 28px 12px 22px;
+    justify-content: flex-start;
+  }
+
+  .brand-row { margin-bottom: 8px; gap: 10px; }
+  .brand-badge { width: 36px; height: 36px; border-radius: 12px; font-size: 18px; }
+  .brand-copy h2 { font-size: 18px; }
+  .brand-copy p { font-size: 9px; letter-spacing: 1.2px; }
+  .form-copy { margin-bottom: 8px; }
+  .eyebrow { min-height: 0; margin-bottom: 6px; padding: 4px 10px; font-size: 10px; }
+  .form-copy h1 { font-size: 30px; margin-bottom: 4px; }
+  .intro { font-size: 12px; line-height: 1.4; }
+  .field-group { margin-bottom: 8px; }
+  .field-group label { margin-bottom: 3px; font-size: 12px; }
+  .input-shell { min-height: 40px; border-radius: 12px; }
+  .input-shell input { min-height: 38px; font-size: 13px; }
+  .role-grid { gap: 8px; }
+  .role-card { min-height: 58px; padding: 8px 10px; border-radius: 14px; }
+  .role-icon { width: 32px; height: 32px; border-radius: 10px; }
+  .terms-box { margin-bottom: 8px; }
+  .terms-copy { font-size: 12px; line-height: 1.35; }
+  .submit-button { min-height: 42px; border-radius: 14px; }
+  .login-note { margin-top: 8px; }
+  .visual-panel { padding: 16px 18px 12px 40px; }
+  .signup-card :deep(.google-continue) { margin-top: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

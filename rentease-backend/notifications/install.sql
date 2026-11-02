@@ -10,12 +10,44 @@ CREATE TABLE IF NOT EXISTS public.notification_outbox (
  created_at timestamptz NOT NULL DEFAULT now(), processed_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS notification_pending_idx ON public.notification_outbox(notification_id) WHERE status='pending';
+CREATE TABLE IF NOT EXISTS public.user_notifications (
+ notification_id bigserial PRIMARY KEY,
+ recipient_id integer NOT NULL REFERENCES public.app_users(user_id),
+ event_key text NOT NULL,
+ title text NOT NULL,
+ body text NOT NULL,
+ is_read boolean NOT NULL DEFAULT false,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ read_at timestamptz,
+ UNIQUE (recipient_id, event_key)
+);
+CREATE INDEX IF NOT EXISTS user_notifications_unread_idx ON public.user_notifications(recipient_id) WHERE is_read = false;
+ALTER TABLE public.app_users ADD COLUMN IF NOT EXISTS google_sub text;
+CREATE UNIQUE INDEX IF NOT EXISTS app_users_google_sub_unique ON public.app_users(google_sub) WHERE google_sub IS NOT NULL;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS gateway_provider text;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS gateway_checkout_id text;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS gateway_status text;
+CREATE UNIQUE INDEX IF NOT EXISTS payments_gateway_checkout_unique ON public.payments(gateway_checkout_id) WHERE gateway_checkout_id IS NOT NULL;
+ALTER TABLE public.payments DROP CONSTRAINT IF EXISTS payments_status_check;
+ALTER TABLE public.payments ADD CONSTRAINT payments_status_check CHECK (status IN ('pending_verification','pending_gateway','verified','rejected','failed','cancelled'));
+CREATE TABLE IF NOT EXISTS public.payment_gateway_events (
+ event_id text PRIMARY KEY,
+ payment_id integer REFERENCES public.payments(payment_id),
+ event_type text NOT NULL,
+ received_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE OR REPLACE FUNCTION public.rentease_enqueue(recipient integer, event text, resource bigint, title text, message text)
 RETURNS void LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
 BEGIN
  IF recipient IS NOT NULL THEN
-  INSERT INTO public.notification_outbox(recipient_id,channel,event_type,resource_id,subject,body)
-  SELECT recipient,c,event,resource,title,'RentEase: '||message FROM unnest(ARRAY['sms','email']) AS c;
+  INSERT INTO public.user_notifications(recipient_id, event_key, title, body)
+  VALUES (recipient, event || ':' || resource::text, title, message)
+  ON CONFLICT (recipient_id, event_key) DO NOTHING;
+  INSERT INTO public.notification_outbox(recipient_id,channel,event_type,resource_id,subject,body,dedupe_key)
+  SELECT recipient,c,event,resource,title,'RentEase: '||message,
+         event || ':' || resource::text || ':' || recipient::text || ':' || c
+  FROM unnest(ARRAY['sms','email']) AS c
+  ON CONFLICT (dedupe_key) WHERE dedupe_key IS NOT NULL DO NOTHING;
  END IF;
 END $$;
 CREATE OR REPLACE FUNCTION public.rentease_notify_event() RETURNS trigger
@@ -23,13 +55,18 @@ LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
 DECLARE
  n jsonb := to_jsonb(NEW); previous jsonb; tenant integer; owner integer;
  unit integer; lease integer; resource bigint; state text; kind text; message text;
+ owner_admin integer;
 BEGIN
  IF TG_OP='UPDATE' THEN previous:=to_jsonb(OLD); END IF;
  state:=lower(COALESCE(n->>'status',n->>'account_status',''));
  IF TG_OP='UPDATE' AND COALESCE(n->>'status',n->>'account_status','') IS NOT DISTINCT FROM
  COALESCE(previous->>'status',previous->>'account_status','') THEN RETURN NEW; END IF;
  IF TG_TABLE_NAME='app_users' THEN
-  IF TG_OP='UPDATE' AND state IN ('active','rejected') THEN
+  IF TG_OP='INSERT' AND lower(COALESCE(n->>'role',''))='owner' AND state='pending' THEN
+   FOR owner_admin IN SELECT user_id FROM public.app_users WHERE role='admin' AND lower(account_status)='active' LOOP
+    PERFORM public.rentease_enqueue(owner_admin,'owner_registration',NEW.user_id,'Owner registration','A property owner account is waiting for approval.');
+   END LOOP;
+  ELSIF TG_OP='UPDATE' AND state IN ('active','rejected') THEN
    PERFORM public.rentease_enqueue(NEW.user_id,'account_'||state,NEW.user_id,'Account update',
     CASE WHEN state='active' THEN 'Your account is approved. You can now sign in.' ELSE 'Your registration was rejected. Contact the administrator for details.' END);
   END IF;
@@ -74,12 +111,15 @@ BEGIN
   END IF;
  ELSIF TG_TABLE_NAME='payments' THEN
   resource:=(n->>'payment_id')::bigint;
-  IF TG_OP='INSERT' THEN
+  IF TG_OP='INSERT' AND state='pending_verification' THEN
    PERFORM public.rentease_enqueue(owner,'payments_insert',resource,'Payment submitted','A rent payment was submitted and needs your verification.');
   ELSIF TG_OP='UPDATE' AND state='verified' THEN
    PERFORM public.rentease_enqueue(tenant,'payments_verified',resource,'Payment verified','Your rent payment was verified. Check your updated bill balance.');
+   PERFORM public.rentease_enqueue(owner,'payments_verified_owner',resource,'Payment confirmed','A rent payment was confirmed and applied to the bill.');
   ELSIF TG_OP='UPDATE' AND state='rejected' THEN
    PERFORM public.rentease_enqueue(tenant,'payments_rejected',resource,'Payment rejected','Your rent payment was rejected. Check RentEase or contact the owner.');
+  ELSIF TG_OP='UPDATE' AND state IN ('failed','cancelled') THEN
+   PERFORM public.rentease_enqueue(tenant,'payments_'||state,resource,'Payment update','Your online payment was not completed. You can try again from Billing.');
   END IF;
  ELSIF TG_TABLE_NAME='security_deposit_payments' THEN
   resource:=(n->>'deposit_payment_id')::bigint;

@@ -18,17 +18,18 @@ async function requireActiveAdmin(req, res, next) {
 }
 router.use(requireActiveAdmin);
 
-// Read-only, platform-wide oversight. No mutation routes here.
+// Platform oversight. Listing moderation is the only write on this router.
 router.get('/admin/overview', async (req, res, next) => {
   try {
     const [properties, bills, leases, maintenance] = await Promise.all([
       pool.query(`SELECT p.property_id AS id, p.property_name AS name,
         COALESCE(o.full_name,'Unknown owner') AS owner,
         COUNT(u.unit_id)::int AS units,
-        COALESCE(NULLIF(p.city,''),p.address) AS location
+        COALESCE(NULLIF(p.city,''),p.address) AS location,
+        lower(COALESCE(p.listing_status,'active')) AS listing
         FROM properties p JOIN app_users o ON o.user_id=p.owner_id
         LEFT JOIN units u ON u.property_id=p.property_id
-        GROUP BY p.property_id,p.property_name,p.city,p.address,o.full_name
+        GROUP BY p.property_id,p.property_name,p.city,p.address,p.listing_status,o.full_name
         ORDER BY p.property_id DESC`),
       pool.query(`SELECT b.bill_id AS id, COALESCE(t.full_name,'Unknown tenant') AS tenant,
         CONCAT(p.property_name,' - Unit ',u.unit_number) AS unit,
@@ -61,4 +62,37 @@ router.get('/admin/overview', async (req, res, next) => {
     res.json({success:true,properties:properties.rows,bills:bills.rows,leases:leases.rows,maintenance:maintenance.rows});
   } catch (error) { next(error); }
 });
+
+router.patch('/admin/properties/:id/listing', async (req, res, next) => {
+  try {
+    if (req.body?.confirm !== true) {
+      return res.status(400).json({ success: false, message: 'Confirm this listing change before it is saved.' });
+    }
+    const id = req.params.id;
+    const action = String(req.body?.action || '');
+    if (!/^\d+$/.test(id) || !['suspend', 'archive', 'restore'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Provide a property and a suspend, archive, or restore action.' });
+    }
+    const nextStatus = action === 'restore' ? 'active' : action === 'archive' ? 'archived' : 'suspended';
+    const allowedFrom = action === 'restore' ? ['suspended', 'archived'] : action === 'archive' ? ['active', 'suspended'] : ['active'];
+    const result = await pool.query(
+      `UPDATE properties
+       SET listing_status = $2
+       WHERE property_id = $1
+         AND lower(listing_status) = ANY($3::text[])
+       RETURNING property_id, property_name, listing_status`,
+      [Number(id), nextStatus, allowedFrom]
+    );
+    if (result.rowCount === 0) {
+      return res.status(409).json({ success: false, message: 'That listing change is not available for the current property status.' });
+    }
+    const labels = { suspend: 'suspended', archive: 'archived', restore: 'restored' };
+    return res.json({
+      success: true,
+      message: `Listing ${labels[action]}. Rental records, prices, and leases were not changed.`,
+      property: result.rows[0],
+    });
+  } catch (error) { next(error); }
+});
+
 module.exports=router;

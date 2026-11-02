@@ -18,6 +18,7 @@ type AuthResponse = {
 const API_URL = 'http://localhost:5000/api';
 
 export const currentUser = ref<AuthUser | null>(null);
+export const sessionEpoch = ref(0);
 
 export function dashboardPath(role: UserRole): string {
   const paths: Record<UserRole, string> = {
@@ -170,4 +171,5 @@ export async function logout(): Promise<void> {
 
   currentUser.value = null;
   removeLegacyAuthentication();
+  sessionEpoch.value += 1;
 }

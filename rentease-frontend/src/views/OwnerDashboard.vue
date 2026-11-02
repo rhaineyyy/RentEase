@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { getMyProfile, saveMyProfile } from '@/services/profile';
+import { getMyProfile, saveMyProfile, changeMyEmail } from '@/services/profile';
 import { computed, reactive, ref, watch, onMounted } from 'vue';
+import { useSectionReturn } from '@/composables/sectionReturn';
 import { useRouter } from 'vue-router';
 import { logout as logoutUser } from '@/services/auth';
 import { restoreSession } from '@/services/auth';
-import { listProperties, listPropertyUnits, createProperty, createUnit, updateProperty, updateUnit } from '@/services/properties';
+import { listProperties, listPropertyUnits, createProperty, createUnit, updateProperty, updateUnit, deleteProperty } from '@/services/properties';
 import { confirmUnitTurnover } from '@/services/turnover';
 import { listOwnerDeposits, decideDepositPayment, type SecurityDepositPayment } from '@/services/deposits';
 import { listOwnerSettlements, createDepositSettlement, addDepositDeduction, deleteDepositDeduction, finalizeDepositSettlement, recordDepositRefund, decideDepositRefund, type DepositSettlement } from '@/services/depositSettlements';
 import { printDepositSettlement } from '@/services/printDepositSettlement';
 import { listOwnerApplications, reviewRentalApplication, type RentalApplication } from '@/services/applications';
 import { listOwnerLeases, prepareLease, finishLease, type RentalLease } from '@/services/leases';
+import NotificationCenter from '@/components/NotificationCenter.vue';
 import { listOwnerBills, listOwnerPayments, createBill, decidePayment, type RentalBill, type RentalPayment } from '@/services/billing';
 import { listOwnerMaintenance, updateMaintenanceStatus, type RentalMaintenanceRequest } from '@/services/maintenance';
 import {
@@ -47,6 +49,7 @@ type Property = {
   id: number;
   name: string;
   address: string;
+  listing?: string;
 };
 type Unit = {
   id: number;
@@ -415,6 +418,7 @@ async function refreshRentalCatalog() {
       id: Number(property.property_id),
       name: property.property_name,
       address: property.address,
+      listing: String(property.listing_status || 'active'),
     }));
     state.units = unitsByProperty.flat().map(unit => ({
       id: Number(unit.unit_id),
@@ -523,13 +527,30 @@ async function submitLeasePreparation() {
     leaseDialogOpen.value = false;
     leaseDialogApplication.value = null;
     closeDialog();
-    navigate('leases');
+    void visit('leases');
     notify('Lease agreement prepared. The tenant can now review and confirm the rental terms.');
   } catch (error: any) {
     leaseDialogError.value = error?.response?.data?.message || error?.message || 'Unable to prepare the lease. Please try again.';
   } finally { savingLease.value = false; }
 }
-async function createLeaseFromApplication(app: Application) { openLeasePreparation(app); }
+async function createLeaseFromApplication(app: Application) { leasePickerOpen.value = false; openLeasePreparation(app); }
+const leasePickerOpen = ref(false);
+function applicationHasOpenLease(app: Application) {
+  return state.leases.some(lease => lease.applicationId === app.id && lease.status !== 'COMPLETED');
+}
+const leaseReadyApplications = computed(() => state.applications.filter(app => app.status === 'APPROVED' && !applicationHasOpenLease(app)));
+function startCreateLease() {
+  const ready = leaseReadyApplications.value;
+  if (!ready.length) {
+    notify('Create Lease is available after you approve an application and the unit is reserved.');
+    return;
+  }
+  if (ready.length === 1) {
+    createLeaseFromApplication(ready[0]);
+    return;
+  }
+  leasePickerOpen.value = !leasePickerOpen.value;
+}
 function ownerBill(row:RentalBill):Bill {return {id:Number(row.bill_id),leaseId:Number(row.lease_id),period:String(row.billing_period).slice(0,7),due:String(row.due_date).slice(0,10),amount:Number(row.total_amount),verified:Number(row.verified_amount),status:String(row.status).toUpperCase()};}
 function ownerPayment(row:RentalPayment):Payment{return {id:Number(row.payment_id),billId:Number(row.bill_id),amount:Number(row.amount),method:row.payment_method,reference:row.reference_number||'',date:String(row.payment_date).slice(0,10),status:(row.status==='pending_verification'?'PENDING':String(row.status).toUpperCase()) as Payment['status'],proof:'',note:''};}
 async function refreshFinances(){if(financeLoading.value)return;financeLoading.value=true;financeError.value='';try{const [b,p]=await Promise.all([listOwnerBills(),listOwnerPayments()]);state.bills=b.map(ownerBill);state.payments=p.map(ownerPayment);}catch(e:any){financeError.value=e?.response?.data?.message||e?.message||'Failed to load billing records.';notify(financeError.value);}finally{financeLoading.value=false;}}
@@ -592,6 +613,10 @@ async function submitMonthlyBill() {
     }
     validatedCharges[label] = value;
   }
+  if (billingForm.due < dateOffset(0)) {
+    billingError.value = 'Payment due date cannot be in the past.';
+    return;
+  }
   if (billingForm.due < billingForm.month) {
     billingError.value = 'Payment due date must not be earlier than the billing period.';
     return;
@@ -638,11 +663,11 @@ onMounted(async () => {
 });
 
 const section = ref('overview');
+const portalContent = ref<{ $el?: { getScrollElement?: () => Promise<HTMLElement> } } | null>(null);
 const mobileMenuOpen = ref(false);
 const search = ref('');
 const statusFilter = ref('ALL');
 const propertyFilter = ref('ALL');
-const returnToOwnerProfile = ref(false);
 async function refreshOwnerDeposits() {
   if (depositsLoading.value) return;
   depositsLoading.value = true;
@@ -769,28 +794,13 @@ const titles: Record<string, string> = {
   maintenance: 'Maintenance Requests',
   profile: 'Owner Profile',
 };
-const subtitles: Record<string, string> = {
-  overview: 'Your rental operations, collections, and updates in one place.',
-  properties: 'Manage your properties and individual rental units.',
-  pending: 'Review applicant information before making a decision.',
-  history: 'Explore previously approved and rejected applications.',
-  payments: 'Review submitted payments and verification outcomes.',
-  bills: 'Monitor outstanding balances and upcoming due dates.',
-  deposits: 'Verify security deposit collections separately from monthly rent.',
-  leases: 'Review rental agreements and lease expirations.',
-  maintenance: 'Track reported issues from submission to resolution.',
-  profile: 'Keep your contact information up to date.',
-};
+const { backLabel, remember, clearReturn, previousSection, goBack, scrollTo } = useSectionReturn(section, titles, portalContent);
 function clearFilters() {
   search.value = '';
   statusFilter.value = 'ALL';
   propertyFilter.value = 'ALL';
 }
-function navigate(target: string) {
-  clearFilters();
-  returnToOwnerProfile.value = false;
-  section.value = target;
-  mobileMenuOpen.value = false;
+function loadSection(target: string) {
   if (target === 'pending' || target === 'history' || target === 'overview') void refreshOwnerApplications();
   if (target === 'leases' || target === 'overview') void refreshOwnerLeases();
   if (target === 'bills' || target === 'payments' || target === 'overview') void refreshFinances();
@@ -798,14 +808,39 @@ function navigate(target: string) {
   if (target === 'deposits') { void refreshOwnerLeases(); void refreshSettlements(); }
   if (target === 'maintenance' || target === 'overview') void refreshOwnerMaintenance();
 }
+function navigate(target: string) {
+  clearReturn();
+  clearFilters();
+  section.value = target;
+  mobileMenuOpen.value = false;
+  loadSection(target);
+}
+async function visit(target: string, apply?: () => void) {
+  if (previousSection() === target) {
+    await goBack();
+    return;
+  }
+  if (target === section.value && !apply) return;
+  const savedSearch = search.value;
+  const savedStatus = statusFilter.value;
+  const savedProperty = propertyFilter.value;
+  await remember(() => {
+    search.value = savedSearch;
+    statusFilter.value = savedStatus;
+    propertyFilter.value = savedProperty;
+  });
+  clearFilters();
+  section.value = target;
+  mobileMenuOpen.value = false;
+  apply?.();
+  loadSection(target);
+  await scrollTo(0);
+}
 function viewProfileUnits(propertyId: number) {
-  navigate('properties');
-  propertyFilter.value = String(propertyId);
-  returnToOwnerProfile.value = true;
+  void visit('properties', () => { propertyFilter.value = String(propertyId); });
 }
 function openFilteredSection(target: string, status: string) {
-  navigate(target);
-  statusFilter.value = status;
+  void visit(target, () => { statusFilter.value = status; });
 }
 function nextId(records: { id: number }[]): number {
   return Math.max(0, ...records.map(record => record.id)) + 1;
@@ -1240,9 +1275,22 @@ const filterOptions = computed(() => {
   return options[section.value] ?? [];
 });
 const dialogOpen = ref(false);
+const dialogTrail = ref<{ type: string; id: number }[]>([]);
+const dialogBackLabel = computed(() => {
+  const previous = dialogTrail.value[dialogTrail.value.length - 1];
+  if (!previous) return '';
+  const names: Record<string, string> = {
+    property: 'Property', unit: 'Unit', profile: 'Profile', application: 'Application',
+    payment: 'Payment', bill: 'Bill', lease: 'Lease', maintenance: 'Maintenance',
+  };
+  return `Back to ${names[previous.type] || 'previous details'}`;
+});
 const dialog = ref('');
 const selectedId = ref(0);
 const formError = ref('');
+const emailChange = reactive({ next: '', password: '' });
+const showEmailPassword = ref(false);
+const emailSaving = ref(false);
 const form = reactive({
   name: '',
   email: '',
@@ -1274,6 +1322,19 @@ function resetForm() {
   unitSaveStatus.value = '';
 }
 function openDialog(type: string, id = 0) {
+  const nested = dialogOpen.value && !!dialog.value && (dialog.value !== type || selectedId.value !== id);
+  dialogTrail.value = nested
+    ? [...dialogTrail.value, { type: dialog.value, id: selectedId.value }]
+    : [];
+  presentDialog(type, id);
+}
+function backInDialog() {
+  const previous = dialogTrail.value[dialogTrail.value.length - 1];
+  if (!previous) return;
+  dialogTrail.value = dialogTrail.value.slice(0, -1);
+  presentDialog(previous.type, previous.id);
+}
+function presentDialog(type: string, id = 0) {
   resetForm();
   dialog.value = type;
   selectedId.value = id;
@@ -1304,6 +1365,8 @@ function openDialog(type: string, id = 0) {
   }
   if (type === 'profile') {
     Object.assign(form, state.profile);
+    emailChange.next = '';
+    emailChange.password = '';
   }
   if (type === 'maintenance') {
     const request = state.maintenance.find(item => item.id === id);
@@ -1313,6 +1376,7 @@ function openDialog(type: string, id = 0) {
 }
 function closeDialog() {
   dialogOpen.value = false;
+  dialogTrail.value = [];
 }
 const selectedApp = computed(() =>
   state.applications.find(item => item.id === selectedId.value),
@@ -1376,6 +1440,27 @@ async function saveProperty() {
     notify('Property details saved successfully.');
   } catch (error: any) {
     formError.value = error?.response?.data?.message || error?.message || 'Unable to save property.';
+  } finally {
+    savingRental.value = false;
+  }
+}
+
+async function deleteOwnerProperty(property: Property) {
+  if (savingRental.value) return;
+  const confirmed = await systemConfirm(
+    `Delete ${property.name}? Its units are removed with it. A property that already has a lease or maintenance request cannot be deleted.`,
+    'Delete property',
+    'Delete property',
+  );
+  if (!confirmed) return;
+  savingRental.value = true;
+  try {
+    await deleteProperty(property.id);
+    if (selectedId.value === property.id) closeDialog();
+    await refreshRentalCatalog();
+    notify('Property deleted.');
+  } catch (error: any) {
+    notify(error?.response?.data?.message || error?.message || 'Could not delete this property.');
   } finally {
     savingRental.value = false;
   }
@@ -1503,6 +1588,28 @@ async function saveProfile() {
     formError.value = error?.response?.data?.message || error?.message || 'Unable to save profile.';
   }
 }
+async function saveEmail() {
+  if (emailSaving.value) return;
+  const email = emailChange.next.trim().toLowerCase();
+  if (!email || !emailChange.password) {
+    formError.value = 'Enter the new email address and your current password.';
+    return;
+  }
+  emailSaving.value = true;
+  formError.value = '';
+  try {
+    const saved = await changeMyEmail(email, emailChange.password);
+    state.profile.email = saved.email;
+    form.email = saved.email;
+    emailChange.next = '';
+    emailChange.password = '';
+    notify('Email updated. Use the new address the next time you sign in.');
+  } catch (error: any) {
+    formError.value = error?.response?.data?.message || error?.message || 'Could not update email.';
+  } finally {
+    emailSaving.value = false;
+  }
+}
 async function reviewApplication(app: Application, approved: boolean) {
   if (reviewingApplication.value || app.status !== 'PENDING') return;
   if (approved && unitStatus(app.unitId) !== 'AVAILABLE') {
@@ -1617,7 +1724,7 @@ async function resetDemo() {
   await refreshOwnerApplications();
   closeDialog();
   clearFilters();
-  returnToOwnerProfile.value = false;
+  clearReturn();
   notify('Temporary display data cleared. Your rental records remain unchanged.');
 }
 async function logout() {
@@ -1654,17 +1761,12 @@ async function logout() {
           </div>
         </IonButtons>
         <IonButtons slot="end">
-          <IonButton
-            aria-label="Open pending payments"
-            @click="openFilteredSection('payments', 'PENDING')"
-          >
-            <IonIcon :icon="notificationsOutline" />
-          </IonButton>
+          <NotificationCenter />
 
         </IonButtons>
       </IonToolbar>
     </IonHeader>
-    <IonContent class="portal">
+    <IonContent ref="portalContent" class="portal">
       <div class="layout">
         <button
           v-if="mobileMenuOpen"
@@ -1718,18 +1820,16 @@ async function logout() {
         <main class="workspace">
           <div class="page-heading">
             <div>
-              <p class="eyebrow">PROPERTY MANAGEMENT</p>
               <h1>{{ titles[section] }}</h1>
-              <p class="subtitle">{{ subtitles[section] }}</p>
             </div>
             <div class="heading-actions">
               <button
-                v-if="section === 'properties' && returnToOwnerProfile"
+                v-if="backLabel"
                 type="button"
                 class="button secondary"
-                @click="navigate('profile')"
+                @click="goBack"
               >
-                ← Return to Owner Profile
+                {{ backLabel }}
               </button>
               <button
                 v-if="section === 'properties'"
@@ -1762,14 +1862,13 @@ async function logout() {
           <template v-if="section === 'overview'">
             <section class="welcome-hero">
               <div class="hero-copy">
-                <span class="hero-kicker"><span class="live-dot"></span> OWNER WORKSPACE</span>
                 <h2>Good to see you, {{ state.profile.name.split(' ')[0] || 'Owner' }}!</h2>
                 <p>Here’s your rental portfolio at a glance. Keep track of your properties, tenants, and collections—all in one place.</p>
                 <div class="hero-actions">
-                  <button type="button" class="hero-button" @click="navigate('properties')">
+                  <button type="button" class="hero-button" @click="visit('properties')">
                     <IonIcon :icon="businessOutline" /> Manage properties <span>→</span>
                   </button>
-                  <button type="button" class="hero-link" @click="navigate('pending')">
+                  <button type="button" class="hero-link" @click="visit('pending')">
                     Review applications <span>↗</span>
                   </button>
                 </div>
@@ -1852,7 +1951,7 @@ async function logout() {
                 <button
                   type="button"
                   class="attention"
-                  @click="navigate('pending')"
+                  @click="visit('pending')"
                 >
                   <span class="attention-icon">A</span>
                   <span>
@@ -1898,7 +1997,7 @@ async function logout() {
                   <button
                     type="button"
                     class="text-button"
-                    @click="navigate('properties')"
+                    @click="visit('properties')"
                   >
                     Manage units →
                   </button>
@@ -1943,7 +2042,7 @@ async function logout() {
                   <button
                     type="button"
                     class="text-button"
-                    @click="navigate('bills')"
+                    @click="visit('bills')"
                   >
                     View all →
                   </button>
@@ -1987,7 +2086,7 @@ async function logout() {
                   <button
                     type="button"
                     class="text-button"
-                    @click="navigate('leases')"
+                    @click="visit('leases')"
                   >
                     View all →
                   </button>
@@ -2109,7 +2208,7 @@ async function logout() {
                   <IonIcon :icon="businessOutline" class="property-cover-icon" />
                   <div class="property-cover-bottom">
                     <span class="property-location">⌖ {{ property.address }}</span>
-                    <span class="property-active-badge">REGISTERED</span>
+                    <span class="property-active-badge">{{ property.listing === 'suspended' ? 'SUSPENDED' : property.listing === 'archived' ? 'ARCHIVED' : 'REGISTERED' }}</span>
                   </div>
                 </div>
                 <div class="property-info">
@@ -2125,9 +2224,12 @@ async function logout() {
                       <strong>#{{ property.id }}</strong>
                     </div>
                   </div>
-                  <button type="button" class="button primary property-view-button" @click="openDialog('property', property.id)">
-                    <span>Edit Property</span><IonIcon :icon="chevronForwardOutline" />
-                  </button>
+                  <div class="property-card-actions">
+                    <button type="button" class="button primary property-view-button" @click="openDialog('property', property.id)">
+                      <span>Edit Property</span><IonIcon :icon="chevronForwardOutline" />
+                    </button>
+                    <button type="button" class="button property-delete-button" :disabled="savingRental" @click="deleteOwnerProperty(property)">Delete</button>
+                  </div>
                 </div>
               </article>
             </div>
@@ -2247,6 +2349,15 @@ async function logout() {
                       </span>
                     </td>
                     <td>
+                      <button
+                        v-if="app.status === 'APPROVED' && !applicationHasOpenLease(app)"
+                        type="button"
+                        class="button primary"
+                        :disabled="savingLease"
+                        @click="createLeaseFromApplication(app)"
+                      >
+                        Create Lease
+                      </button>
                       <button
                         type="button"
                         class="text-button"
@@ -2440,10 +2551,26 @@ async function logout() {
                 <h2>Rental Agreements</h2>
                 <p>Completing a lease preserves its historical records.</p>
               </div>
+              <div class="heading-actions">
+                <button type="button" class="button primary" :disabled="savingLease" @click="startCreateLease">Create Lease</button>
+                <button type="button" class="button secondary" :disabled="leasesLoading" @click="refreshOwnerLeases">{{ leasesLoading ? 'Loading...' : 'Refresh Leases' }}</button>
+              </div>
             </div>
             <div v-if="leasesError" class="notice" role="alert">{{ leasesError }}</div>
-            <button type="button" class="button secondary" :disabled="leasesLoading" @click="refreshOwnerLeases">{{ leasesLoading ? 'Loading...' : 'Refresh Leases' }}</button>
-            <p class="helper">Approved applications can be turned into pending leases from Application History. A tenant must confirm before activation.</p>
+            <p class="helper">Create Lease uses an approved application and reserved unit. The tenant confirms the agreement before it becomes active.</p>
+            <div v-if="leasePickerOpen" class="table-wrap">
+              <table>
+                <thead><tr><th>Applicant</th><th>Property / Unit</th><th>Move-in</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr v-for="app in leaseReadyApplications" :key="app.id">
+                    <td><strong>{{ app.name }}</strong></td>
+                    <td>{{ unitProperty(app.unitId) }} <small>{{ unitLabel(app.unitId) }}</small></td>
+                    <td>{{ readableDate(app.moveIn) }}</td>
+                    <td><button type="button" class="button primary" :disabled="savingLease" @click="createLeaseFromApplication(app)">Create Lease</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -2619,10 +2746,11 @@ async function logout() {
     <IonModal class="owner-lease-modal" :is-open="leaseDialogOpen" :backdrop-dismiss="!savingLease" @didDismiss="closeLeasePreparation">
       <div class="lease-modal-shell">
         <header class="lease-modal-hero">
-          <div><span class="lease-modal-kicker">RENTEASE · RENTAL AGREEMENTS</span><h2>Prepare Lease Agreement</h2><p>Set the security deposit before sending the agreement to the tenant.</p></div>
+          <div><h2>Prepare Lease Agreement</h2><p>Set the security deposit before sending the agreement to the tenant.</p></div>
           <button type="button" class="lease-close" aria-label="Close lease preparation" :disabled="savingLease" @click="closeLeasePreparation"><IonIcon :icon="closeOutline" /></button>
         </header>
         <form class="lease-modal-body" @submit.prevent="submitLeasePreparation">
+          <div class="lease-modal-scroll">
           <div class="lease-summary" v-if="leaseDialogApplication">
             <div><span>APPLICANT</span><strong>{{ leaseDialogApplication.name }}</strong></div>
             <div><span>RENTAL UNIT</span><strong>{{ unitProperty(leaseDialogApplication.unitId) }} · {{ unitLabel(leaseDialogApplication.unitId) }}</strong></div>
@@ -2639,7 +2767,8 @@ async function logout() {
           </label>
           <p class="lease-helper"><IonIcon :icon="timeOutline" /> The agreement will remain pending until the tenant reviews and confirms the rental terms.</p>
           <p v-if="leaseDialogError" class="lease-error" role="alert">{{ leaseDialogError }}</p>
-          <div class="lease-modal-actions"><button type="button" class="button secondary" :disabled="savingLease" @click="closeLeasePreparation">Cancel</button><button type="submit" class="button primary" :disabled="savingLease">{{ savingLease ? 'Preparing agreement...' : 'Prepare Lease' }}</button></div>
+          </div>
+          <div class="lease-modal-actions"><button type="button" class="button secondary" :disabled="savingLease" @click="closeLeasePreparation">Cancel</button><button type="submit" class="button primary" :disabled="savingLease">{{ savingLease ? 'Creating lease...' : 'Create Lease' }}</button></div>
         </form>
       </div>
     </IonModal>
@@ -2679,7 +2808,7 @@ async function logout() {
           </template>
           <form v-else id="billing-new-form" class="billing-charge-form" @submit.prevent="submitMonthlyBill">
             <div class="billing-selected-summary"><span>Billing for</span><strong>{{ chosenBillingLease?.tenant }} · {{ chosenBillingLease ? unitLabel(chosenBillingLease.unitId) : '' }}</strong><small>Base rent: {{ peso(chosenBillingLease?.rent || 0) }}</small></div>
-            <div class="billing-date-grid"><label>Billing Period<input v-model="billingForm.month" type="date" required /><small>Choose the first day of the billing month.</small></label><label>Payment Due Date<input v-model="billingForm.due" type="date" required /></label></div>
+            <div class="billing-date-grid"><label>Billing Period<input v-model="billingForm.month" type="date" required /><small>Choose the first day of the billing month.</small></label><label>Payment Due Date<input v-model="billingForm.due" type="date" :min="dateOffset(0)" required /></label></div>
             <p class="billing-subheading">Additional charges</p>
             <div class="billing-charges-grid"><label>Water (₱)<input v-model="billingForm.water" type="number" min="0" step="0.01" required /></label><label>Electricity (₱)<input v-model="billingForm.electricity" type="number" min="0" step="0.01" required /></label><label>Other (₱)<input v-model="billingForm.other" type="number" min="0" step="0.01" required /></label></div>
             <div class="billing-total-box"><span>Estimated bill total<small>Base rent + additional charges</small></span><strong>{{ peso(estimatedBillTotal) }}</strong></div>
@@ -2692,7 +2821,7 @@ async function logout() {
     <IonModal
       :is-open="dialogOpen"
       class="record-modal"
-      @didDismiss="dialogOpen = false"
+      @didDismiss="closeDialog"
     >
       <IonHeader>
         <IonToolbar class="modal-toolbar">
@@ -2712,6 +2841,14 @@ async function logout() {
       </IonHeader>
       <IonContent class="dialog-content">
         <div class="dialog-body">
+          <button
+            v-if="dialogBackLabel"
+            type="button"
+            class="button secondary dialog-back"
+            @click="backInDialog"
+          >
+            {{ dialogBackLabel }}
+          </button>
           <p
             v-if="formError"
             class="form-error"
@@ -2895,6 +3032,40 @@ async function logout() {
               </button>
             </div>
           </form>
+          <form
+            v-if="dialog === 'profile'"
+            @submit.prevent="saveEmail"
+          >
+            <p class="helper">
+              Change the email you use to sign in. Your current password confirms the change.
+            </p>
+            <label>
+              New email
+              <input
+                v-model="emailChange.next"
+                type="email"
+                autocomplete="email"
+                required
+              />
+            </label>
+            <label>
+              Current password
+              <span class="password-field">
+                <input
+                  v-model="emailChange.password"
+                  :type="showEmailPassword ? 'text' : 'password'"
+                  autocomplete="current-password"
+                  required
+                />
+                <button type="button" @click="showEmailPassword = !showEmailPassword">{{ showEmailPassword ? 'Hide' : 'Show' }}</button>
+              </span>
+            </label>
+            <div class="dialog-actions">
+              <button class="button primary" type="submit" :disabled="emailSaving">
+                {{ emailSaving ? 'Updating email...' : 'Update Email' }}
+              </button>
+            </div>
+          </form>
           <template
             v-if="dialog === 'application' && selectedApp"
           >
@@ -2948,7 +3119,7 @@ async function logout() {
             </div>
             <div v-if="selectedApp.status === 'APPROVED'" class="dialog-actions">
               <button type="button" class="button primary" :disabled="savingLease" @click="createLeaseFromApplication(selectedApp)">
-                {{ savingLease ? 'Preparing...' : 'Prepare Lease Agreement' }}
+                {{ savingLease ? 'Creating lease...' : 'Create Lease' }}
               </button>
             </div>
           </template>
@@ -3994,6 +4165,10 @@ tbody tr:hover {
   padding: 26px;
   color: #142b49;
 }
+.dialog-back { margin-bottom: 14px; }
+.password-field { display: flex; align-items: center; gap: 8px; }
+.password-field input { flex: 1; min-width: 0; }
+.password-field button { flex: none; min-height: 42px; padding: 0 12px; border: 1px solid #c9d8ee; border-radius: 12px; background: #fff; color: #1766bd; font-weight: 800; cursor: pointer; }
 .dialog-body h2 {
   margin: 16px 0;
   font-size: 23px;
@@ -4679,6 +4854,10 @@ tbody tr:hover {background:#eef5ff}
 .property-info-tile {border:1px solid #e0eafd;border-radius:12px;background:linear-gradient(180deg,#fbfdff,#f1f6ff);padding:12px}
 .property-info-tile span {display:block;font-size:10px;color:#7387a4;margin-bottom:5px}
 .property-info-tile strong {font-size:17px;color:#173c7b}
+.property-card-actions {display:flex;align-items:stretch;gap:8px}
+.property-card-actions .property-view-button {flex:1 1 auto;width:auto;min-width:0}
+.property-delete-button {flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid #f0c9c6;border-radius:12px;background:#fff;color:#b42318;font-weight:600;cursor:pointer}
+.property-delete-button:hover {background:#fff6f6}
 .property-view-button {display:flex;width:100%;justify-content:space-between;padding:11px 16px}
 .property-view-button ion-icon {font-size:18px}
 .owner-nav-backdrop {display:none}
@@ -4836,17 +5015,20 @@ tbody tr:hover {background:#eef5ff}
 
 
 /* Owner-specific rental notifications and lease preparation */
-:global(ion-modal.owner-lease-modal) {--width:min(560px,calc(100% - 22px));--height:auto;--max-height:90%;--border-radius:23px;--box-shadow:0 30px 85px rgba(5,30,72,.25)}
+:global(ion-modal.owner-lease-modal) {--width:min(560px,calc(100% - 22px));--height:auto;--max-height:calc(100dvh - 24px);--border-radius:23px;--box-shadow:0 30px 85px rgba(5,30,72,.25)}
 :global(ion-modal.owner-notice-modal) {--width:min(425px,calc(100% - 26px));--height:auto;--max-height:85%;--border-radius:23px;--box-shadow:0 28px 76px rgba(5,30,72,.22)}
-:global(ion-modal.owner-lease-modal::part(content)),:global(ion-modal.owner-notice-modal::part(content)){overflow-y:auto;background:#fff}
+:global(ion-modal.owner-lease-modal::part(content)){overflow:hidden;background:#fff;max-height:calc(100dvh - 24px)}
+:global(ion-modal.owner-notice-modal::part(content)){overflow-y:auto;background:#fff}
+.lease-modal-shell{display:flex;flex-direction:column;max-height:calc(100dvh - 24px);overflow:hidden}
 .lease-modal-shell,.owner-notice-shell{color:#17335c;background:#fff;font-family:Inter,'Segoe UI',sans-serif}
-.lease-modal-hero,.owner-notice-hero{background:linear-gradient(120deg,#123d8f,#126dc6 62%,#12a4bd);color:#fff;position:relative;padding:26px 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:15px;overflow:hidden}
+.lease-modal-hero,.owner-notice-hero{background:linear-gradient(120deg,#123d8f,#126dc6 62%,#12a4bd);color:#fff;position:relative;padding:18px 22px;display:flex;align-items:flex-start;justify-content:space-between;gap:15px;overflow:hidden;flex-shrink:0}
 .lease-modal-hero::after,.owner-notice-hero::after{content:'';position:absolute;width:210px;height:210px;border:25px solid rgba(255,255,255,.1);border-radius:50%;right:-100px;bottom:-150px;pointer-events:none}
 .lease-modal-kicker,.owner-notice-kicker{font-size:10px;letter-spacing:1.4px;font-weight:850;color:#d7eeff}
-.lease-modal-hero h2{font-size:23px;color:#fff;margin:10px 0 7px;line-height:1.2}
-.lease-modal-hero p{color:#daedff;font-size:12px;line-height:1.6;margin:0;max-width:380px}
+.lease-modal-hero h2{font-size:22px;color:#fff;margin:0 0 6px;line-height:1.2}
+.lease-modal-hero p{color:#daedff;font-size:12px;line-height:1.45;margin:0;max-width:380px}
 .lease-close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:11px;min-width:36px;min-height:36px;font-size:19px;cursor:pointer}
-.lease-modal-body{padding:23px 28px 26px;display:grid;gap:18px}
+.lease-modal-body{display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden;padding:0;gap:0}
+.lease-modal-scroll{overflow-y:auto;padding:16px 22px 8px;display:grid;gap:12px}
 .lease-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lease-summary>div{padding:13px;border:1px solid #dce8fb;border-radius:13px;background:linear-gradient(155deg,#fff,#f4f8ff)}
 .lease-summary>div:last-child{grid-column:1 / -1}
@@ -4860,7 +5042,7 @@ tbody tr:hover {background:#eef5ff}
 .lease-helper{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.65;color:#5f7492;padding:12px;border-radius:12px;background:#f0f6ff;margin:0}
 .lease-helper ion-icon{font-size:17px;color:#2172cd;flex-shrink:0}
 .lease-error{margin:0;padding:10px 12px;border-radius:10px;background:#fff1f2;color:#9f3039;font-size:12px}
-.lease-modal-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;border-top:1px solid #e3ecf8;padding-top:16px}
+.lease-modal-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-shrink:0;border-top:1px solid #e3ecf8;padding:12px 22px 16px;background:#fff}
 .lease-modal-actions .button{min-width:120px}
 .owner-notice-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 20px 18px;gap:14px}
 .owner-notice-hero.notice-error{background:linear-gradient(120deg,#aa3552,#e16a69)}
@@ -4893,4 +5075,36 @@ tbody tr:hover {background:#eef5ff}
 .lease-deposit-explainer p strong{color:#1e477c}
 .deposit-amount-hint{font-size:11px;line-height:1.6;font-weight:500;color:#647e9e}
 @media(max-width:520px){.lease-deposit-explainer{padding:13px}}
+
+/* Shorter desktop windows keep the owner overview on screen at 100% zoom. */
+@media (min-width: 761px) and (max-height: 1050px) {
+  .topbar { --min-height: 54px; }
+  .owner-brand-mark { width: 32px; height: 32px; font-size: 16px; border-radius: 10px; }
+  .owner-brand-text strong { font-size: 16px; }
+  .layout { padding: 8px; gap: 10px; grid-template-columns: 228px minmax(0, 1fr); }
+  .sidebar { top: 8px; width: 228px; max-height: calc(100dvh - 78px); padding: 10px; border-radius: 16px; }
+  .owner { padding: 8px; margin-bottom: 6px; }
+  .avatar { width: 34px; height: 34px; border-radius: 10px; }
+  .nav-label { margin: 8px 8px 4px; }
+  .sidebar nav { gap: 2px; }
+  .sidebar nav button { min-height: 32px; padding: 5px 8px; }
+  .sidebar-note { margin-top: 8px; padding: 10px; }
+  .sidebar-note p { line-height: 1.5; margin-top: 4px; }
+  .workspace { padding: 10px 16px 12px; }
+  .page-heading { margin-bottom: 14px; }
+  h1 { font-size: 26px; line-height: 1.2; }
+  .welcome-hero { min-height: 0; padding: 22px 24px; margin-bottom: 14px; border-radius: 18px; }
+  .welcome-hero h2 { font-size: 26px; margin: 0 0 8px; line-height: 1.2; }
+  .welcome-hero p { font-size: 14px; line-height: 1.55; }
+  .hero-actions { margin-top: 10px; gap: 10px; }
+  .hero-art { flex-basis: 150px; height: 110px; transform: scale(.72); transform-origin: center right; }
+  .metrics { gap: 12px; margin-bottom: 14px; }
+  .metric { padding: 16px 16px; }
+  .panel { padding: 18px 18px; }
+  .bar-track { height: 96px; }
+  .chart-column > strong { margin-bottom: 8px; }
+  .chart-column > small { margin-top: 8px; }
+}
 </style>
+
+<style scoped src="../theme/dashboard-polish.css"></style>

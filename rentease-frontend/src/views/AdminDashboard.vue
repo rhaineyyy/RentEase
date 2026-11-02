@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { getMyProfile, saveMyProfile } from '@/services/profile';
+import { getMyProfile, saveMyProfile, changeMyEmail } from '@/services/profile';
 import { reactive, ref, computed, onMounted } from 'vue';
+import { useSectionReturn } from '@/composables/sectionReturn';
 import { useRouter } from 'vue-router';
-import { restoreSession } from '@/services/auth';
+import { logout as logoutUser, restoreSession } from '@/services/auth';
+import NotificationCenter from '@/components/NotificationCenter.vue';
 import { getAdminOverview } from '@/services/adminOverview';
 import {
   IonPage,
@@ -61,6 +63,8 @@ const auditPageSize = 25;
 type AuditRow = { id: number; text: string; time: string; eventType: string; outcome: string; actorRole: string; actorUserId: number | null; targetUserId: number | null };
 
 const userActionLoading = ref<number | null>(null);
+const propertyActionId = ref<number | null>(null);
+const showEmailPassword = ref(false);
 
 function normalizeUserStatus(status: unknown): string {
   const value = String(status ?? 'PENDING').toUpperCase();
@@ -275,7 +279,7 @@ const state = reactive({
 
   users: [] as Array<{id:number;name:string;email:string;role:string;status:string}>,
 
-  properties: [] as Array<{id:number;name:string;owner:string;units:number;location:string}>,
+  properties: [] as Array<{id:number;name:string;owner:string;units:number;location:string;listing?:string}>,
   bills: [] as Array<{id:number;tenant:string;unit:string;period:string;amount:number;status:string}>,
   maintenance: [] as Array<{id:number;unit:string;category:string;description:string;status:string}>,
   leases: [] as Array<{id:number;tenant:string;unit:string;start:string;end:string;status:string}>,
@@ -354,6 +358,7 @@ onMounted(async () => {
 });
 
 const section = ref('overview');
+const portalContent = ref<{ $el?: { getScrollElement?: () => Promise<HTMLElement> } } | null>(null);
 const mobileMenuOpen = ref(false);
 const globalSearch = ref('');
 const todayLabel = new Intl.DateTimeFormat('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date());
@@ -387,6 +392,8 @@ const profileForm = reactive({
   mobile: '',
   avatar: '',
 });
+const emailChange = reactive({ next: '', password: '' });
+const emailSaving = ref(false);
 
 const menu = [
   { id: 'overview', label: 'Dashboard Overview', icon: gridOutline },
@@ -411,18 +418,7 @@ const titles: Record<string, string> = {
   settings: 'System Configuration',
   profile: 'Admin Profile',
 };
-
-const subtitles: Record<string, string> = {
-  overview: 'System-wide monitoring, user records, and platform audits.',
-  users: 'Review registered users and approve or reject new accounts.',
-  properties: 'Monitor all registered properties and available units.',
-  billing: 'Review live platform-wide billing records.',
-  maintenance: 'Monitor live repair requests across rental properties.',
-  leases: 'Review registered lease agreements and their status.',
-  security: 'Audit logging awaits a dedicated persistent backend.',
-  settings: 'Configure platform preferences and maintenance flags.',
-  profile: 'Manage your administrator credentials and profile picture.',
-};
+const { backLabel, remember, clearReturn, previousSection, goBack, scrollTo } = useSectionReturn(section, titles, portalContent);
 
 const initials = computed(() => {
   if (!state.profile.name) return 'AD';
@@ -519,7 +515,7 @@ function searchEverywhere() {
   if (!q) return;
   userSearch.value = q;
   propertySearch.value = q;
-  navigate('users');
+  if (section.value !== 'users') void visit('users');
 }
 
 const userCounts = computed(() => ({
@@ -531,12 +527,28 @@ const userCounts = computed(() => ({
   ).length,
 }));
 
-function navigate(target: string) {
-  section.value = target;
-  mobileMenuOpen.value = false;
+function loadAdminSection(target: string) {
   if (target === 'users') void fetchUsers();
   if (target === 'security') void fetchAuditEvents();
   if (['overview','properties','billing','maintenance','leases'].includes(target)) void fetchPlatformOverview();
+}
+function navigate(target: string) {
+  clearReturn();
+  section.value = target;
+  mobileMenuOpen.value = false;
+  loadAdminSection(target);
+}
+async function visit(target: string) {
+  if (previousSection() === target) {
+    await goBack();
+    return;
+  }
+  if (target === section.value) return;
+  await remember();
+  section.value = target;
+  mobileMenuOpen.value = false;
+  loadAdminSection(target);
+  await scrollTo(0);
 }
 
 async function openAddProperty() {
@@ -558,8 +570,63 @@ async function rejectUser(user: any) {
   await updateUserAccount(user, 'reject');
 }
 
-async function toggleUserStatus(_user: any) {
-  await showCustomAlert('Not available yet', 'Suspension and reactivation require a secured backend endpoint.');
+async function changeAccountAccess(user: any, action: 'deactivate' | 'reactivate') {
+  if (userActionLoading.value !== null) return;
+  const confirmed = await showConfirmDialog(
+    action === 'deactivate' ? 'Deactivate Account' : 'Reactivate Account',
+    action === 'deactivate'
+      ? `Deactivate ${user.name}? They cannot sign in until you reactivate the account. Their leases, bills, and payments stay on record.`
+      : `Reactivate ${user.name}? They will be able to sign in again.`
+  );
+  if (!confirmed) return;
+  userActionLoading.value = user.id;
+  try {
+    const response = await fetch(`${API_BASE}/admin/users/${user.id}/${action}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ confirm: true }),
+    });
+    if (!response.ok) throw new Error(await getApiError(response));
+    const result = await response.json().catch(() => ({}));
+    await fetchUsers();
+    await showCustomAlert(action === 'deactivate' ? 'Account Deactivated' : 'Account Reactivated', result.message || 'The account status was updated.');
+  } catch (error) {
+    await showCustomAlert('Update Failed', error instanceof Error ? error.message : 'The account status could not be updated.');
+  } finally {
+    userActionLoading.value = null;
+  }
+}
+
+async function moderateListing(property: { id: number; name: string }, action: 'suspend' | 'archive' | 'restore') {
+  if (propertyActionId.value !== null) return;
+  const prompts = {
+    suspend: `Suspend ${property.name}? It will be hidden from new applications. Prices, leases, and payments stay unchanged.`,
+    archive: `Archive ${property.name}? It leaves public browsing and is not deleted. Existing rental records stay in place.`,
+    restore: `Restore ${property.name} to public browsing? This does not change the owner's prices or lease records.`,
+  };
+  const confirmed = await showConfirmDialog(
+    action === 'suspend' ? 'Suspend Listing' : action === 'archive' ? 'Archive Listing' : 'Restore Listing',
+    prompts[action]
+  );
+  if (!confirmed) return;
+  propertyActionId.value = property.id;
+  try {
+    const response = await fetch(`${API_BASE}/admin/properties/${property.id}/listing`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ action, confirm: true }),
+    });
+    if (!response.ok) throw new Error(await getApiError(response));
+    const result = await response.json().catch(() => ({}));
+    await fetchPlatformOverview();
+    await showCustomAlert('Listing Updated', result.message || 'The listing status was updated.');
+  } catch (error) {
+    await showCustomAlert('Update Failed', error instanceof Error ? error.message : 'The listing could not be updated.');
+  } finally {
+    propertyActionId.value = null;
+  }
 }
 
 function openDialog() {
@@ -567,6 +634,8 @@ function openDialog() {
   profileForm.email = state.profile.email;
   profileForm.mobile = state.profile.mobile;
   profileForm.avatar = state.profile.avatar;
+  emailChange.next = '';
+  emailChange.password = '';
   dialogOpen.value = true;
 }
 
@@ -659,6 +728,28 @@ async function saveProfile() {
   }
 }
 
+async function saveEmail() {
+  if (emailSaving.value) return;
+  const email = emailChange.next.trim().toLowerCase();
+  if (!email || !emailChange.password) {
+    await showCustomAlert('Email change incomplete', 'Enter the new email address and your current password.');
+    return;
+  }
+  emailSaving.value = true;
+  try {
+    const saved = await changeMyEmail(email, emailChange.password);
+    state.profile.email = saved.email;
+    profileForm.email = saved.email;
+    emailChange.next = '';
+    emailChange.password = '';
+    await showCustomAlert('Email updated', 'Your email address has been changed. Use it the next time you sign in.');
+  } catch (error: any) {
+    await showCustomAlert('Email update failed', error?.response?.data?.message || error?.message || 'Could not update email.');
+  } finally {
+    emailSaving.value = false;
+  }
+}
+
 async function triggerSystemMaintenance() {
   await showCustomAlert(
     'System Maintenance',
@@ -675,19 +766,7 @@ async function logout() {
   if (!confirmed) return;
 
   try {
-    const response = await fetch('http://localhost:5000/api/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error('Unable to end the server session.');
-    }
-
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-
+    await logoutUser();
     await router.replace('/login');
   } catch (error) {
     console.error('Admin logout failed:', error);
@@ -711,14 +790,15 @@ async function logout() {
           <span class="brand-mark"><IonIcon :icon="homeOutline" /></span>
           <div class="brand-wordmark"><strong>RentEase<span class="brand-dot">.</span></strong><small>ADMIN CONSOLE</small></div>
         </div>
-        <div class="global-search" slot="start">
+        <div class="global-search">
           <IonIcon :icon="searchOutline" />
           <input v-model="globalSearch" type="search" placeholder="Find users or properties..." aria-label="Search registered users and properties" @keydown.enter="searchEverywhere" />
           <button type="button" title="Search" @click="searchEverywhere">Search</button>
         </div>
         <IonButtons slot="end" class="topbar-actions">
           <span class="topbar-date">{{ todayLabel }}</span>
-          <IonButton class="header-icon" aria-label="View audit activity" @click="navigate('security')">
+          <NotificationCenter />
+          <IonButton class="header-icon" aria-label="View audit activity" @click="visit('security')">
             <IonIcon :icon="shieldCheckmarkOutline" />
           </IonButton>
           <button type="button" class="topbar-profile" aria-label="Open administrator profile" @click="navigate('profile')">{{ initials }}</button>
@@ -726,7 +806,7 @@ async function logout() {
       </IonToolbar>
     </IonHeader>
 
-    <IonContent class="portal">
+    <IonContent ref="portalContent" class="portal">
       <div class="layout">
         <button
           v-if="mobileMenuOpen"
@@ -785,15 +865,18 @@ async function logout() {
         <main class="workspace">
           <div class="page-heading">
             <div>
-              <div class="heading-trail"><span>Workspace</span><IonIcon :icon="chevronForwardOutline" /><strong>{{ menu.find(item => item.id === section)?.label }}</strong></div>
-              <p class="eyebrow">RENTEASE · SYSTEM ADMINISTRATION</p>
               <h1>{{ titles[section] || 'Admin Portal' }}</h1>
-              <p class="subtitle">
-                {{ subtitles[section] || 'Manage platform settings.' }}
-              </p>
             </div>
 
             <div class="heading-actions">
+              <button
+                v-if="backLabel"
+                type="button"
+                class="button secondary"
+                @click="goBack"
+              >
+                {{ backLabel }}
+              </button>
               <button
                 v-if="section === 'overview' || section === 'settings'"
                 type="button"
@@ -823,20 +906,19 @@ async function logout() {
           <section v-if="section === 'overview'" class="section-content">
             <div class="welcome-banner">
               <div class="welcome-copy">
-                <span class="welcome-kicker"><IonIcon :icon="sparklesOutline" /> RENTAL OPERATIONS · LIVE OVERVIEW</span>
                 <h2>Welcome back, {{ state.profile.name?.split(' ')[0] || 'Admin' }} <span class="wave">✦</span></h2>
                 <p>A clearer view of everything happening across RentEase. Review accounts, monitor rental operations, and stay on top of requests.</p>
                 <div class="hero-actions">
-                  <button type="button" class="welcome-cta" @click="navigate('users')"><IonIcon :icon="peopleOutline" /> Review accounts <IonIcon :icon="arrowForwardOutline" /></button>
+                  <button type="button" class="welcome-cta" @click="visit('users')"><IonIcon :icon="peopleOutline" /> Review accounts <IonIcon :icon="arrowForwardOutline" /></button>
                   <button type="button" class="welcome-cta outline" :disabled="overviewLoading || usersLoading" @click="fetchUsers(); fetchPlatformOverview()"><IonIcon :icon="refreshOutline" /> Refresh data</button>
                 </div>
               </div>
               <div class="welcome-visual" aria-hidden="true"><div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div><IonIcon :icon="businessOutline" /></div>
               <div class="hero-date"><IonIcon :icon="timeOutline" /><span>{{ todayLabel }}<small>System administrator</small></span></div>
             </div>
-            <div class="section-mini-heading"><div><span class="mini-kicker">AT A GLANCE</span><h2>Platform performance</h2></div><span class="mini-date"><IonIcon :icon="timeOutline" /> Live PostgreSQL data</span></div>
+            <div class="section-mini-heading"><div><h2>Platform performance</h2></div><span class="mini-date"><IonIcon :icon="timeOutline" /> Live PostgreSQL data</span></div>
             <div class="stats-grid overview-stats">
-              <button v-for="stat in liveStats" :key="stat.label" type="button" class="stat-card metric-action" :class="'metric-' + stat.tint" @click="navigate(stat.section)" :aria-label="'Open ' + stat.label">
+              <button v-for="stat in liveStats" :key="stat.label" type="button" class="stat-card metric-action" :class="'metric-' + stat.tint" @click="visit(stat.section)" :aria-label="'Open ' + stat.label">
                 <span class="stat-icon" :class="stat.tint"><IonIcon :icon="stat.icon" /></span>
                 <span class="stat-copy"><span class="stat-label">{{ stat.label }}</span><strong class="stat-value">{{ stat.value }}</strong><span class="stat-detail">{{ stat.detail }}</span></span>
                 <IonIcon class="stat-arrow" :icon="arrowForwardOutline" />
@@ -844,14 +926,14 @@ async function logout() {
             </div>
             <div class="insight-grid">
               <article class="panel insight-panel">
-                <div class="panel-heading"><div><h2><IonIcon :icon="peopleOutline" /> User distribution</h2><p>Registered tenant and owner accounts</p></div><button type="button" class="button secondary" @click="navigate('users')">View users <IonIcon :icon="arrowForwardOutline" /></button></div>
+                <div class="panel-heading"><div><h2><IonIcon :icon="peopleOutline" /> User distribution</h2><p>Registered tenant and owner accounts</p></div><button type="button" class="button secondary" @click="visit('users')">View users <IonIcon :icon="arrowForwardOutline" /></button></div>
                 <div class="distribution-layout">
                   <div class="distribution-ring" :style="{ '--tenant-share': userRoleMix.tenantPercent + '%' }"><div class="ring-center"><strong>{{ state.users.length }}</strong><small>Accounts</small></div></div>
                   <div class="distribution-legend"><div><i class="legend-dot tenant-dot"></i><span>Tenants</span><strong>{{ userRoleMix.tenants }}</strong></div><div><i class="legend-dot owner-dot"></i><span>Property owners</span><strong>{{ userRoleMix.owners }}</strong></div><p>Based on the registered users returned by the existing admin API.</p></div>
                 </div>
               </article>
               <article class="panel insight-panel">
-                <div class="panel-heading"><div><h2><IonIcon :icon="constructOutline" /> Maintenance pipeline</h2><p>Current repair request status</p></div><button type="button" class="button secondary" @click="navigate('maintenance')">View tickets <IonIcon :icon="arrowForwardOutline" /></button></div>
+                <div class="panel-heading"><div><h2><IonIcon :icon="constructOutline" /> Maintenance pipeline</h2><p>Current repair request status</p></div><button type="button" class="button secondary" @click="visit('maintenance')">View tickets <IonIcon :icon="arrowForwardOutline" /></button></div>
                 <div class="pipeline-list"><div v-for="item in maintenanceStatusMix" :key="item.status" class="pipeline-item"><span>{{ item.status.replace(/_/g, ' ') }}</span><div class="pipeline-track"><div :style="{width: state.maintenance.length ? (item.count / state.maintenance.length * 100) + '%' : '0%'}"></div></div><strong>{{ item.count }}</strong></div></div>
                 <p class="insight-footnote">Live totals from maintenance requests. No estimated or fabricated trends.</p>
               </article>
@@ -863,7 +945,7 @@ async function logout() {
                     <h2>Recent Activity</h2>
                     <p>Recent account and access activity</p>
                   </div>
-                  <button class="button secondary" @click="navigate('security')">
+                  <button class="button secondary" @click="visit('security')">
                     View Audit Logs
                   </button>
                 </div>
@@ -892,19 +974,19 @@ async function logout() {
                 </div>
 
                 <div class="quick-actions">
-                  <button @click="navigate('users')">
+                  <button @click="visit('users')">
                     <IonIcon :icon="peopleOutline" />
                     <span><strong>Manage Users</strong><small>Accounts and access</small></span>
                   </button>
-                  <button @click="navigate('properties')">
+                  <button @click="visit('properties')">
                     <IonIcon :icon="businessOutline" />
                     <span><strong>Manage Properties</strong><small>Properties and units</small></span>
                   </button>
-                  <button @click="navigate('billing')">
+                  <button @click="visit('billing')">
                     <IonIcon :icon="cardOutline" />
                     <span><strong>Review Payments</strong><small>Billing records</small></span>
                   </button>
-                  <button @click="navigate('maintenance')">
+                  <button @click="visit('maintenance')">
                     <IonIcon :icon="constructOutline" />
                     <span><strong>Maintenance</strong><small>Repair requests</small></span>
                   </button>
@@ -927,8 +1009,8 @@ async function logout() {
   <div>
     <h2>Registered Users</h2>
     <p>
-      Search and manage platform accounts
-      <span v-if="usersLoading"> — Loading users...</span>
+      Tenants can sign in immediately. Property owner accounts stay pending until you verify them.
+      <span v-if="usersLoading"> Loading users...</span>
     </p>
   </div>
 
@@ -975,7 +1057,7 @@ async function logout() {
                       <td>
                         <div class="table-actions">
                           <button
-  v-if="user.status === 'PENDING'"
+  v-if="user.status === 'PENDING' && user.role === 'Property Owner'"
   class="text-button approve-text"
   :disabled="userActionLoading !== null"
   @click="approveUser(user)"
@@ -984,13 +1066,15 @@ async function logout() {
 </button>
 
 <button
-  v-if="user.status === 'PENDING'"
+  v-if="user.status === 'PENDING' && user.role === 'Property Owner'"
   class="text-button danger-text"
   :disabled="userActionLoading !== null"
   @click="rejectUser(user)"
 >
   {{ userActionLoading === user.id ? 'Processing...' : 'Reject' }}
 </button>
+                          <button v-if="user.status === 'ACTIVE' && user.role !== 'System Administrator'" class="text-button danger-text" :disabled="userActionLoading !== null" @click="changeAccountAccess(user, 'deactivate')">Deactivate</button>
+                          <button v-if="user.status === 'SUSPENDED'" class="text-button approve-text" :disabled="userActionLoading !== null" @click="changeAccountAccess(user, 'reactivate')">Reactivate</button>
                           <button class="text-button" @click="viewDetails(user)">View</button>
                         </div>
                       </td>
@@ -1049,7 +1133,7 @@ async function logout() {
                         <p class="property-eyebrow">Property overview</p>
                         <h3>{{ property.name }}</h3>
                       </div>
-                      <span class="property-state"><IonIcon :icon="checkmarkCircleOutline" /> Active listing</span>
+                      <span class="property-state"><IonIcon :icon="checkmarkCircleOutline" /> {{ property.listing === 'suspended' ? 'Suspended' : property.listing === 'archived' ? 'Archived' : 'Active listing' }}</span>
                     </div>
                     <div class="property-showcase-facts">
                       <div class="property-fact">
@@ -1063,9 +1147,14 @@ async function logout() {
                     </div>
                     <div class="property-card-footer">
                       <span class="property-id-label">Property ID <strong>#{{ property.id }}</strong></span>
-                      <button type="button" class="property-view-button" @click="viewDetails(property)">
-                        View Property <IonIcon :icon="arrowForwardOutline" />
-                      </button>
+                      <div class="property-admin-actions">
+                        <button v-if="property.listing !== 'suspended' && property.listing !== 'archived'" type="button" class="text-button" :disabled="propertyActionId !== null" @click="moderateListing(property, 'suspend')">Suspend</button>
+                        <button v-if="property.listing !== 'archived'" type="button" class="text-button" :disabled="propertyActionId !== null" @click="moderateListing(property, 'archive')">Archive</button>
+                        <button v-if="property.listing === 'suspended' || property.listing === 'archived'" type="button" class="text-button" :disabled="propertyActionId !== null" @click="moderateListing(property, 'restore')">Restore</button>
+                        <button type="button" class="property-view-button" @click="viewDetails(property)">
+                          View Property <IonIcon :icon="arrowForwardOutline" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -1186,7 +1275,7 @@ async function logout() {
                 <button type="button" class="button secondary" :disabled="auditLoading" @click="fetchAuditEvents(auditPage)"><IonIcon :icon="refreshOutline" /> {{ auditLoading ? 'Loading...' : 'Refresh Logs' }}</button>
               </div>
               <div class="audit-filters">
-                <label>Event Type<select v-model="auditType" @change="fetchAuditEvents(1)"><option value="all">All events</option><option value="LOGIN">Login attempts</option><option value="LOGOUT">Sign-outs</option><option value="ACCOUNT_REGISTRATION">Registrations</option><option value="ACCOUNT_APPROVED">Account approvals</option><option value="ACCOUNT_REJECTED">Account rejections</option><option value="LEASE_PREPARED">Leases prepared</option><option value="LEASE_CONFIRMED">Leases confirmed</option><option value="LEASE_COMPLETED">Leases completed</option><option value="BILL_CREATED">Bills created</option><option value="PAYMENT_SUBMITTED">Payments submitted</option><option value="PAYMENT_REVIEWED">Payment decisions</option><option value="MAINTENANCE_CREATED">Maintenance submitted</option><option value="MAINTENANCE_UPDATED">Maintenance updates</option></select></label>
+                <label>Event Type<select v-model="auditType" @change="fetchAuditEvents(1)"><option value="all">All events</option><option value="LOGIN">Login attempts</option><option value="LOGOUT">Sign-outs</option><option value="ACCOUNT_REGISTRATION">Registrations</option><option value="ACCOUNT_APPROVED">Account approvals</option><option value="ACCOUNT_REJECTED">Account rejections</option><option value="ACCOUNT_DELETED">Account deletions</option><option value="LEASE_PREPARED">Leases prepared</option><option value="LEASE_CONFIRMED">Leases confirmed</option><option value="LEASE_COMPLETED">Leases completed</option><option value="BILL_CREATED">Bills created</option><option value="PAYMENT_SUBMITTED">Payments submitted</option><option value="PAYMENT_REVIEWED">Payment decisions</option><option value="MAINTENANCE_CREATED">Maintenance submitted</option><option value="MAINTENANCE_UPDATED">Maintenance updates</option></select></label>
                 <label>Result<select v-model="auditOutcome" @change="fetchAuditEvents(1)"><option value="all">All results</option><option value="success">Successful</option><option value="failure">Unsuccessful</option></select></label>
               </div>
               <p v-if="auditError" class="audit-error" role="alert">{{ auditError }}</p>
@@ -1336,6 +1425,19 @@ async function logout() {
             <div class="modal-actions">
               <button type="button" class="button secondary" @click="closeDialog">Cancel</button>
               <button type="submit" class="button primary">Save Profile</button>
+            </div>
+          </form>
+          <form @submit.prevent="saveEmail">
+            <p>Change the email you use to sign in. Your current password confirms the change.</p>
+            <label>New email address</label>
+            <input v-model="emailChange.next" required type="email" autocomplete="email" placeholder="New email address" />
+            <label>Current password</label>
+            <div class="password-field">
+              <input v-model="emailChange.password" required :type="showEmailPassword ? 'text' : 'password'" autocomplete="current-password" placeholder="Current password" />
+              <button type="button" @click="showEmailPassword = !showEmailPassword">{{ showEmailPassword ? 'Hide' : 'Show' }}</button>
+            </div>
+            <div class="modal-actions">
+              <button type="submit" class="button primary" :disabled="emailSaving">{{ emailSaving ? 'Updating email...' : 'Update Email' }}</button>
             </div>
           </form>
         </div>
@@ -2333,6 +2435,10 @@ tbody tr:last-child td {
 .property-fact small {font-size:10px;color:#8293ab;font-weight:650;}
 .property-fact strong {font-size:12px;color:#1b3b68;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .property-card-footer {margin-top:auto;padding-top:15px;border-top:1px solid #e8eff9;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.property-admin-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.password-field { display: flex; align-items: center; gap: 8px; }
+.password-field input { flex: 1; min-width: 0; }
+.password-field button { flex: none; min-height: 42px; padding: 0 12px; border: 1px solid #c9d8ee; border-radius: 12px; background: #fff; color: #1766bd; font-weight: 800; cursor: pointer; }
 .property-id-label {font-size:11px;color:#8393a9;white-space:nowrap;}.property-id-label strong{color:#355580;}
 .property-view-button {min-height:43px;padding:11px 16px;border:0;border-radius:11px;background:linear-gradient(118deg,#1d5fe0,#118be0);color:#fff;box-shadow:0 7px 16px rgba(23,99,218,.19);font-size:12px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:13px;cursor:pointer;transition:transform .2s,box-shadow .2s;}
 .property-view-button:hover {transform:translateY(-2px);box-shadow:0 11px 23px rgba(23,99,218,.28);}.property-view-button:focus-visible{outline:3px solid #93c5fd;outline-offset:3px;}
@@ -2351,4 +2457,54 @@ tbody tr:last-child td {
 .audit-pagination>div{display:flex;gap:9px}
 .audit-footnote{font-size:11px;color:#7286a2;line-height:1.7;margin-top:16px}
 @media(max-width:700px){.audit-filters{flex-direction:column}.audit-pagination>div{width:100%}.audit-pagination button{flex:1}}
+
+/* Shorter desktop windows keep the admin overview on screen at 100% zoom. */
+@media (min-width: 701px) and (max-height: 1050px) {
+  .topbar { --min-height: 54px; }
+  .toolbar-brand { min-height: 54px; margin-left: 12px; gap: 8px; }
+  .brand-mark { width: 32px; height: 32px; font-size: 18px; }
+  .brand-wordmark strong { font-size: 16px; }
+  .header-icon { width: 34px; height: 34px; }
+  .topbar-profile { width: 32px; height: 32px; }
+  .global-search { height: 34px; }
+  .sidebar { width: 228px; position: sticky; top: 8px; align-self: flex-start; max-height: calc(100dvh - 78px); overflow-y: auto; padding: 10px 10px 12px; }
+  .sidebar-profile { padding: 8px; gap: 8px; }
+  .sidebar-profile .avatar { width: 34px; height: 34px; }
+  .nav-label { margin: 8px 8px 4px; }
+  .sidebar nav { gap: 2px; }
+  .sidebar nav button { min-height: 32px; padding: 5px 8px; }
+  .sidebar-logout { margin-top: 8px; }
+  .sidebar-note { margin-top: 8px; padding: 10px; }
+  .sidebar-note .note-icon { width: 26px; height: 26px; margin-bottom: 6px; }
+  .sidebar-note p { line-height: 1.5; }
+  .workspace { padding: 14px 18px 16px; }
+  .page-heading { margin-bottom: 16px; }
+  .page-heading h1 { font-size: 26px; margin: 0; line-height: 1.2; }
+  .section-content { gap: 14px; }
+  .welcome-banner { min-height: 0; padding: 22px 24px; border-radius: 18px; }
+  .welcome-banner h2 { font-size: 26px; margin: 0 0 8px; line-height: 1.2; }
+  .welcome-banner p { line-height: 1.55; font-size: 14px; }
+  .welcome-cta { padding: 8px 12px; }
+  .hero-actions { margin-top: 10px; }
+  .welcome-visual { width: 110px; height: 100px; margin-right: 36px; }
+  .welcome-visual > ion-icon { font-size: 56px; }
+  .orbit-one { width: 100px; height: 100px; }
+  .orbit-two { width: 74px; height: 74px; }
+  .stat-card, .metric-action { min-height: 0; padding: 16px 16px; }
+  .stat-icon, .stat-icon.indigo, .stat-icon.sky, .stat-icon.mint, .stat-icon.violet, .stat-icon.amber, .stat-icon.coral { width: 34px; height: 34px; font-size: 16px; }
+  .metric-action .stat-value, .stat-card h2 { font-size: 20px; }
+  .overview-stats, .stats-grid, .stats-grid.four { gap: 10px; }
+  .panel { padding: 18px 18px; }
+  .quick-actions { gap: 8px; }
+  .quick-actions button { min-height: 62px; padding: 10px; }
+  .insight-panel { min-height: 0; }
+  .insight-grid { gap: 10px; }
+  .distribution-ring { width: 120px; height: 120px; }
+  .ring-center { width: 82px; height: 82px; }
+  .ring-center strong { font-size: 22px; }
+  .section-mini-heading h2 { font-size: 16px; }
+  .workspace-footer { margin-top: 12px; padding-top: 10px; }
+}
 </style>
+
+<style scoped src="../theme/dashboard-polish.css"></style>

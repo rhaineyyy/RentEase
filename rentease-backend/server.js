@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const dotenv = require('dotenv');
+const { spawn } = require('child_process');
 const applicationRoutes = require('./routes/applications');
 const leaseRoutes = require('./routes/leases');
 const billingRoutes = require('./routes/billing');
@@ -12,6 +13,9 @@ const { auditCapture, auditRouter } = require('./routes/audit');
 const depositRoutes = require('./routes/deposits');
 const depositSettlementRoutes =
   require('./routes/depositSettlements');
+const notificationRoutes = require('./routes/notifications');
+const googleAuthRoutes = require('./routes/googleAuth');
+const { router: paymongoRoutes, webhook: paymongoWebhook } = require('./routes/paymongo');
 dotenv.config();
 
 const pool = require('./db');
@@ -23,9 +27,17 @@ const propertyRoutes = require('./routes/properties');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// PayMongo signs the raw request body, so this route must run before JSON parsing.
+app.post('/api/payments/paymongo/webhook', express.raw({ type: 'application/json' }), paymongoWebhook);
+
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:8100',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:8100'
+    ],
     credentials: true
 }));
 
@@ -82,6 +94,7 @@ app.get('/api/health', async (req, res) => {
 // Authentication and Admin routes
 app.use('/api', auditCapture);
 app.use('/api', authRoutes);
+app.use('/api', googleAuthRoutes);
 
 // Property and unit management routes
 app.use('/api', propertyRoutes);
@@ -93,6 +106,8 @@ app.use('/api', depositSettlementRoutes);
 app.use('/api', maintenanceRoutes);
 app.use('/api', adminOverviewRoutes);
 app.use('/api', auditRouter);
+app.use('/api', notificationRoutes);
+app.use('/api', paymongoRoutes);
 
 // Handle unknown API routes
 app.use('/api', (req, res) => {
@@ -113,8 +128,22 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(
         `RentEase backend running on port ${PORT}`
     );
 });
+
+const notificationWorker = spawn(process.execPath, ['notifications/worker.js'], {
+    cwd: __dirname,
+    env: process.env,
+    stdio: 'inherit',
+});
+
+function stopNotificationWorker() {
+    if (!notificationWorker.killed) notificationWorker.kill();
+}
+
+process.on('SIGINT', stopNotificationWorker);
+process.on('SIGTERM', stopNotificationWorker);
+server.on('close', stopNotificationWorker);
