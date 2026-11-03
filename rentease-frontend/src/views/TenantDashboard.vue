@@ -6,6 +6,9 @@ import { restoreSession, logout as logoutUser } from '@/services/auth';
 import { listAvailableUnits, type RentalUnit } from '@/services/properties';
 import { submitRentalApplication, listMyApplications, type RentalApplication } from '@/services/applications';
 import { listMyLeases, confirmLease, type RentalLease } from '@/services/leases';
+import { printLeaseAgreement } from '@/services/printLeaseAgreement';
+import { printPaymentReceipt } from '@/services/printPaymentReceipt';
+import { printBillingStatement } from '@/services/printBillingStatement';
 import { listMyBills, listMyPayments, submitBillPayment, startBillCheckout, type RentalBill, type RentalPayment } from '@/services/billing';
 import { listMyDeposits, submitDepositPayment, type DepositMethod, type SecurityDepositPayment } from '@/services/deposits';
 import { listMySettlements, type DepositSettlement } from '@/services/depositSettlements';
@@ -22,9 +25,9 @@ type PaymentStatus = 'PENDING VERIFICATION' | 'VERIFIED' | 'REJECTED';
 type MaintenanceStatus = 'PENDING' | 'IN PROGRESS' | 'COMPLETED';
 interface Property { id: number; name: string; location: string; unit: string; monthlyRent: number; bedrooms: number; bathrooms: number; description: string; features: string[]; available: boolean; }
 interface Application { id: number; propertyId: number; property: string; unit: string; moveIn: string; occupants: number; contact: string; message: string; submittedAt: string; status: ApplicationStatus; }
-interface Lease { id: string; unitId: number; property: string; unit: string; rent: number; deposit: number; start: string; end: string; status: string; }
+interface Lease { id: string; unitId: number; property: string; unit: string; rent: number; deposit: number; start: string; end: string; status: string; tenantName: string; ownerName: string; }
 interface Bill { id: number; period: string; dueDate: string; rent: number; utilities: number; status: 'UNPAID' | 'PARTIALLY PAID' | 'PAID' | 'OVERDUE'; total:number;verified:number; }
-interface Payment { id: number; billId: number; amount: number; method: string; reference: string; submittedAt: string; status: PaymentStatus; }
+interface Payment { id: number; billId: number; amount: number; method: string; reference: string; submittedAt: string; status: PaymentStatus; property: string; unit: string; tenant: string; }
 interface Maintenance { id: number; category: string; description: string; urgency: string; createdAt: string; status: MaintenanceStatus | 'ASSIGNED' | 'CANCELLED'; unitId: number; unit: string; }
 
 const router = useRouter();
@@ -120,6 +123,7 @@ const applications = ref<Application[]>([]);
 const lease = ref<Lease | null>(null);
 const bills = ref<Bill[]>([]);
 const payments = ref<Payment[]>([]);
+const tenantBillingRecords = ref<RentalBill[]>([]);
 const maintenance = ref<Maintenance[]>([]);
 const applyForm = reactive({ moveIn: '', durationMonths: 12, occupants: 1, contact: '', message: '' });
 const paymentForm = reactive({ amount: 0, method: 'GCash', reference: '', proofName: '' });
@@ -232,7 +236,36 @@ function mapLease(row: RentalLease): Lease {
   return { id: String(row.lease_id), unitId: Number(row.unit_id), property: row.property_name, unit: `Unit ${row.unit_number}`,
     rent: Number(row.monthly_rent), deposit: Number(row.security_deposit || 0),
     start: String(row.start_date).slice(0,10), end: String(row.end_date).slice(0,10),
+    tenantName: row.tenant_name, ownerName: row.owner_name,
     status: String(row.status).toUpperCase() };
+}
+function downloadLeaseContract(id: string) {
+  const row = leases.value.find(item => item.id === id);
+  if (!row) {
+    void alertBox('Contract unavailable', 'Refresh your leases and try again.');
+    return;
+  }
+  try {
+    const apiLease = {
+      lease_id: Number(row.id),
+      application_id: null,
+      tenant_id: 0,
+      unit_id: row.unitId,
+      start_date: row.start,
+      end_date: row.end,
+      monthly_rent: row.rent,
+      security_deposit: row.deposit,
+      status: row.status,
+      tenant_name: row.tenantName || profile.name,
+      unit_number: row.unit.replace(/^Unit\s+/i, ''),
+      property_name: row.property,
+      owner_id: 0,
+      owner_name: row.ownerName || 'Property Owner',
+    };
+    printLeaseAgreement(apiLease);
+  } catch (error) {
+    void alertBox('Unable to generate contract', error instanceof Error ? error.message : 'Please allow pop-ups and try again.');
+  }
 }
 async function refreshMyLeases() {
   if (leaseLoading.value) return;
@@ -317,7 +350,36 @@ async function submitApplication() {
   }
 }
 function tenantBill(row:RentalBill):Bill{return {id:Number(row.bill_id),period:String(row.billing_period).slice(0,10),dueDate:String(row.due_date).slice(0,10),rent:Number(row.rent_amount),utilities:Number(row.water_charge||0)+Number(row.electricity_charge||0)+Number(row.other_charges||0),total:Number(row.total_amount),verified:Number(row.verified_amount),status:String(row.status).toUpperCase() as Bill['status']};}
-function tenantPayment(row:RentalPayment):Payment{return {id:Number(row.payment_id),billId:Number(row.bill_id),amount:Number(row.amount),method:row.payment_method,reference:row.reference_number||'',submittedAt:String(row.payment_date).slice(0,10),status:(row.status==='pending_verification'?'PENDING VERIFICATION':String(row.status).toUpperCase()) as PaymentStatus};}
+function tenantPayment(row:RentalPayment):Payment{return {id:Number(row.payment_id),billId:Number(row.bill_id),amount:Number(row.amount),method:row.payment_method,reference:row.reference_number||'',submittedAt:String(row.payment_date).slice(0,10),status:(row.status==='pending_verification'?'PENDING VERIFICATION':String(row.status).toUpperCase()) as PaymentStatus,property:row.property_name,unit:`Unit ${row.unit_number}`,tenant:row.tenant_name};}
+function downloadPaymentReceipt(payment: Payment) {
+  const source = payments.value.find(item => item.id === payment.id);
+  const bill = bills.value.find(item => item.id === payment.billId);
+  if (!source) {
+    void alertBox('Receipt unavailable', 'Refresh your billing records and try again.');
+    return;
+  }
+  try {
+    printPaymentReceipt({
+      payment_id: source.id,
+      bill_id: source.billId,
+      amount: source.amount,
+      payment_method: source.method,
+      reference_number: source.reference || null,
+      payment_date: source.submittedAt,
+      status: source.status === 'PENDING VERIFICATION' ? 'pending_verification' : source.status.toLowerCase(),
+      verified_by: null,
+      verified_at: null,
+      lease_id: 0,
+      tenant_id: 0,
+      unit_number: source.unit.replace(/^Unit\s+/i, ''),
+      property_name: source.property,
+      owner_id: 0,
+      tenant_name: source.tenant,
+    }, bill?.period);
+  } catch (error) {
+    void alertBox('Unable to generate receipt', error instanceof Error ? error.message : 'Please allow pop-ups and try again.');
+  }
+}
 async function refreshMyDeposits() {
   if (depositsLoading.value) return;
   depositsLoading.value = true; depositsError.value = '';
@@ -351,7 +413,12 @@ async function submitDeposit() {
     await alertBox('Deposit not submitted', error?.response?.data?.message || error?.message || 'Unable to submit deposit.');
   } finally { depositsSaving.value = false; }
 }
-async function refreshBilling(){if(financeLoading.value)return;financeLoading.value=true;financeError.value='';try{const [b,p]=await Promise.all([listMyBills(),listMyPayments()]);bills.value=b.map(tenantBill);payments.value=p.map(tenantPayment);}catch(e:any){financeError.value=e?.response?.data?.message||e?.message||'Unable to load billing records.';}finally{financeLoading.value=false;}}
+async function refreshBilling(){if(financeLoading.value)return;financeLoading.value=true;financeError.value='';try{const [b,p]=await Promise.all([listMyBills(),listMyPayments()]);tenantBillingRecords.value=b;bills.value=b.map(tenantBill);payments.value=p.map(tenantPayment);}catch(e:any){financeError.value=e?.response?.data?.message||e?.message||'Unable to load billing records.';}finally{financeLoading.value=false;}}
+function downloadBillingStatement(id: number) {
+  const bill = tenantBillingRecords.value.find(item => Number(item.bill_id) === id);
+  if (!bill) { void alertBox('Statement unavailable', 'Refresh your billing records and try again.'); return; }
+  try { printBillingStatement(bill); } catch (error) { void alertBox('Unable to generate statement', error instanceof Error ? error.message : 'Please allow pop-ups and try again.'); }
+}
 function openPayment(bill: Bill) { selectedBillId.value = bill.id; paymentForm.amount = Math.max(0,bill.total-bill.verified); paymentForm.method = 'GCash'; paymentForm.reference = ''; paymentForm.proofName = ''; modal.value = 'payment'; }
 function proofSelected(event: Event) { const file = (event.target as HTMLInputElement).files?.[0]; paymentForm.proofName = file?.name ?? ''; }
 async function payOnline(){if(financeSaving.value||selectedBillId.value==null)return;const amount=Number(paymentForm.amount);if(!Number.isFinite(amount)||amount<=0){await alertBox('Invalid payment','Enter a positive amount.');return;}financeSaving.value=true;try{window.location.assign(await startBillCheckout({bill_id:selectedBillId.value,amount}));}catch(e:any){await alertBox('Online payment unavailable',e?.response?.data?.message||e?.message||'Submit the payment for owner verification instead.');}finally{financeSaving.value=false;}}
@@ -512,13 +579,14 @@ onMounted(async () => {
                 <div class="info-grid"><div><small>Monthly Rent</small><strong>{{ peso(item.rent) }}</strong></div><div><small>Security Deposit</small><strong>{{ peso(item.deposit) }}</strong></div><div><small>Start Date</small><strong>{{ item.start }}</strong></div><div><small>End Date</small><strong>{{ item.end }}</strong></div></div>
                 <div v-if="item.status === 'PENDING'" class="inline-note"><IonIcon :icon="informationCircleOutline" />The owner has prepared this lease. Review its terms, including rent, deposit, and dates, before confirmation.</div>
                 <button v-if="item.status === 'PENDING'" class="btn primary" style="margin-top:16px" :disabled="confirmingLease" @click="acceptLease(item.id)">{{ confirmingLease ? 'Confirming...' : 'Confirm Lease Agreement' }}</button>
-                <div v-else class="inline-note"><IonIcon :icon="informationCircleOutline" />{{ item.status === 'ACTIVE' ? 'Your rental agreement is active.' : 'This lease has ended.' }} For a signed copy of your lease agreement, please coordinate with the property owner.</div>
+                <div v-else class="inline-note"><IonIcon :icon="informationCircleOutline" />{{ item.status === 'ACTIVE' ? 'Your rental agreement is active.' : 'This lease has ended.' }} Download a digital copy below for your records.</div>
+                <button class="btn secondary" style="margin-top:12px" @click="downloadLeaseContract(item.id)">Print / Save Lease as PDF</button>
               </article>
             </div>
             <div v-else-if="!leaseLoading && !leaseError" class="empty panel"><IonIcon :icon="keyOutline" /><h2>No lease agreement yet</h2><p>When the owner prepares a lease for your approved application, you can review it here.</p><button class="btn primary" @click="visit('applications')">View Applications</button></div>
           </template>
 
-          <template v-else-if="section === 'billing'"><div v-if="financeError" class="demo-notice">{{ financeError }}</div><button type="button" class="btn secondary" style="margin-bottom:15px" :disabled="financeLoading" @click="refreshBilling">Refresh Billing & Payments</button><template v-if="hasLease || hasBillingHistory"><div v-if="!hasLease" class="inline-note" role="status"><IonIcon :icon="informationCircleOutline" />Your lease is no longer active. You can still review previous bills, outstanding balances, and payment records. New monthly bills require an active lease.</div><div class="metrics billing-metrics"><article class="metric"><small>Outstanding Balance</small><strong>{{ peso(amountDue) }}</strong><p>Across unpaid statements</p></article><article class="metric"><small>Billing Records</small><strong>{{ bills.length }}</strong><p>Statements on file</p></article><article class="metric"><small>Pending Payments</small><strong>{{ payments.filter(p => p.status === 'PENDING VERIFICATION').length }}</strong><p>Awaiting verification</p></article></div><section class="panel"><div class="panel-head"><div><h2>My Statements</h2><p>Only owner-issued bills appear here.</p></div></div><div v-if="bills.length" class="table-wrap"><table><thead><tr><th>Period</th><th>Due Date</th><th>Rent</th><th>Utilities</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody><tr v-for="bill in bills" :key="bill.id"><td>{{ bill.period }}</td><td>{{ bill.dueDate }}</td><td>{{ peso(bill.rent) }}</td><td>{{ peso(bill.utilities) }}</td><td><strong>{{ peso(bill.total) }}</strong></td><td><span class="pill" :class="statusClass(bill.status)">{{ bill.status }}</span></td><td><button v-if="bill.total-bill.verified>0.001" class="btn small secondary" @click="openPayment(bill)">Submit Payment</button><span v-else>—</span></td></tr></tbody></table></div><div v-else class="empty compact"><IonIcon :icon="cardOutline" /><h2>No statements yet</h2><p>Billing records will appear when your property owner issues a statement.</p></div></section><section class="panel spaced"><div class="panel-head"><div><h2>Payment Submissions</h2><p>Submitted does not mean verified or paid.</p></div></div><div v-if="payments.length" class="table-wrap"><table><thead><tr><th>Reference</th><th>Amount</th><th>Method</th><th>Submitted</th><th>Status</th></tr></thead><tbody><tr v-for="payment in payments" :key="payment.id"><td>{{ payment.reference }}</td><td>{{ peso(payment.amount) }}</td><td>{{ payment.method }}</td><td>{{ payment.submittedAt }}</td><td><span class="pill" :class="statusClass(payment.status)">{{ payment.status }}</span></td></tr></tbody></table></div><div v-else class="empty compact"><IonIcon :icon="walletOutline" /><h2>No payments submitted</h2><p>Once a statement is issued, you can submit transaction details for owner verification.</p></div></section></template><div v-else class="empty panel"><IonIcon :icon="walletOutline" /><h2>No billing records yet</h2><p>Monthly statements will appear after your lease becomes active and the property owner issues a bill. Any past statements and payments will remain available here after your lease ends.</p><button class="btn primary" @click="visit('applications')">View Applications</button></div></template>
+          <template v-else-if="section === 'billing'"><div v-if="financeError" class="demo-notice">{{ financeError }}</div><button type="button" class="btn secondary" style="margin-bottom:15px" :disabled="financeLoading" @click="refreshBilling">Refresh Billing & Payments</button><template v-if="hasLease || hasBillingHistory"><div v-if="!hasLease" class="inline-note" role="status"><IonIcon :icon="informationCircleOutline" />Your lease is no longer active. You can still review previous bills, outstanding balances, and payment records. New monthly bills require an active lease.</div><div class="metrics billing-metrics"><article class="metric"><small>Outstanding Balance</small><strong>{{ peso(amountDue) }}</strong><p>Across unpaid statements</p></article><article class="metric"><small>Billing Records</small><strong>{{ bills.length }}</strong><p>Statements on file</p></article><article class="metric"><small>Pending Payments</small><strong>{{ payments.filter(p => p.status === 'PENDING VERIFICATION').length }}</strong><p>Awaiting verification</p></article></div><section class="panel"><div class="panel-head"><div><h2>My Statements</h2><p>Only owner-issued bills appear here.</p></div></div>          <div v-if="bills.length" class="table-wrap"><table><thead><tr><th>Period</th><th>Due Date</th><th>Rent</th><th>Utilities</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody><tr v-for="bill in bills" :key="bill.id"><td>{{ bill.period }}</td><td>{{ bill.dueDate }}</td><td>{{ peso(bill.rent) }}</td><td>{{ peso(bill.utilities) }}</td><td><strong>{{ peso(bill.total) }}</strong></td><td><span class="pill" :class="statusClass(bill.status)">{{ bill.status }}</span></td><td><button type="button" class="btn small secondary" @click="downloadBillingStatement(bill.id)">Statement PDF</button><button v-if="bill.total-bill.verified>0.001" class="btn small secondary" @click="openPayment(bill)">Submit Payment</button><span v-else>—</span></td></tr></tbody></table></div><div v-else class="empty compact"><IonIcon :icon="cardOutline" /><h2>No statements yet</h2><p>Billing records will appear when your property owner issues a statement.</p></div></section><section class="panel spaced"><div class="panel-head"><div><h2>Payment Submissions</h2><p>Submitted does not mean verified or paid.</p></div></div>          <div v-if="payments.length" class="table-wrap"><table><thead><tr><th>Reference</th><th>Amount</th><th>Method</th><th>Submitted</th><th>Status</th><th>Receipt</th></tr></thead><tbody><tr v-for="payment in payments" :key="payment.id"><td>{{ payment.reference }}</td><td>{{ peso(payment.amount) }}</td><td>{{ payment.method }}</td><td>{{ payment.submittedAt }}</td><td><span class="pill" :class="statusClass(payment.status)">{{ payment.status }}</span></td><td><button type="button" class="btn small secondary" @click="downloadPaymentReceipt(payment)">Print / Save PDF</button></td></tr></tbody></table></div><div v-else class="empty compact"><IonIcon :icon="walletOutline" /><h2>No payments submitted</h2><p>Once a statement is issued, you can submit transaction details for owner verification.</p></div></section></template><div v-else class="empty panel"><IonIcon :icon="walletOutline" /><h2>No billing records yet</h2><p>Monthly statements will appear after your lease becomes active and the property owner issues a bill. Any past statements and payments will remain available here after your lease ends.</p><button class="btn primary" @click="visit('applications')">View Applications</button></div></template>
 
           <template v-else-if="section === 'deposits'">
             <div v-if="depositsError" class="demo-notice" role="alert">{{ depositsError }}</div>

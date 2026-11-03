@@ -10,6 +10,8 @@ import { confirmUnitTurnover } from '@/services/turnover';
 import { listOwnerDeposits, decideDepositPayment, type SecurityDepositPayment } from '@/services/deposits';
 import { listOwnerSettlements, createDepositSettlement, addDepositDeduction, deleteDepositDeduction, finalizeDepositSettlement, recordDepositRefund, decideDepositRefund, type DepositSettlement } from '@/services/depositSettlements';
 import { printDepositSettlement } from '@/services/printDepositSettlement';
+import { printLeaseAgreement } from '@/services/printLeaseAgreement';
+import { printBillingStatement } from '@/services/printBillingStatement';
 import { listOwnerApplications, reviewRentalApplication, type RentalApplication } from '@/services/applications';
 import { listOwnerLeases, prepareLease, finishLease, type RentalLease } from '@/services/leases';
 import NotificationCenter from '@/components/NotificationCenter.vue';
@@ -155,6 +157,7 @@ const depositsError = ref('');
 const financeLoading=ref(false);
 const financeSaving=ref(false);
 const financeError=ref('');
+const ownerBillingRecords = ref<RentalBill[]>([]);
 const maintenanceLoading=ref(false);
 const maintenanceSaving=ref(false);
 const maintenanceError=ref('');
@@ -519,10 +522,15 @@ async function submitLeasePreparation() {
     leaseDialogError.value = 'Enter an amount from ₱0 to ₱100,000,000, with no more than 2 decimal places.';
     return;
   }
+  const contractWindow = window.open('', '_blank');
   savingLease.value = true;
   leaseDialogError.value = '';
   try {
-    await prepareLease(app.id, amount);
+    const preparedLease = await prepareLease(app.id, amount);
+    try { printLeaseAgreement(preparedLease, contractWindow); } catch (error) {
+      contractWindow?.close();
+      notify(error instanceof Error ? error.message : 'Lease saved, but the PDF could not be opened.');
+    }
     await refreshOwnerLeases();
     leaseDialogOpen.value = false;
     leaseDialogApplication.value = null;
@@ -530,6 +538,7 @@ async function submitLeasePreparation() {
     void visit('leases');
     notify('Lease agreement prepared. The tenant can now review and confirm the rental terms.');
   } catch (error: any) {
+    contractWindow?.close();
     leaseDialogError.value = error?.response?.data?.message || error?.message || 'Unable to prepare the lease. Please try again.';
   } finally { savingLease.value = false; }
 }
@@ -553,7 +562,12 @@ function startCreateLease() {
 }
 function ownerBill(row:RentalBill):Bill {return {id:Number(row.bill_id),leaseId:Number(row.lease_id),period:String(row.billing_period).slice(0,7),due:String(row.due_date).slice(0,10),amount:Number(row.total_amount),verified:Number(row.verified_amount),status:String(row.status).toUpperCase()};}
 function ownerPayment(row:RentalPayment):Payment{return {id:Number(row.payment_id),billId:Number(row.bill_id),amount:Number(row.amount),method:row.payment_method,reference:row.reference_number||'',date:String(row.payment_date).slice(0,10),status:(row.status==='pending_verification'?'PENDING':String(row.status).toUpperCase()) as Payment['status'],proof:'',note:''};}
-async function refreshFinances(){if(financeLoading.value)return;financeLoading.value=true;financeError.value='';try{const [b,p]=await Promise.all([listOwnerBills(),listOwnerPayments()]);state.bills=b.map(ownerBill);state.payments=p.map(ownerPayment);}catch(e:any){financeError.value=e?.response?.data?.message||e?.message||'Failed to load billing records.';notify(financeError.value);}finally{financeLoading.value=false;}}
+async function refreshFinances(){if(financeLoading.value)return;financeLoading.value=true;financeError.value='';try{const [b,p]=await Promise.all([listOwnerBills(),listOwnerPayments()]);ownerBillingRecords.value=b;state.bills=b.map(ownerBill);state.payments=p.map(ownerPayment);}catch(e:any){financeError.value=e?.response?.data?.message||e?.message||'Failed to load billing records.';notify(financeError.value);}finally{financeLoading.value=false;}}
+function downloadOwnerBill(id: number) {
+  const bill = ownerBillingRecords.value.find(item => Number(item.bill_id) === id);
+  if (!bill) { notify('Billing statement unavailable. Refresh billing records and try again.'); return; }
+  try { printBillingStatement(bill); } catch (error) { notify(error instanceof Error ? error.message : 'Unable to generate billing statement.'); }
+}
 const billingModalOpen = ref(false);
 const billingStep = ref<1 | 2>(1);
 const billingError = ref('');
@@ -621,15 +635,21 @@ async function submitMonthlyBill() {
     billingError.value = 'Payment due date must not be earlier than the billing period.';
     return;
   }
+  const statementWindow = window.open('', '_blank');
   billingError.value = '';
   financeSaving.value = true;
   try {
-    await createBill({ lease_id: lease.id, billing_period: billingForm.month, due_date: billingForm.due,
+    const createdBill = await createBill({ lease_id: lease.id, billing_period: billingForm.month, due_date: billingForm.due,
       water_charge: validatedCharges.water, electricity_charge: validatedCharges.electricity, other_charges: validatedCharges.other });
+    try { printBillingStatement(createdBill, statementWindow); } catch (error) {
+      statementWindow?.close();
+      notify(error instanceof Error ? error.message : 'Bill saved, but the PDF could not be opened.');
+    }
     billingModalOpen.value = false;
     await refreshFinances();
     notify('Monthly bill created. The tenant can now view the statement.');
   } catch (error: any) {
+    statementWindow?.close();
     billingError.value = error?.response?.data?.message || error?.message || 'Could not create the bill.';
   } finally { financeSaving.value = false; }
 }
@@ -2063,6 +2083,13 @@ async function logout() {
                       @click="openDialog('bill', bill.id)"
                     >
                       View bill
+                    </button>
+                    <button
+                      type="button"
+                      class="text-button"
+                      @click="downloadOwnerBill(bill.id)"
+                    >
+                      Download PDF
                     </button>
                   </div>
                 </div>

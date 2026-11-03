@@ -18,9 +18,10 @@ router.use(auth);
 const leaseSelect=`SELECT l.lease_id,l.application_id,l.tenant_id,l.unit_id,TO_CHAR(l.start_date, 'YYYY-MM-DD') AS start_date,
 TO_CHAR(l.end_date, 'YYYY-MM-DD') AS end_date,
  l.monthly_rent,l.security_deposit,l.status, t.full_name AS tenant_name,
- u.unit_number,p.property_name,p.owner_id
+ u.unit_number,p.property_name,p.owner_id,o.full_name AS owner_name
  FROM leases l JOIN app_users t ON t.user_id=l.tenant_id
- JOIN units u ON u.unit_id=l.unit_id JOIN properties p ON p.property_id=u.property_id`;
+ JOIN units u ON u.unit_id=l.unit_id JOIN properties p ON p.property_id=u.property_id
+ JOIN app_users o ON o.user_id=p.owner_id`;
 router.get('/owner/leases',owner,async(req,res,next)=>{try {
  const r=await pool.query(`${leaseSelect} WHERE p.owner_id=$1 ORDER BY l.lease_id DESC`,[req.currentUser.id]);res.json({success:true,leases:r.rows});
 }catch(e){next(e)}});

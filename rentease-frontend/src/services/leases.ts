@@ -3,7 +3,7 @@ export interface RentalLease {
   lease_id: number; application_id: number | null; tenant_id: number; unit_id: number;
   start_date: string; end_date: string; monthly_rent: string | number;
   security_deposit: string | number | null; status: string;
-  tenant_name: string; unit_number: string; property_name: string; owner_id: number;
+  tenant_name: string; unit_number: string; property_name: string; owner_id: number; owner_name: string;
 }
 export async function listOwnerLeases(): Promise<RentalLease[]> {
   const {data}=await api.get('/owner/leases');return data.leases;

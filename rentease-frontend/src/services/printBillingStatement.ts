@@ -1,0 +1,35 @@
+import type { RentalBill } from './billing';
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;',
+  }[character] || character));
+}
+
+function peso(value: string | number | null): string {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency', currency: 'PHP', minimumFractionDigits: 2,
+  }).format(Number(value || 0));
+}
+
+export function printBillingStatement(bill: RentalBill, targetWindow?: Window | null): void {
+  const printWindow = targetWindow || window.open('', '_blank');
+  if (!printWindow) throw new Error('Allow pop-ups to generate the billing statement PDF.');
+  const billId = escapeHtml(String(bill.bill_id));
+  const tenant = escapeHtml(bill.tenant_name || 'Tenant');
+  const property = escapeHtml(bill.property_name || 'Rental Property');
+  const unit = escapeHtml(`Unit ${bill.unit_number}`);
+  const period = escapeHtml(String(bill.billing_period).slice(0, 7));
+  const due = escapeHtml(String(bill.due_date).slice(0, 10));
+  const status = escapeHtml(String(bill.status).replaceAll('_', ' ').toUpperCase());
+  const total = Number(bill.total_amount);
+  const paid = Number(bill.verified_amount);
+  printWindow.document.write(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>RentEase Billing Receipt #${billId}</title>
+<style>
+@page{size:A5;margin:10mm}*{box-sizing:border-box}body{background:#edf2f7;color:#172b4d;font:13px/1.45 Arial,sans-serif;margin:0}.receipt{background:#fff;border:1px solid #d9e3ef;border-radius:14px;box-shadow:0 12px 30px rgba(28,57,92,.12);margin:auto;max-width:500px;overflow:hidden}.receipt-head{background:linear-gradient(135deg,#102f70,#176cc9 68%,#1db5b2);color:#fff;padding:24px 26px 22px;position:relative}.receipt-head:after{border:22px solid rgba(255,255,255,.1);border-radius:50%;content:"";height:130px;position:absolute;right:-42px;top:-62px;width:130px}.brand-row{align-items:center;display:flex;gap:10px;position:relative;z-index:1}.brand-mark{align-items:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:9px;display:flex;font-size:18px;font-weight:800;height:36px;justify-content:center;width:36px}.brand{font-size:23px;font-weight:800;letter-spacing:.3px}.sub{font-size:10px;letter-spacing:.8px;opacity:.85;text-transform:uppercase}.receipt-title{font-size:17px;font-weight:800;letter-spacing:1.6px;margin-top:23px;position:relative;text-transform:uppercase;z-index:1}.receipt-subtitle{font-size:11px;margin-top:3px;opacity:.86;position:relative;z-index:1}.receipt-body{padding:22px 26px 24px}.receipt-meta{align-items:flex-start;border-bottom:1px dashed #cbd8e8;display:flex;justify-content:space-between;padding-bottom:14px}.meta-label{color:#71839c;display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase}.meta-value{font-size:12px;font-weight:700;margin-top:3px}.status{background:#e8f7ef;border:1px solid #bde5cd;border-radius:999px;color:#187344;font-size:9px;font-weight:800;padding:5px 10px}.amount-block{padding:20px 0 18px;text-align:center}.amount-label{color:#71839c;font-size:10px;letter-spacing:1.2px;text-transform:uppercase}.amount{color:#123f88;font-size:32px;font-weight:800;letter-spacing:-.7px;margin-top:2px}.property-card{background:#f3f7fc;border:1px solid #d9e6f4;border-radius:10px;padding:13px 14px}.property-card .name{color:#174c95;font-size:14px;font-weight:800}.property-card .unit{color:#657895;font-size:11px;margin-top:2px}.section-title{color:#174c95;font-size:10px;font-weight:800;letter-spacing:1.1px;margin:20px 0 7px;text-transform:uppercase}.line-items{border-top:1px solid #dbe5f0}.line{align-items:center;border-bottom:1px solid #edf1f6;display:flex;justify-content:space-between;padding:9px 0}.line .name{color:#60748f}.line .value{font-weight:700}.line.total-line{border-bottom:0;border-top:2px solid #174c95;margin-top:3px;padding-top:12px}.line.total-line .name,.line.total-line .value{color:#123f88;font-size:14px;font-weight:800}.balance{background:#eef6ff;border-radius:10px;margin-top:16px;padding:13px 14px}.balance-row{display:flex;justify-content:space-between;padding:3px 0}.balance-row span:first-child{color:#60748f}.balance-row strong{color:#174c95}.balance-row.remaining{border-top:1px solid #ccdef1;margin-top:7px;padding-top:8px}.receipt-note{color:#71839c;font-size:10px;line-height:1.5;margin:17px 0 0;text-align:center}.receipt-foot{background:#f8fafc;border-top:1px dashed #cbd8e8;color:#71839c;font-size:10px;padding:15px 26px 18px;text-align:center}.receipt-foot strong{color:#174c95;display:block;font-size:11px;margin-bottom:3px}@media print{body{background:#fff}.receipt{border:0;box-shadow:none}.receipt-foot{background:#fff}}
+</style></head><body><section class="receipt"><header class="receipt-head"><div class="brand-row"><span class="brand-mark">R</span><div><div class="brand">RentEase</div><div class="sub">Digital Rental Management Platform</div></div></div><div class="receipt-title">Billing Receipt</div><div class="receipt-subtitle">Official rental statement</div></header><main class="receipt-body"><div class="receipt-meta"><div><span class="meta-label">Receipt no.</span><span class="meta-value">#${billId}</span></div><div style="text-align:right"><span class="meta-label">Billing period</span><span class="meta-value">${period}</span></div><span class="status">${status}</span></div><div class="amount-block"><div class="amount-label">Total amount due</div><div class="amount">${peso(total)}</div></div><div class="property-card"><div class="name">${property}</div><div class="unit">${unit} · Tenant: ${tenant}</div></div><div class="section-title">Charge details</div><div class="line-items"><div class="line"><span class="name">Monthly rent</span><span class="value">${peso(bill.rent_amount)}</span></div><div class="line"><span class="name">Water</span><span class="value">${peso(bill.water_charge)}</span></div><div class="line"><span class="name">Electricity</span><span class="value">${peso(bill.electricity_charge)}</span></div><div class="line"><span class="name">Other charges</span><span class="value">${peso(bill.other_charges)}</span></div><div class="line total-line"><span class="name">TOTAL</span><span class="value">${peso(total)}</span></div></div><div class="balance"><div class="balance-row"><span>Due date</span><strong>${due}</strong></div><div class="balance-row"><span>Verified payments</span><strong>${peso(paid)}</strong></div><div class="balance-row remaining"><span>Remaining balance</span><strong>${peso(Math.max(0, total - paid))}</strong></div></div><p class="receipt-note">This receipt is a digital copy of the billing record saved in RentEase.</p></main><footer class="receipt-foot"><strong>Thank you for using RentEase</strong>Keep this receipt for your records · Generated digitally</footer></section></body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.onload = () => printWindow.print();
+}
