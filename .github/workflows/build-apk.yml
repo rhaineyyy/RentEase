@@ -1,0 +1,54 @@
+name: Build RentEase Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-24.04
+
+    defaults:
+      run:
+        working-directory: rentease-frontend
+
+    steps:
+      - name: Checkout RentEase
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build RentEase frontend
+        run: npm run build
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Build and name the debug APK
+        working-directory: rentease-frontend/android
+        run: |
+          bash ./gradlew --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/RentEase.apk"
+
+      - name: Upload RentEase APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: RentEase-APK
+          path: ${{ runner.temp }}/RentEase.apk
+          if-no-files-found: error

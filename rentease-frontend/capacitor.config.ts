@@ -1,9 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'rentease',
-  webDir: 'dist'
+  appId: 'com.rhaineyyy.rentease',
+  appName: 'RentEase',
+  webDir: 'dist',
 };
 
 export default config;
