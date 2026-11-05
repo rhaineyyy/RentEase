@@ -28,7 +28,7 @@ async function authenticated(req, res, next) {
 router.get('/notifications', authenticated, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT notification_id, title, body, is_read, created_at
+      `SELECT notification_id, event_key, title, body, is_read, created_at
        FROM user_notifications
        WHERE recipient_id = $1
        ORDER BY created_at DESC, notification_id DESC

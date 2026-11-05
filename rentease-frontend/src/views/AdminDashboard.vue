@@ -5,6 +5,7 @@ import { useSectionReturn } from '@/composables/sectionReturn';
 import { useRouter } from 'vue-router';
 import { logout as logoutUser, restoreSession } from '@/services/auth';
 import NotificationCenter from '@/components/NotificationCenter.vue';
+import DocumentActions from '@/components/documents/DocumentActions.vue';
 import { getAdminOverview } from '@/services/adminOverview';
 import {
   IonPage,
@@ -281,6 +282,7 @@ const state = reactive({
 
   properties: [] as Array<{id:number;name:string;owner:string;units:number;location:string;listing?:string}>,
   bills: [] as Array<{id:number;tenant:string;unit:string;period:string;amount:number;status:string}>,
+  receipts: [] as Array<{id:number;tenant:string;unit:string;amount:number;method:string;reference:string;verified:string}>,
   maintenance: [] as Array<{id:number;unit:string;category:string;description:string;status:string}>,
   leases: [] as Array<{id:number;tenant:string;unit:string;start:string;end:string;status:string}>,
   // Audit trail requires a dedicated persistent backend. Never show fake events.
@@ -326,6 +328,7 @@ async function fetchPlatformOverview() {
     const data = await getAdminOverview();
     state.properties = data.properties;
     state.bills = data.bills;
+    state.receipts = data.receipts || [];
     state.maintenance = data.maintenance;
     state.leases = data.leases;
     state.metrics.activeProperties = data.properties.length;
@@ -333,6 +336,7 @@ async function fetchPlatformOverview() {
     overviewError.value = error?.response?.data?.message || error?.message || 'Unable to load PostgreSQL overview.';
     state.properties = [];
     state.bills = [];
+    state.receipts = [];
     state.maintenance = [];
     state.leases = [];
   } finally {
@@ -589,6 +593,11 @@ async function visit(target: string) {
   loadAdminSection(target);
   await scrollTo(0);
 }
+function openNotice(eventKey: string) {
+  const event = eventKey.split(':')[0];
+  if (event.startsWith('leases_')) void visit('leases');
+  else if (event.startsWith('billing_') || event.startsWith('payments_')) void visit('billing');
+}
 
 async function openAddProperty() {
   await showCustomAlert('Read-only overview', 'Properties must be registered through the owner portal.');
@@ -830,7 +839,7 @@ async function logout() {
           <div class="brand-wordmark"><strong>RentEase<span class="brand-dot">.</span></strong><small>ADMIN CONSOLE</small></div>
         </div>
         <IonButtons slot="end" class="topbar-actions">
-          <NotificationCenter />
+          <NotificationCenter @open="openNotice" />
           <IonButton class="header-icon" aria-label="View audit activity" @click="visit('security')">
             <IonIcon :icon="shieldCheckmarkOutline" />
           </IonButton>
@@ -1229,9 +1238,29 @@ async function logout() {
                       <td><span class="status-badge" :class="badgeClass(bill.status)">{{ bill.status }}</span></td>
                       <td><div class="table-actions">
                         <button class="text-button" @click="viewDetails(bill)">View</button>
+                        <DocumentActions kind="bills" :id="bill.id" />
                       </div></td>
                     </tr>
                     <tr v-if="filteredBills.length === 0"><td colspan="7" class="empty-cell">No billing records match this search.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-heading">
+                <div><h2>Verified Payment Receipts</h2><p>Receipts are available only for payments the owner or payment gateway has verified.</p></div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Receipt</th><th>Tenant</th><th>Unit</th><th>Amount</th><th>Method</th><th>Reference</th><th>Verified</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    <tr v-for="receipt in state.receipts" :key="receipt.id">
+                      <td>#{{ receipt.id }}</td><td>{{ receipt.tenant }}</td><td>{{ receipt.unit }}</td>
+                      <td>₱{{ Number(receipt.amount).toLocaleString() }}</td><td>{{ receipt.method }}</td>
+                      <td>{{ receipt.reference || '—' }}</td><td>{{ receipt.verified || '—' }}</td>
+                      <td><DocumentActions kind="payments" :id="receipt.id" /></td>
+                    </tr>
+                    <tr v-if="state.receipts.length === 0"><td colspan="8" class="empty-cell">No verified payment receipts yet.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -1300,6 +1329,7 @@ async function logout() {
                       <td><span class="status-badge" :class="badgeClass(lease.status)">{{ lease.status }}</span></td>
                       <td><div class="table-actions">
                         <button class="text-button" @click="viewDetails(lease)">View</button>
+                        <DocumentActions kind="leases" :id="lease.id" />
                       </div></td>
                     </tr>
                     <tr v-if="filteredLeases.length === 0"><td colspan="7" class="empty-cell">No lease agreements match this search.</td></tr>
@@ -1322,7 +1352,7 @@ async function logout() {
                 <button type="button" class="button secondary" :disabled="auditLoading" @click="fetchAuditEvents(auditPage)"><IonIcon :icon="refreshOutline" /> {{ auditLoading ? 'Loading...' : 'Refresh Logs' }}</button>
               </div>
               <div class="audit-filters">
-                <label>Event Type<select v-model="auditType" @change="fetchAuditEvents(1)"><option value="all">All events</option><option value="LOGIN">Login attempts</option><option value="LOGOUT">Sign-outs</option><option value="ACCOUNT_REGISTRATION">Registrations</option><option value="ACCOUNT_APPROVED">Account approvals</option><option value="ACCOUNT_REJECTED">Account rejections</option><option value="ACCOUNT_DELETED">Account deletions</option><option value="LEASE_PREPARED">Leases prepared</option><option value="LEASE_CONFIRMED">Leases confirmed</option><option value="LEASE_COMPLETED">Leases completed</option><option value="BILL_CREATED">Bills created</option><option value="PAYMENT_SUBMITTED">Payments submitted</option><option value="PAYMENT_REVIEWED">Payment decisions</option><option value="MAINTENANCE_CREATED">Maintenance submitted</option><option value="MAINTENANCE_UPDATED">Maintenance updates</option></select></label>
+                <label>Event Type<select v-model="auditType" @change="fetchAuditEvents(1)"><option value="all">All events</option><option value="LOGIN">Login attempts</option><option value="LOGOUT">Sign-outs</option><option value="ACCOUNT_REGISTRATION">Registrations</option><option value="ACCOUNT_APPROVED">Account approvals</option><option value="ACCOUNT_REJECTED">Account rejections</option><option value="ACCOUNT_DELETED">Account deletions</option><option value="LEASE_PREPARED">Leases prepared</option><option value="LEASE_CONFIRMED">Leases confirmed</option><option value="LEASE_COMPLETED">Leases completed</option><option value="BILL_CREATED">Bills created</option><option value="PAYMENT_SUBMITTED">Payments submitted</option><option value="PAYMENT_REVIEWED">Payment decisions</option><option value="DOCUMENT_ACCESSED">Document access</option><option value="MAINTENANCE_CREATED">Maintenance submitted</option><option value="MAINTENANCE_UPDATED">Maintenance updates</option></select></label>
                 <label>Result<select v-model="auditOutcome" @change="fetchAuditEvents(1)"><option value="all">All results</option><option value="success">Successful</option><option value="failure">Unsuccessful</option></select></label>
                 <label class="record-search audit-record-search">
                   <IonIcon :icon="searchOutline" />

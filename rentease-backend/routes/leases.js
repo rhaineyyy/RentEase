@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const pool = require('../db');
+const { freezeLease } = require('../documents/issue');
 const router = express.Router();
 const validId = x => /^\d+$/.test(String(x)) && Number.isSafeInteger(Number(x)) && Number(x) > 0;
 async function auth(req,res,next) {
@@ -56,6 +57,7 @@ router.post('/owner/leases',owner,async(req,res,next)=>{
   SELECT $1,$2,$3,$4::date,($4::date + ($5::int || ' months')::interval - interval '1 day')::date,$6,$7,'pending'
   RETURNING lease_id`,[a.application_id,a.tenant_id,a.unit_id,a.move_in_date,months,a.monthly_rent,deposit]);
   const r=await client.query(`${leaseSelect} WHERE l.lease_id=$1`,[inserted.rows[0].lease_id]);
+  await freezeLease(client, inserted.rows[0].lease_id);
   await client.query('COMMIT');res.status(201).json({success:true,lease:r.rows[0]});
  }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
 });

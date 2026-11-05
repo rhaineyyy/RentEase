@@ -98,7 +98,7 @@ BEGIN
  ELSIF TG_TABLE_NAME='leases' THEN
   resource:=(n->>'lease_id')::bigint;
   IF TG_OP='INSERT' THEN
-   PERFORM public.rentease_enqueue(tenant,'leases_insert',resource,'Lease ready','Your lease is ready. Open RentEase to review and confirm.');
+   PERFORM public.rentease_enqueue(tenant,'leases_insert',resource,'Lease ready','Your lease is ready. Open My Lease to review it and download the agreement.');
   ELSIF TG_OP='UPDATE' AND state='active' THEN
    PERFORM public.rentease_enqueue(owner,'leases_active',resource,'Lease confirmed','Your tenant confirmed the lease. It is now active.');
   ELSIF TG_OP='UPDATE' AND state='completed' THEN
@@ -107,14 +107,14 @@ BEGIN
  ELSIF TG_TABLE_NAME='billing' THEN
   resource:=(n->>'bill_id')::bigint;
   IF TG_OP='INSERT' THEN
-   PERFORM public.rentease_enqueue(tenant,'billing_insert',resource,'New rent bill','A new rent bill is available. Open RentEase for the amount and due date.');
+   PERFORM public.rentease_enqueue(tenant,'billing_insert',resource,'New rent bill','A new billing statement is available. Open Billing to view or download it.');
   END IF;
  ELSIF TG_TABLE_NAME='payments' THEN
   resource:=(n->>'payment_id')::bigint;
   IF TG_OP='INSERT' AND state='pending_verification' THEN
    PERFORM public.rentease_enqueue(owner,'payments_insert',resource,'Payment submitted','A rent payment was submitted and needs your verification.');
   ELSIF TG_OP='UPDATE' AND state='verified' THEN
-   PERFORM public.rentease_enqueue(tenant,'payments_verified',resource,'Payment verified','Your rent payment was verified. Check your updated bill balance.');
+   PERFORM public.rentease_enqueue(tenant,'payments_verified',resource,'Payment verified','Your payment was verified. Open Billing to view or download the receipt.');
    PERFORM public.rentease_enqueue(owner,'payments_verified_owner',resource,'Payment confirmed','A rent payment was confirmed and applied to the bill.');
   ELSIF TG_OP='UPDATE' AND state='rejected' THEN
    PERFORM public.rentease_enqueue(tenant,'payments_rejected',resource,'Payment rejected','Your rent payment was rejected. Check RentEase or contact the owner.');

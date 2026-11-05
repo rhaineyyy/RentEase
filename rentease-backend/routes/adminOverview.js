@@ -16,12 +16,12 @@ async function requireActiveAdmin(req, res, next) {
     next();
   } catch (error) { next(error); }
 }
-router.use(requireActiveAdmin);
+router.use('/admin', requireActiveAdmin);
 
 // Platform oversight. Listing moderation is the only write on this router.
 router.get('/admin/overview', async (req, res, next) => {
   try {
-    const [properties, bills, leases, maintenance] = await Promise.all([
+    const [properties, bills, receipts, leases, maintenance] = await Promise.all([
       pool.query(`SELECT p.property_id AS id, p.property_name AS name,
         COALESCE(o.full_name,'Unknown owner') AS owner,
         COUNT(u.unit_id)::int AS units,
@@ -44,6 +44,19 @@ router.get('/admin/overview', async (req, res, next) => {
         JOIN units u ON u.unit_id=l.unit_id JOIN properties p ON p.property_id=u.property_id
         LEFT JOIN LATERAL (SELECT SUM(pay.amount) AS verified FROM payments pay WHERE pay.bill_id=b.bill_id AND pay.status='verified') v ON TRUE
         ORDER BY b.billing_period DESC,b.bill_id DESC`),
+      pool.query(`SELECT py.payment_id AS id, COALESCE(t.full_name,'Unknown tenant') AS tenant,
+        CONCAT(p.property_name,' - Unit ',u.unit_number) AS unit,
+        py.amount::numeric AS amount, py.payment_method AS method,
+        COALESCE(py.reference_number,'') AS reference,
+        TO_CHAR(py.verified_at,'YYYY-MM-DD') AS verified
+        FROM payments py
+        JOIN billing b ON b.bill_id = py.bill_id
+        JOIN leases l ON l.lease_id = b.lease_id
+        JOIN app_users t ON t.user_id = l.tenant_id
+        JOIN units u ON u.unit_id = l.unit_id
+        JOIN properties p ON p.property_id = u.property_id
+        WHERE py.status = 'verified'
+        ORDER BY py.verified_at DESC NULLS LAST, py.payment_id DESC`),
       pool.query(`SELECT l.lease_id AS id, COALESCE(t.full_name,'Unknown tenant') AS tenant,
         CONCAT(p.property_name,' - Unit ',u.unit_number) AS unit,
         TO_CHAR(l.start_date,'YYYY-MM-DD') AS start, TO_CHAR(l.end_date,'YYYY-MM-DD') AS "end",
@@ -59,7 +72,7 @@ router.get('/admin/overview', async (req, res, next) => {
         JOIN properties p ON p.property_id=u.property_id
         ORDER BY m.created_at DESC NULLS LAST,m.request_id DESC`)
     ]);
-    res.json({success:true,properties:properties.rows,bills:bills.rows,leases:leases.rows,maintenance:maintenance.rows});
+    res.json({success:true,properties:properties.rows,bills:bills.rows,receipts:receipts.rows,leases:leases.rows,maintenance:maintenance.rows});
   } catch (error) { next(error); }
 });
 

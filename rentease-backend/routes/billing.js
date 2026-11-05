@@ -1,6 +1,7 @@
 'use strict';
 const express=require('express');
 const pool=require('../db');
+const { freezeBill, freezeReceipt } = require('../documents/issue');
 const router=express.Router();
 const validId=x=>/^\d+$/.test(String(x))&&Number.isSafeInteger(Number(x))&&Number(x)>0;
 const money=x=>Number.isFinite(Number(x))&&Number(x)>=0&&Number(x)<=100000000;
@@ -36,6 +37,7 @@ router.post('/owner/bills',allow('owner'),async(req,res,next)=>{
  if(!dueCheck.rows[0].allowed){await client.query('ROLLBACK');return res.status(400).json({success:false,message:'Payment due date cannot be in the past.'})}
  if(String(r.rows[0].status).toLowerCase()!=='active'){await client.query('ROLLBACK');return res.status(409).json({success:false,message:'Bills can only be issued for active leases.'})}
  const insert=await client.query(`INSERT INTO billing(lease_id,billing_period,rent_amount,water_charge,electricity_charge,other_charges,due_date,status) VALUES($1,$2::date,$3,$4,$5,$6,$7::date,'unpaid') RETURNING bill_id`,[lease_id,billing_period,r.rows[0].monthly_rent,water_charge,electricity_charge,other_charges,due_date]);
+ await freezeBill(client, insert.rows[0].bill_id);
  const bill=await client.query(`${billQuery} WHERE b.bill_id=$1`,[insert.rows[0].bill_id]);await client.query('COMMIT');res.status(201).json({success:true,bill:bill.rows[0]});
  }catch(e){await client.query('ROLLBACK');if(e.code==='23505')return res.status(409).json({success:false,message:'A bill already exists for this lease and month.'});if(e.code==='22008'||e.code==='22007')return res.status(400).json({success:false,message:'Invalid billing or due date.'});
  if(e.code==='22003')return res.status(400).json({success:false,message:'One of the billing amounts exceeds the allowed database limit. Ask the administrator to check the billing table amount columns.'});
@@ -61,6 +63,7 @@ router.patch('/owner/payments/:id/decision',allow('owner'),async(req,res,next)=>
  if(req.body.decision==='verified'&&Number(p.amount)>Number(bill.rows[0].total_amount)-Number(bill.rows[0].verified_amount)+0.001){await client.query('ROLLBACK');return res.status(409).json({success:false,message:'Payment would exceed the remaining bill balance.'})}
  await client.query('UPDATE payments SET status=$1,verified_by=$2,verified_at=NOW() WHERE payment_id=$3',[req.body.decision,req.actor.id,req.params.id]);
  const sums=await client.query(`SELECT COALESCE(SUM(amount),0) AS amount FROM payments WHERE bill_id=$1 AND status='verified'`,[p.bill_id]);const total=Number(bill.rows[0].total_amount),paid=Number(sums.rows[0].amount);const newStatus=paid>=total-0.001?'paid':paid>0?'partially_paid':'unpaid';await client.query('UPDATE billing SET status=$1 WHERE bill_id=$2',[newStatus,p.bill_id]);
+ if(req.body.decision==='verified') await freezeReceipt(client, req.params.id);
  const result=await client.query(`${paymentQuery} WHERE py.payment_id=$1`,[req.params.id]);await client.query('COMMIT');res.json({success:true,payment:result.rows[0]});
  }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
 });

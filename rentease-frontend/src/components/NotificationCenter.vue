@@ -14,7 +14,7 @@
       <p v-else-if="!items.length" class="notice-empty">No notifications yet.</p>
       <ul v-else>
         <li v-for="item in items" :key="item.notification_id" :class="{ unread: !item.is_read }">
-          <button type="button" @click="markOne(item)">
+          <button type="button" @click="openItem(item)">
             <strong>{{ item.title }}</strong>
             <span>{{ item.body }}</span>
             <small>{{ when(item.created_at) }}</small>
@@ -34,7 +34,9 @@ import api from '@/services/api';
 
 defineProps<{ tone?: 'light' | 'dark' }>();
 
-type Notice = { notification_id: number; title: string; body: string; is_read: boolean; created_at: string };
+const emit = defineEmits<{ open: [eventKey: string] }>();
+
+type Notice = { notification_id: number; event_key?: string; title: string; body: string; is_read: boolean; created_at: string };
 const open = ref(false);
 const busy = ref(false);
 const error = ref('');
@@ -89,16 +91,19 @@ async function toggle() {
   await load();
 }
 
-async function markOne(item: Notice) {
-  if (item.is_read || busy.value) return;
-  busy.value = true;
-  try {
-    await api.patch(`/notifications/${item.notification_id}/read`);
-    item.is_read = true;
-    unread.value = Math.max(0, unread.value - 1);
-  } finally {
-    busy.value = false;
+async function openItem(item: Notice) {
+  if (!item.is_read && !busy.value) {
+    busy.value = true;
+    try {
+      await api.patch(`/notifications/${item.notification_id}/read`);
+      item.is_read = true;
+      unread.value = Math.max(0, unread.value - 1);
+    } finally {
+      busy.value = false;
+    }
   }
+  open.value = false;
+  emit('open', item.event_key || '');
 }
 
 async function markAll() {

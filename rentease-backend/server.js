@@ -16,6 +16,7 @@ const depositSettlementRoutes =
 const notificationRoutes = require('./routes/notifications');
 const googleAuthRoutes = require('./routes/googleAuth');
 const { router: paymongoRoutes, webhook: paymongoWebhook } = require('./routes/paymongo');
+const documentRoutes = require('./routes/documents');
 dotenv.config();
 
 const pool = require('./db');
@@ -35,10 +36,13 @@ app.use(cors({
     origin: [
         'http://localhost:5173',
         'http://localhost:8100',
+        'http://localhost:8101',
         'http://127.0.0.1:5173',
-        'http://127.0.0.1:8100'
+        'http://127.0.0.1:8100',
+        'http://127.0.0.1:8101'
     ],
-    credentials: true
+    credentials: true,
+    exposedHeaders: ['Content-Disposition']
 }));
 
 app.use(express.json({ limit: '3mb' })); // Profile images: max 2 MB binary (~2.8 MB base64)
@@ -95,6 +99,7 @@ app.get('/api/health', async (req, res) => {
 app.use('/api', auditCapture);
 app.use('/api', authRoutes);
 app.use('/api', googleAuthRoutes);
+app.use('/api', notificationRoutes);
 
 // Property and unit management routes
 app.use('/api', propertyRoutes);
@@ -106,8 +111,8 @@ app.use('/api', depositSettlementRoutes);
 app.use('/api', maintenanceRoutes);
 app.use('/api', adminOverviewRoutes);
 app.use('/api', auditRouter);
-app.use('/api', notificationRoutes);
 app.use('/api', paymongoRoutes);
+app.use('/api', documentRoutes);
 
 // Handle unknown API routes
 app.use('/api', (req, res) => {

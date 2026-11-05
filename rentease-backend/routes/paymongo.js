@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const express = require('express');
 const pool = require('../db');
+const { freezeReceipt } = require('../documents/issue');
 
 const router = express.Router();
 const validId = value => /^\d+$/.test(String(value)) && Number.isSafeInteger(Number(value)) && Number(value) > 0;
@@ -258,6 +259,7 @@ async function webhook(req, res) {
         const paidAmount = Number(sums.rows[0].amount);
         const nextStatus = paidAmount >= total - 0.001 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'unpaid';
         await client.query('UPDATE billing SET status = $1 WHERE bill_id = $2', [nextStatus, payment.bill_id]);
+        await freezeReceipt(client, payment.payment_id);
       }
     } else if (failed && payment.status === 'pending_gateway') {
       await client.query(

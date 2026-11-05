@@ -13,6 +13,7 @@ import { printDepositSettlement } from '@/services/printDepositSettlement';
 import { listOwnerApplications, reviewRentalApplication, type RentalApplication } from '@/services/applications';
 import { listOwnerLeases, prepareLease, finishLease, type RentalLease } from '@/services/leases';
 import NotificationCenter from '@/components/NotificationCenter.vue';
+import DocumentActions from '@/components/documents/DocumentActions.vue';
 import { listOwnerBills, listOwnerPayments, createBill, decidePayment, type RentalBill, type RentalPayment } from '@/services/billing';
 import { listOwnerMaintenance, updateMaintenanceStatus, type RentalMaintenanceRequest } from '@/services/maintenance';
 import {
@@ -835,6 +836,12 @@ async function visit(target: string, apply?: () => void) {
   apply?.();
   loadSection(target);
   await scrollTo(0);
+}
+function openNotice(eventKey: string) {
+  const event = eventKey.split(':')[0];
+  if (event.startsWith('leases_')) void visit('leases');
+  else if (event.startsWith('billing_')) void visit('bills');
+  else if (event.startsWith('payments_')) void visit('payments');
 }
 function viewProfileUnits(propertyId: number) {
   void visit('properties', () => { propertyFilter.value = String(propertyId); });
@@ -1754,7 +1761,7 @@ async function logout() {
           </div>
         </IonButtons>
         <IonButtons slot="end">
-          <NotificationCenter />
+          <NotificationCenter @open="openNotice" />
 
         </IonButtons>
       </IonToolbar>
@@ -2418,13 +2425,16 @@ async function logout() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        type="button"
-                        class="text-button"
-                        @click="openDialog('payment', payment.id)"
-                      >
-                        Review details
-                      </button>
+                      <div class="row-actions">
+                        <button
+                          type="button"
+                          class="text-button"
+                          @click="openDialog('payment', payment.id)"
+                        >
+                          Review details
+                        </button>
+                        <DocumentActions v-if="payment.status === 'VERIFIED'" kind="payments" :id="payment.id" />
+                      </div>
                     </td>
                   </tr>
                   <tr v-if="!filteredPayments.length">
@@ -2482,13 +2492,16 @@ async function logout() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        type="button"
-                        class="text-button"
-                        @click="openDialog('bill', bill.id)"
-                      >
-                        View bill
-                      </button>
+                      <div class="row-actions">
+                        <button
+                          type="button"
+                          class="text-button"
+                          @click="openDialog('bill', bill.id)"
+                        >
+                          View bill
+                        </button>
+                        <DocumentActions kind="bills" :id="bill.id" />
+                      </div>
                     </td>
                   </tr>
                   <tr v-if="!filteredBills.length">
@@ -2598,13 +2611,16 @@ async function logout() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        type="button"
-                        class="text-button"
-                        @click="openDialog('lease', lease.id)"
-                      >
-                        View lease
-                      </button>
+                      <div class="row-actions">
+                        <button
+                          type="button"
+                          class="text-button"
+                          @click="openDialog('lease', lease.id)"
+                        >
+                          View lease
+                        </button>
+                        <DocumentActions kind="leases" :id="lease.id" />
+                      </div>
                     </td>
                   </tr>
                   <tr v-if="!filteredLeases.length">
@@ -3148,6 +3164,7 @@ async function logout() {
                 <dd>{{ selectedPayment.note }}</dd>
               </template>
             </dl>
+            <DocumentActions v-if="selectedPayment.status === 'VERIFIED'" kind="payments" :id="selectedPayment.id" />
             <h3>Payment Evidence</h3>
             <img
               v-if="selectedPayment.proof"
@@ -3218,6 +3235,7 @@ async function logout() {
                 <strong>{{ peso(balance(selectedBill)) }}</strong>
               </dd>
             </dl>
+            <DocumentActions kind="bills" :id="selectedBill.id" />
             <h3>Related Payments</h3>
             <div
               v-for="payment in selectedBillPayments"
@@ -3270,6 +3288,7 @@ async function logout() {
               <dt>Outstanding balance</dt>
               <dd>{{ peso(selectedLeaseBalance) }}</dd>
             </dl>
+            <DocumentActions kind="leases" :id="selectedLease.id" />
             <p class="lease-completion-note">
               Completing a lease ends its active status.
               Only leases past their end date can be completed.

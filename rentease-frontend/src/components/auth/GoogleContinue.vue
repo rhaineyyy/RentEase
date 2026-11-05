@@ -1,7 +1,7 @@
 <template>
   <div class="google-continue">
     <div v-if="enabled" ref="buttonHost" class="google-button-host"></div>
-    <p v-else-if="checked" class="google-note">Google sign-in needs a Google client ID in the server configuration.</p>
+    <p v-else-if="checked && !localError" class="google-note">Google sign-in needs a Google client ID in the server configuration.</p>
     <p v-if="localError" class="google-note error">{{ localError }}</p>
   </div>
 </template>
