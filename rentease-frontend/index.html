@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Ionic App</title>
+    <title>RentEase</title>
 
     <base href="/" />
 
@@ -17,18 +17,144 @@
     <link rel="shortcut icon" type="image/png" href="/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-    <!-- add to homescreen for ios -->
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Ionic App" />
+    <meta name="apple-mobile-web-app-title" content="RentEase" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <style>
+      #rentease-startup {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 14px;
+        background: linear-gradient(150deg, #102f65, #176cb1 64%, #087884);
+        color: #fff;
+        text-align: center;
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      #rentease-startup[hidden] {
+        display: none;
+      }
+
+      .startup-properties {
+        width: min(300px, 76vw);
+        height: auto;
+        overflow: hidden;
+      }
+
+      .startup-building {
+        transform-box: fill-box;
+        transform-origin: center bottom;
+        animation: startup-rise 800ms cubic-bezier(.2, .85, .35, 1.16) both;
+      }
+
+      .startup-building:nth-of-type(2) {
+        animation-delay: 140ms;
+      }
+
+      .startup-building:nth-of-type(3) {
+        animation-delay: 280ms;
+      }
+
+      .startup-brand {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+      }
+
+      .startup-message {
+        font-size: 0.9rem;
+        color: #e0f4ff;
+      }
+
+      @keyframes startup-rise {
+        from {
+          opacity: 0;
+          transform: translateY(36px) scaleY(.2);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scaleY(1);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .startup-building {
+          animation: none;
+        }
+      }
+    </style>
   </head>
 
   <body>
     <div id="app"></div>
+
+    <div id="rentease-startup" role="status">
+      <svg class="startup-properties" viewBox="0 0 300 158" aria-hidden="true">
+        <circle cx="150" cy="75" r="66" fill="#ffffff18" />
+
+        <g class="startup-building">
+          <path d="M108 145V45h79v100" fill="#c2ecff" />
+          <path d="M108 45l13-14h53l13 14z" fill="#edfaff" />
+          <path
+            d="M122 60h17v15h-17zM156 60h17v15h-17zM122 86h17v15h-17zM156 86h17v15h-17zM139 116h18v29h-18z"
+            fill="#216195"
+          />
+        </g>
+
+        <g class="startup-building">
+          <path d="M29 145V92l36-28 36 28v53z" fill="#effbff" />
+          <path d="M21 94l44-38 44 38-7 8-37-31-37 31z" fill="#72ded9" />
+          <path d="M42 106h15v14H42zM67 108h17v37H67z" fill="#216195" />
+        </g>
+
+        <g class="startup-building">
+          <path d="M198 145V88h63v57z" fill="#9ce6ee" />
+          <path d="M193 90l8-14h57l8 14z" fill="#e1fbff" />
+          <path d="M208 100h13v12h-13zM238 100h13v12h-13zM223 122h14v23h-14z" fill="#216195" />
+        </g>
+
+        <path d="M18 146h264" stroke="#a5fff0" stroke-width="4" stroke-linecap="round" />
+      </svg>
+
+      <span class="startup-brand">RentEase.</span>
+      <span class="startup-message">Getting your space ready…</span>
+    </div>
+
+    <script>
+      const startup = document.getElementById('rentease-startup');
+      const appRoot = document.getElementById('app');
+      const buildings = [...startup.querySelectorAll('.startup-building')];
+      const minimumStartupTime = new Promise(resolve => setTimeout(resolve, 2500));
+
+      const observer = new MutationObserver(() => {
+        if (!appRoot.hasAttribute('data-v-app')) return;
+        observer.disconnect();
+
+        const animations = buildings.flatMap(building => building.getAnimations());
+        const buildingsReady = Promise.allSettled(animations.map(animation => animation.finished));
+
+        Promise.all([minimumStartupTime, buildingsReady]).then(() => {
+          startup.hidden = true;
+        });
+      });
+
+      observer.observe(appRoot, {
+        attributes: true,
+        attributeFilter: ['data-v-app'],
+      });
+    </script>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
-
 </html>
-
