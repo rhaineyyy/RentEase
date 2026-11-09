@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: rentease
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SESSION_COOKIE_SAME_SITE
+        value: none
+      - key: DB_SSL
+        value: true
+      - key: DB_SSL_REJECT_UNAUTHORIZED
+        value: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CLIENT_ORIGINS
+        value: https://localhost,capacitor://localhost
