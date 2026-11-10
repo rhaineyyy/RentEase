@@ -357,7 +357,8 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { IonPage, IonContent, onIonViewWillEnter } from '@ionic/vue';
-import { dashboardPath, signup, type AuthUser } from '@/services/auth';
+import { API_BASE_URL } from '@/services/apiBase';
+import { dashboardPath, type AuthUser } from '@/services/auth';
 import GoogleContinue from '@/components/auth/GoogleContinue.vue';
 
 const router = useRouter();
@@ -445,11 +446,6 @@ const handleSignup = async () => {
     return;
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-    errorMessage.value = 'Enter a valid email address.';
-    return;
-  }
-
   if (password.value.length < 8) {
     errorMessage.value = 'Your password must contain at least 8 characters.';
     return;
@@ -474,21 +470,34 @@ const handleSignup = async () => {
   isLoading.value = true;
 
   try {
-    await signup({
-      name: trimmedName,
-      email: normalizedEmail,
-      password: password.value,
-      role: selectedRole.value,
+    const response = await fetch(`${API_BASE_URL}/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        name: trimmedName,
+        email: normalizedEmail,
+        password: password.value,
+        role: selectedRole.value
+      })
     });
 
-    await router.replace({
-      path: '/login',
-      query: { registered: selectedRole.value }
-    });
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok && data.success) {
+      await router.replace({
+        path: '/login',
+        query: { registered: selectedRole.value }
+      });
+      return;
+    }
+
+    errorMessage.value =
+      data.message || 'Registration failed. Please try again.';
   } catch (error) {
-    errorMessage.value = error instanceof Error
-      ? error.message
-      : 'Registration failed. Please try again.';
+    console.error('Signup error:', error);
+    errorMessage.value =
+      'Unable to connect to the server. Please make sure the backend is running.';
   } finally {
     isLoading.value = false;
   }

@@ -123,19 +123,6 @@ export async function signup(values: {
   removeLegacyAuthentication();
 }
 
-export async function requestPasswordReset(email: string): Promise<void> {
-  await request('/forgot-password', {
-    email: email.trim().toLowerCase(),
-  });
-}
-
-export async function resetPassword(
-  token: string,
-  password: string,
-): Promise<void> {
-  await request('/reset-password', { token, password });
-}
-
 export async function restoreSession(): Promise<AuthUser | null> {
   let response: Response;
 

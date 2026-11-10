@@ -34,8 +34,8 @@ to `https://<service>/api`. The workflow rejects non-HTTPS URLs or URLs that
 do not end in `/api`. When the run succeeds, download the `RentEase-APK`
 artifact and install the APK from its ZIP file.
 
-The workflow also runs on pushes to `main`. It uses the `VITE_API_BASE_URL`
-repository variable when set, otherwise it uses the current production API URL.
+The workflow also runs on pushes to `main`; set a GitHub Actions repository
+variable named `VITE_API_BASE_URL` to the same URL if you want automatic builds.
 The workflow currently creates a debug APK, not a signed Play Store release.
 
 ## Optional integrations
@@ -43,16 +43,3 @@ The workflow currently creates a debug APK, not a signed Play Store release.
 Google sign-in, PayMongo, email, and SMS notifications require provider
 credentials. Configure them as private environment variables in the hosting
 dashboard; never place them in frontend variables or source control.
-
-## Password reset mail
-
-The password reset endpoints require `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
-`SMTP_PASS`, `EMAIL_FROM`, and `APP_PUBLIC_URL` in the backend environment.
-Use a verified sender address and the public frontend origin for
-`APP_PUBLIC_URL`. Never commit SMTP credentials.
-
-After deploying the backend code, run
-`npm run migrate:password-reset` from `rentease-backend` against the production
-database, or apply `rentease-backend/schema/password-reset-tokens.sql` using the
-database provider's SQL console. The migration only creates the reset-token
-table and index.
