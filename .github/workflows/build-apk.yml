@@ -4,11 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      api_base_url:
-        description: Public backend URL including /api (for example https://rentease.example.com/api)
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -39,22 +34,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Validate backend URL
-        env:
-          VITE_API_BASE_URL: ${{ inputs.api_base_url || vars.VITE_API_BASE_URL }}
-        run: |
-          case "$VITE_API_BASE_URL" in
-            https://*/api) ;;
-            *)
-              echo "Provide the deployed HTTPS backend URL ending in /api using the workflow input or VITE_API_BASE_URL repository variable."
-              exit 1
-              ;;
-          esac
-
       - name: Build RentEase frontend
         run: npm run build
-        env:
-          VITE_API_BASE_URL: ${{ inputs.api_base_url || vars.VITE_API_BASE_URL }}
 
       - name: Sync Capacitor Android
         run: npx cap sync android

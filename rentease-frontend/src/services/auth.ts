@@ -1,5 +1,4 @@
 import { ref } from 'vue';
-import { API_BASE_URL } from './apiBase';
 
 export type UserRole = 'tenant' | 'owner' | 'admin';
 
@@ -15,6 +14,8 @@ type AuthResponse = {
   message?: string;
   user?: AuthUser;
 };
+
+const API_URL = 'http://localhost:5000/api';
 
 export const currentUser = ref<AuthUser | null>(null);
 export const sessionEpoch = ref(0);
@@ -61,7 +62,7 @@ async function request(
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(`${API_URL}${path}`, {
       method: body ? 'POST' : 'GET',
       credentials: 'include',
       headers: body
@@ -127,7 +128,7 @@ export async function restoreSession(): Promise<AuthUser | null> {
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE_URL}/me`, {
+    response = await fetch(`${API_URL}/me`, {
       credentials: 'include',
       cache: 'no-store',
     });

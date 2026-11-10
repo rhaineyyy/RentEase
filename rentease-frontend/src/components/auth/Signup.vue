@@ -357,7 +357,6 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { IonPage, IonContent, onIonViewWillEnter } from '@ionic/vue';
-import { API_BASE_URL } from '@/services/apiBase';
 import { dashboardPath, type AuthUser } from '@/services/auth';
 import GoogleContinue from '@/components/auth/GoogleContinue.vue';
 
@@ -470,7 +469,7 @@ const handleSignup = async () => {
   isLoading.value = true;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/signup`, {
+    const response = await fetch('http://localhost:5000/api/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
