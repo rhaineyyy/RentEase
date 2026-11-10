@@ -11,6 +11,14 @@ const config: CapacitorConfig = {
     CapacitorHttp: {
       enabled: true,
     },
+    SocialLogin: {
+      providers: {
+        google: true,
+        facebook: false,
+        apple: false,
+        twitter: false,
+      },
+    },
   },
 };
 

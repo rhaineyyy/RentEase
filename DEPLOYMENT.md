@@ -38,6 +38,30 @@ The workflow also runs on pushes to `main`; set a GitHub Actions repository
 variable named `VITE_API_BASE_URL` to the same URL if you want automatic builds.
 The workflow currently creates a debug APK, not a signed Play Store release.
 
+## Google sign-in for web and Android
+
+RentEase uses the Web OAuth client ID for browser sign-in and for verifying ID
+tokens on the backend. The Android app uses native Google sign-in and sends its
+ID token to the same `/api/auth/google` endpoint.
+
+1. In the same Google Cloud project as the Web client, add
+   `https://rentease-14e0.onrender.com` to that Web client's **Authorized
+   JavaScript origins**. Keep the Web client ID configured privately as
+   `GOOGLE_CLIENT_ID` in Render. Do not put its client secret in the frontend.
+2. Create an **Android** OAuth client in that project. Use package name
+   `com.rhaineyyy.rentease` and the SHA-1 signing-certificate fingerprint of the
+   APK you install. The APK workflow prints its SHA-1 in the
+   **Print APK signing certificate fingerprint** step; alternatively, run
+   `keytool -printcert -jarfile RentEase.apk` on a downloaded APK. Enter the
+   reported SHA-1 in the Android client; do not add `https://localhost` as a
+   workaround for the Android WebView origin error.
+3. Keep the Web client ID as the backend ID-token audience. The app fetches
+   that public ID from `/api/auth/google/config`; the Android OAuth client is
+   selected by Google using the package name and APK signing certificate.
+4. Build and install a fresh APK, then test Google sign-in on both the website
+   and Android app. If you change the APK signing key, register its new SHA-1
+   fingerprint in Google Cloud as well.
+
 ## Optional integrations
 
 Google sign-in, PayMongo, email, and SMS notifications require provider
