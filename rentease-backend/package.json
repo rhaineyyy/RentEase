@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "migrate:password-reset": "node scripts/migrate-password-reset.js",
     "create-admin": "node create-admin.js"
   },
   "keywords": [],

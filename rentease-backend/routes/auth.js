@@ -1,6 +1,8 @@
 
 const express = require('express');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const pool = require('../db');
 
 const router = express.Router();
@@ -46,6 +48,16 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Please complete all required fields.',
+      });
+    }
+
+    if (
+      email.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address.',
       });
     }
 
@@ -117,6 +129,212 @@ router.post('/signup', async (req, res) => {
       success: false,
       message: 'Unable to create your account right now.',
     });
+  }
+});
+
+function passwordResetConfiguration() {
+  const host = process.env.SMTP_HOST?.trim();
+  const user = process.env.SMTP_USER?.trim();
+  const password = process.env.SMTP_PASS;
+  const from = process.env.EMAIL_FROM?.trim();
+  const appUrl = process.env.APP_PUBLIC_URL?.trim() || process.env.RENDER_EXTERNAL_URL?.trim();
+
+  if (!host || !user || !password || !from || !appUrl) {
+    return null;
+  }
+
+  let baseUrl;
+  try {
+    baseUrl = new URL(appUrl);
+  } catch {
+    return null;
+  }
+
+  if (
+    (process.env.NODE_ENV === 'production' && baseUrl.protocol !== 'https:') ||
+    !['https:', 'http:'].includes(baseUrl.protocol)
+  ) {
+    return null;
+  }
+
+  const port = Number(process.env.SMTP_PORT || 587);
+  return {
+    from,
+    resetUrl: new URL('/login', baseUrl).toString(),
+    transporter: nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      requireTLS: port !== 465,
+      auth: { user, pass: password },
+      connectionTimeout: 15000,
+      socketTimeout: 20000,
+    }),
+  };
+}
+
+router.post('/forgot-password', async (req, res) => {
+  const email = typeof req.body?.email === 'string'
+    ? req.body.email.trim().toLowerCase()
+    : '';
+
+  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Enter a valid email address.',
+    });
+  }
+
+  const mail = passwordResetConfiguration();
+  if (!mail) {
+    return res.status(503).json({
+      success: false,
+      message: 'Password reset email is not configured. Please contact support.',
+    });
+  }
+
+  let resetToken;
+  let resetTokenId;
+  try {
+    const userResult = await pool.query(
+      `SELECT user_id, email
+       FROM app_users
+       WHERE email = $1 AND lower(account_status) <> 'deleted'`,
+      [email]
+    );
+    const user = userResult.rows[0];
+
+    if (!user) {
+      return res.json({
+        success: true,
+        message: 'If an account exists for that email, password reset instructions will be sent.',
+      });
+    }
+
+    const recentRequests = await pool.query(
+      `SELECT count(*)::int AS count
+       FROM password_reset_tokens
+       WHERE user_id = $1 AND created_at > now() - interval '1 hour'`,
+      [user.user_id]
+    );
+    if (recentRequests.rows[0].count >= 3) {
+      return res.json({
+        success: true,
+        message: 'If an account exists for that email, password reset instructions will be sent.',
+      });
+    }
+
+    resetToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+    await pool.query(
+      `UPDATE password_reset_tokens
+       SET used_at = now()
+       WHERE user_id = $1 AND used_at IS NULL`,
+      [user.user_id]
+    );
+    const tokenResult = await pool.query(
+      `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+       VALUES ($1, $2, now() + interval '30 minutes')
+       RETURNING token_id`,
+      [user.user_id, tokenHash]
+    );
+    resetTokenId = tokenResult.rows[0].token_id;
+
+    const link = new URL('/login', new URL(mail.resetUrl));
+    link.searchParams.set('resetToken', resetToken);
+    await mail.transporter.sendMail({
+      from: { name: 'RentEase', address: mail.from },
+      to: user.email,
+      subject: 'Reset your RentEase password',
+      text: `We received a request to reset your RentEase password. Open this one-time link within 30 minutes:\n\n${link.toString()}\n\nIf you did not request this, you can ignore this email.`,
+    });
+
+    return res.json({
+      success: true,
+      message: 'If an account exists for that email, password reset instructions will be sent.',
+    });
+  } catch (error) {
+    if (resetTokenId) {
+      await pool.query(
+        'UPDATE password_reset_tokens SET used_at = now() WHERE token_id = $1 AND used_at IS NULL',
+        [resetTokenId]
+      ).catch(cleanupError => {
+        console.error('Could not invalidate unsent password reset token:', cleanupError.message);
+      });
+    }
+    console.error('Password reset email could not be sent:', error.message);
+    return res.status(503).json({
+      success: false,
+      message: 'Password reset email could not be sent. Please try again later.',
+    });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body || {};
+  if (
+    typeof token !== 'string' ||
+    !/^[a-f0-9]{64}$/i.test(token) ||
+    typeof password !== 'string' ||
+    password.length < 8
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: typeof password === 'string' && password.length < 8
+        ? 'Password must be at least 8 characters long.'
+        : 'This password reset link is invalid or has expired.',
+    });
+  }
+
+  const client = await pool.connect();
+  try {
+    const passwordHash = await bcrypt.hash(password, 12);
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    await client.query('BEGIN');
+    const tokenResult = await client.query(
+      `SELECT token_id, user_id
+       FROM password_reset_tokens
+       WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now()
+       FOR UPDATE`,
+      [tokenHash]
+    );
+    const reset = tokenResult.rows[0];
+    if (!reset) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        success: false,
+        message: 'This password reset link is invalid or has expired.',
+      });
+    }
+
+    await client.query(
+      'UPDATE app_users SET password_hash = $1 WHERE user_id = $2',
+      [passwordHash, reset.user_id]
+    );
+    await client.query(
+      `UPDATE password_reset_tokens
+       SET used_at = now()
+       WHERE user_id = $1 AND used_at IS NULL`,
+      [reset.user_id]
+    );
+    await client.query('COMMIT');
+
+    return res.json({
+      success: true,
+      message: 'Password updated. You can now sign in.',
+    });
+  } catch (error) {
+    await client.query('ROLLBACK').catch(rollbackError => {
+      console.error('Password reset rollback failed:', rollbackError.message);
+    });
+    console.error('Password reset failed:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to reset your password right now.',
+    });
+  } finally {
+    client.release();
   }
 });
 
