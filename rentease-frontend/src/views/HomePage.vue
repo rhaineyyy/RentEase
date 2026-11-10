@@ -28,9 +28,9 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue
 <style scoped>
 ion-page,
 ion-content {
-  --background: #0b0c10;
-  --color: #f3f4f6;
-  color: #f3f4f6;
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+  color: var(--ion-text-color);
 }
 
 #container {
@@ -45,18 +45,18 @@ ion-content {
 #container strong {
   font-size: 20px;
   line-height: 26px;
-  color: #ffffff;
+  color: var(--ion-text-color);
 }
 
 #container p {
   font-size: 16px;
   line-height: 22px;
-  color: #8e96aa;
+  color: var(--ion-text-color-step-600);
   margin: 0;
 }
 
 #container a {
-  color: #22d3ee;
+  color: var(--ion-color-primary);
   text-decoration: none;
 }
 </style>

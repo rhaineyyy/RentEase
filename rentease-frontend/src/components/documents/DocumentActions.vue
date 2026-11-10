@@ -138,26 +138,40 @@ onUnmounted(closePreview);
 .doc-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
 .doc-actions > button, .doc-viewer-bar button {
   display: inline-flex; align-items: center; gap: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 999px; background: #1c1f2b; color: #e2e8f0;
-  font: inherit; font-size: 11.5px; font-weight: 600; padding: 6px 12px; cursor: pointer; transition: background 0.16s, border-color 0.16s, color 0.16s;
+  border: 1px solid #cbd8e8; border-radius: 999px; background: #f8fbff; color: #1e293b;
+  font: inherit; font-size: 11.5px; font-weight: 700; padding: 6px 12px; cursor: pointer; transition: background 0.16s, border-color 0.16s, color 0.16s;
 }
 .doc-actions > button:hover:not(:disabled), .doc-viewer-bar button:hover:not(:disabled) {
-  background: rgba(34, 211, 238, 0.14); border-color: rgba(34, 211, 238, 0.42); color: #22d3ee;
+  background: #ecfeff; border-color: #06b6d4; color: #0891b2;
 }
 .doc-actions > button:disabled, .doc-viewer-bar button:disabled { opacity: .55; cursor: wait; }
 .doc-actions ion-icon { font-size: 15px; }
-.doc-error { flex-basis: 100%; margin: 0; color: #f472b6; font-size: 12px; }
+.doc-error { flex-basis: 100%; margin: 0; color: #e11d48; font-size: 12px; }
 .doc-viewer {
   position: fixed; inset: 0; z-index: 100000; display: grid; grid-template-rows: auto minmax(0, 1fr);
-  background: rgba(5, 7, 11, .84); padding: 18px; backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, .62); padding: 18px; backdrop-filter: blur(4px);
 }
 .doc-viewer-bar {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: 12px 16px; border-radius: 14px 14px 0 0; background: #14161e; color: white; border: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 0;
+  padding: 12px 16px; border-radius: 14px 14px 0 0; background: #ffffff; color: #0f172a; border: 1px solid #dbe5f1; border-bottom: 1px solid #e2ebf5;
 }
 .doc-viewer-bar div { display: flex; flex-wrap: wrap; gap: 8px; }
-.doc-viewer-bar button { background: #1e2230; color: #f3f4f6; }
+.doc-viewer-bar button { background: #f1f6fc; color: #0f172a; }
 .doc-viewer iframe { width: 100%; height: 100%; border: 0; border-radius: 0 0 14px 14px; background: white; }
+
+:global(html[data-theme="dark"]) .doc-actions > button,
+:global(html[data-theme="dark"]) .doc-viewer-bar button {
+  border-color: rgba(255, 255, 255, 0.12); background: #1c1f2b; color: #e2e8f0;
+}
+:global(html[data-theme="dark"]) .doc-actions > button:hover:not(:disabled),
+:global(html[data-theme="dark"]) .doc-viewer-bar button:hover:not(:disabled) {
+  background: rgba(34, 211, 238, 0.14); border-color: rgba(34, 211, 238, 0.42); color: #22d3ee;
+}
+:global(html[data-theme="dark"]) .doc-error { color: #f472b6; }
+:global(html[data-theme="dark"]) .doc-viewer { background: rgba(5, 7, 11, .84); }
+:global(html[data-theme="dark"]) .doc-viewer-bar { background: #14161e; color: white; border-color: rgba(255, 255, 255, 0.08); }
+:global(html[data-theme="dark"]) .doc-viewer-bar button { background: #1e2230; color: #f3f4f6; }
+
 @media (max-width: 720px) {
   .doc-viewer { padding: 8px; }
   .doc-viewer-bar { align-items: flex-start; flex-direction: column; }

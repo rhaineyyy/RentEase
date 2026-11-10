@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <title>RentEase</title>
 
     <base href="/" />
 
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light" />
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -18,16 +18,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
 
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="RentEase" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <script>
+      (function () {
+        try {
+          var saved = window.localStorage.getItem('rentease_theme');
+          var mode = saved === 'dark' ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', mode);
+          document.documentElement.style.colorScheme = mode;
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
 
     <style>
       body {
+        background: #f4f7fb;
+        color: #0f172a;
+      }
+
+      html[data-theme="dark"] body {
         background: #0b0c10;
         color: #f3f4f6;
       }
@@ -41,11 +59,18 @@
         justify-items: center;
         gap: 14px;
         background:
+          radial-gradient(circle at 50% 35%, rgba(6, 182, 212, 0.16), transparent 48%),
+          linear-gradient(150deg, #f8fbff 0%, #edf4fc 64%, #e6f0fa 100%);
+        color: #0f172a;
+        text-align: center;
+        font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+      }
+
+      html[data-theme="dark"] #rentease-startup {
+        background:
           radial-gradient(circle at 50% 35%, rgba(34, 211, 238, 0.2), transparent 48%),
           linear-gradient(150deg, #06090f 0%, #0e1320 64%, #090b10 100%);
         color: #fff;
-        text-align: center;
-        font-family: Inter, system-ui, sans-serif;
       }
 
       #rentease-startup[hidden] {
@@ -76,16 +101,28 @@
         font-size: 2.5rem;
         font-weight: 800;
         letter-spacing: -0.05em;
+        color: #0f172a;
+      }
+
+      html[data-theme="dark"] .startup-brand {
         color: #ffffff;
       }
 
       .startup-brand em {
         font-style: normal;
+        color: #06b6d4;
+      }
+
+      html[data-theme="dark"] .startup-brand em {
         color: #22d3ee;
       }
 
       .startup-message {
         font-size: 0.9rem;
+        color: #64748b;
+      }
+
+      html[data-theme="dark"] .startup-message {
         color: #8b92a5;
       }
 
@@ -117,29 +154,29 @@
         <circle cx="150" cy="75" r="66" fill="#22d3ee22" />
 
         <g class="startup-building">
-          <path d="M108 145V45h79v100" fill="#1b1f2e" />
-          <path d="M108 45l13-14h53l13 14z" fill="#22d3ee" />
+          <path d="M108 145V45h79v100" fill="#1b263b" />
+          <path d="M108 45l13-14h53l13 14z" fill="#06b6d4" />
           <path
             d="M122 60h17v15h-17zM156 60h17v15h-17zM122 86h17v15h-17zM156 86h17v15h-17z"
             fill="#22d3ee"
           />
-          <path d="M139 116h18v29h-18z" fill="#a78bfa" />
+          <path d="M139 116h18v29h-18z" fill="#8b5cf6" />
         </g>
 
         <g class="startup-building">
-          <path d="M29 145V92l36-28 36 28v53z" fill="#161925" />
-          <path d="M21 94l44-38 44 38-7 8-37-31-37 31z" fill="#a78bfa" />
+          <path d="M29 145V92l36-28 36 28v53z" fill="#24344d" />
+          <path d="M21 94l44-38 44 38-7 8-37-31-37 31z" fill="#8b5cf6" />
           <path d="M42 106h15v14H42zM67 108h17v37H67z" fill="#22d3ee" />
         </g>
 
         <g class="startup-building">
-          <path d="M198 145V88h63v57z" fill="#161925" />
+          <path d="M198 145V88h63v57z" fill="#24344d" />
           <path d="M193 90l8-14h57l8 14z" fill="#38bdf8" />
           <path d="M208 100h13v12h-13zM238 100h13v12h-13z" fill="#38bdf8" />
-          <path d="M223 122h14v23h-14z" fill="#a78bfa" />
+          <path d="M223 122h14v23h-14z" fill="#8b5cf6" />
         </g>
 
-        <path d="M18 146h264" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" />
+        <path d="M18 146h264" stroke="#06b6d4" stroke-width="4" stroke-linecap="round" />
       </svg>
 
       <span class="startup-brand">RentEase<em>.</em></span>

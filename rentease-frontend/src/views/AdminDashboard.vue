@@ -7,6 +7,8 @@ import { useRouter } from 'vue-router';
 import { logout as logoutUser, restoreSession } from '@/services/auth';
 import NotificationCenter from '@/components/NotificationCenter.vue';
 import DocumentActions from '@/components/documents/DocumentActions.vue';
+import ThemeToggle from '@/components/ThemeToggle.vue';
+import { getPropertyPhoto } from '@/services/propertyPhotos';
 import { getAdminOverview } from '@/services/adminOverview';
 import {
   IonPage,
@@ -51,7 +53,6 @@ import {
 
 const router = useRouter();
 const API_BASE = API_BASE_URL;
-
 const usersLoading = ref(false);
 const overviewLoading = ref(false);
 const overviewError = ref('');
@@ -842,6 +843,7 @@ async function logout() {
           <div class="brand-wordmark"><strong>RentEase<span class="brand-dot">.</span></strong><small>ADMIN CONSOLE</small></div>
         </div>
         <IonButtons slot="end" class="topbar-actions">
+          <ThemeToggle />
           <NotificationCenter @open="openNotice" />
           <IonButton class="header-icon" aria-label="View audit activity" @click="visit('security')">
             <IonIcon :icon="shieldCheckmarkOutline" />
@@ -943,7 +945,7 @@ async function logout() {
             </div>
           </div>
 
-          <div v-if="overviewError" class="notice" role="alert" style="margin-bottom:16px;color:#f472b6">
+          <div v-if="overviewError" class="notice" role="alert" style="margin-bottom:16px;color:#a52d2d">
             PostgreSQL overview: {{ overviewError }}
             <button type="button" class="button secondary" @click="fetchPlatformOverview">Retry</button>
           </div>
@@ -1162,15 +1164,16 @@ async function logout() {
               <div v-if="filteredProperties.length" class="property-grid property-showcase-grid">
                 <article v-for="(property, index) in filteredProperties" :key="property.id" class="property-card property-showcase">
                   <div class="property-cover" :class="'property-cover-' + (index % 3)">
-                    <div class="cover-grid" aria-hidden="true"></div>
+                    <img
+                      :src="getPropertyPhoto(property.id, property.name)"
+                      :alt="property.name"
+                      class="property-cover-photo"
+                      loading="lazy"
+                    />
+                    <div class="cover-photo-scrim" aria-hidden="true"></div>
                     <div class="cover-topline">
                       <span class="cover-eyebrow"><IonIcon :icon="businessOutline" /> RENTAL PROPERTY</span>
                       <span class="cover-number">#{{ String(property.id).padStart(3, '0') }}</span>
-                    </div>
-                    <div class="cover-illustration" aria-hidden="true">
-                      <span class="building building-back"></span>
-                      <span class="building building-main"></span>
-                      <span class="building building-front"></span>
                     </div>
                     <div class="cover-bottomline">
                       <span class="cover-location"><IonIcon :icon="businessOutline" /> {{ property.location || 'Location not provided' }}</span>

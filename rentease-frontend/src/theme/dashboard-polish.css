@@ -2180,3 +2180,1060 @@
     touch-action: manipulation;
   }
 }
+
+/* ─── Realistic Online Apartment & Unit Photos (Admin, Owner, Tenant) ─── */
+.portal .property-cover,
+.portal .property-visual {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 184px !important;
+}
+
+.portal .property-cover-photo,
+.portal .property-photo {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  z-index: 0 !important;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.portal .property-card:hover .property-cover-photo,
+.portal .property-card:hover .property-photo,
+.portal .owner-property-card:hover .property-cover-photo {
+  transform: scale(1.04) !important;
+}
+
+.portal .cover-photo-scrim {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 10, 18, 0.58) 0%,
+    rgba(6, 10, 18, 0.16) 45%,
+    rgba(6, 10, 18, 0.78) 100%
+  ) !important;
+  pointer-events: none !important;
+}
+
+.portal .property-cover .cover-topline,
+.portal .property-cover .cover-bottomline,
+.portal .property-cover .property-cover-top,
+.portal .property-cover .property-cover-bottom {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.portal .property-cover .cover-eyebrow,
+.portal .property-cover .cover-number,
+.portal .property-cover .property-cover-kicker,
+.portal .property-cover .property-code {
+  background: rgba(9, 13, 22, 0.72) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  padding: 4px 10px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+
+.portal .property-cover .cover-location,
+.portal .property-cover .property-location {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65) !important;
+}
+
+.portal .property-cover .cover-live,
+.portal .property-cover .property-active-badge {
+  background: rgba(9, 13, 22, 0.78) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(34, 211, 238, 0.45) !important;
+  color: #22d3ee !important;
+}
+
+.portal .property-visual .availability {
+  position: absolute !important;
+  right: 14px !important;
+  top: 14px !important;
+  z-index: 2 !important;
+  background: rgba(9, 13, 22, 0.78) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(34, 211, 238, 0.5) !important;
+  color: #22d3ee !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.portal .property-visual .property-unit-tag {
+  position: absolute !important;
+  left: 14px !important;
+  top: 14px !important;
+  z-index: 2 !important;
+  padding: 5px 11px !important;
+  border-radius: 999px !important;
+  background: rgba(9, 13, 22, 0.76) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.portal .unit-tile {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.portal .unit-tile-media {
+  position: relative !important;
+  height: 128px !important;
+  margin: -4px -4px 12px !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: #1e293b !important;
+}
+
+.portal .unit-tile-photo {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  transition: transform 0.3s ease !important;
+}
+
+.portal .unit-tile:hover .unit-tile-photo {
+  transform: scale(1.04) !important;
+}
+
+.portal .unit-tile-media .pill {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 2 !important;
+  background: rgba(9, 13, 22, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+.portal .unit-row-cell {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+.portal .unit-row-thumb {
+  width: 56px !important;
+  height: 42px !important;
+  border-radius: 10px !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.14) !important;
+}
+
+.unit-summary-with-photo {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.unit-summary-photo {
+  width: 76px !important;
+  height: 58px !important;
+  border-radius: 12px !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+  border: 1px solid rgba(6, 182, 212, 0.38) !important;
+}
+
+.topbar .owner-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 8px;
+}
+
+/* ─── Light Mode (Default) — Electric Cyan & Purple Editorial Design System ─── */
+:global(html:not([data-theme="dark"]) body) {
+  background: #f4f7fb !important;
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal,
+:global(html:not([data-theme="dark"])) .dialog-content,
+:global(html:not([data-theme="dark"])) .modal-content {
+  --background: #f4f7fb;
+  --ion-background-color: #f4f7fb;
+  --ion-text-color: #0f172a;
+  --re-navy: #0f172a;
+  --re-blue: #06b6d4;
+  --re-teal: #8b5cf6;
+  --re-canvas: #f4f7fb;
+  --re-card: #ffffff;
+  --re-ink: #0f172a;
+  --re-muted: #64748b;
+  --re-line: #dbe5f1;
+  --navy: #0f172a;
+  --teal: #0891b2;
+  --line: #dbe5f1;
+  --muted: #64748b;
+  background: #f4f7fb !important;
+  color: #1e293b !important;
+  color-scheme: light;
+}
+
+:global(html:not([data-theme="dark"])) .topbar {
+  --background: #ffffff !important;
+  --color: #0f172a !important;
+  --border-color: #e2ebf5 !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05) !important;
+}
+
+:global(html:not([data-theme="dark"])) .topbar ion-title,
+:global(html:not([data-theme="dark"])) .topbar ion-button {
+  --color: #0f172a !important;
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .brand-mark,
+:global(html:not([data-theme="dark"])) .owner-brand-mark,
+:global(html:not([data-theme="dark"])) .tenant-logo {
+  background: #ecfeff !important;
+  color: #0891b2 !important;
+  border: 1px solid rgba(6, 182, 212, 0.35) !important;
+  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.14) !important;
+}
+
+:global(html:not([data-theme="dark"])) .brand,
+:global(html:not([data-theme="dark"])) .owner-brand-text strong,
+:global(html:not([data-theme="dark"])) .brand-wordmark strong {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .brand-dot,
+:global(html:not([data-theme="dark"])) .owner-brand-text strong span,
+:global(html:not([data-theme="dark"])) .brand-mark span {
+  color: #06b6d4 !important;
+}
+
+:global(html:not([data-theme="dark"])) .brand-tag,
+:global(html:not([data-theme="dark"])) .brand-subtitle,
+:global(html:not([data-theme="dark"])) .owner-brand-text small,
+:global(html:not([data-theme="dark"])) .brand-wordmark small {
+  color: #64748b !important;
+}
+
+:global(html:not([data-theme="dark"])) .mobile-menu-button,
+:global(html:not([data-theme="dark"])) .owner-menu-toggle,
+:global(html:not([data-theme="dark"])) .mobile-toggle {
+  background: #f1f6fc !important;
+  color: #0f172a !important;
+  border: 1px solid #d5e2f0 !important;
+}
+
+:global(html:not([data-theme="dark"])) .topbar .global-search {
+  background: #f1f6fc !important;
+  border: 1px solid #d5e2f0 !important;
+  color: #64748b !important;
+}
+
+:global(html:not([data-theme="dark"])) .topbar .global-search input {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .topbar .global-search input::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+}
+
+:global(html:not([data-theme="dark"])) .topbar .global-search button {
+  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+  color: #ffffff !important;
+}
+
+/* Light Mode Sidebar */
+:global(html:not([data-theme="dark"])) .portal .layout > .sidebar,
+:global(html:not([data-theme="dark"])) .portal .sidebar {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #e2ebf5 !important;
+  border-right: 1px solid #e2ebf5 !important;
+  box-shadow: 10px 0 30px rgba(15, 23, 42, 0.05) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-profile,
+:global(html:not([data-theme="dark"])) .portal .account,
+:global(html:not([data-theme="dark"])) .portal .owner {
+  background: #f8fbff !important;
+  border: 1px solid #dbe5f1 !important;
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-profile:hover,
+:global(html:not([data-theme="dark"])) .portal .account:hover {
+  border-color: #06b6d4 !important;
+  background: #ecfeff !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-profile strong,
+:global(html:not([data-theme="dark"])) .portal .account strong,
+:global(html:not([data-theme="dark"])) .portal .owner strong,
+:global(html:not([data-theme="dark"])) .portal .account-name strong {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-profile small,
+:global(html:not([data-theme="dark"])) .portal .account small,
+:global(html:not([data-theme="dark"])) .portal .owner small,
+:global(html:not([data-theme="dark"])) .portal .account-name small {
+  color: #64748b !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .nav-label,
+:global(html:not([data-theme="dark"])) .portal .nav-caption {
+  color: #64748b !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar nav button {
+  color: #475569 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar nav button:hover {
+  background: #f1f6fc !important;
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar nav button.active {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.28) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar nav button.active ion-icon,
+:global(html:not([data-theme="dark"])) .portal .sidebar nav button.active span {
+  color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .nav-count,
+:global(html:not([data-theme="dark"])) .portal .sidebar nav b {
+  background: #ecfeff !important;
+  color: #0891b2 !important;
+  border-color: #a5f3fc !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar nav button.active .nav-count,
+:global(html:not([data-theme="dark"])) .portal .sidebar nav button.active b {
+  background: rgba(255, 255, 255, 0.24) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-note,
+:global(html:not([data-theme="dark"])) .portal .sidebar-help {
+  background: linear-gradient(145deg, #ecfeff 0%, #e0f2fe 100%) !important;
+  border: 1px solid #a5f3fc !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.1) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-note strong,
+:global(html:not([data-theme="dark"])) .portal .sidebar-help strong {
+  color: #0e7490 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-note p,
+:global(html:not([data-theme="dark"])) .portal .sidebar-help p {
+  color: #334155 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-note .note-icon,
+:global(html:not([data-theme="dark"])) .portal .sidebar-help ion-icon {
+  background: rgba(6, 182, 212, 0.16) !important;
+  color: #0891b2 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-logout,
+:global(html:not([data-theme="dark"])) .portal .owner-sidebar-logout,
+:global(html:not([data-theme="dark"])) .portal .tenant-logout {
+  background: #fff1f2 !important;
+  color: #e11d48 !important;
+  border: 1px solid #fecdd3 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .sidebar-logout:hover,
+:global(html:not([data-theme="dark"])) .portal .owner-sidebar-logout:hover,
+:global(html:not([data-theme="dark"])) .portal .tenant-logout:hover {
+  background: #ffe4e6 !important;
+  border-color: #fda4af !important;
+  color: #be123c !important;
+}
+
+/* Light Mode Workspace & Headings */
+:global(html:not([data-theme="dark"])) .portal .workspace {
+  background: #f4f7fb !important;
+  color: #1e293b !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal h1,
+:global(html:not([data-theme="dark"])) .portal .page-heading h1,
+:global(html:not([data-theme="dark"])) .portal h2,
+:global(html:not([data-theme="dark"])) .portal .panel h2,
+:global(html:not([data-theme="dark"])) .portal .panel-heading h2,
+:global(html:not([data-theme="dark"])) .portal .panel-head h2,
+:global(html:not([data-theme="dark"])) .portal .section-mini-heading h2,
+:global(html:not([data-theme="dark"])) .portal h3,
+:global(html:not([data-theme="dark"])) .portal .property-info h2,
+:global(html:not([data-theme="dark"])) .portal .property-title-row h3 {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .eyebrow,
+:global(html:not([data-theme="dark"])) .portal .mini-kicker,
+:global(html:not([data-theme="dark"])) .portal .heading-trail strong {
+  color: #0891b2 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .heading-trail,
+:global(html:not([data-theme="dark"])) .portal .subtitle,
+:global(html:not([data-theme="dark"])) .portal .panel-heading p,
+:global(html:not([data-theme="dark"])) .portal .panel-head p,
+:global(html:not([data-theme="dark"])) .portal small,
+:global(html:not([data-theme="dark"])) .portal .stat-detail,
+:global(html:not([data-theme="dark"])) .portal .form-note,
+:global(html:not([data-theme="dark"])) .portal .muted,
+:global(html:not([data-theme="dark"])) .portal .mini-date,
+:global(html:not([data-theme="dark"])) .portal .insight-footnote,
+:global(html:not([data-theme="dark"])) .portal .heading-date {
+  color: #64748b !important;
+}
+
+/* Light Mode Welcome Banner */
+:global(html:not([data-theme="dark"])) .portal .welcome-banner,
+:global(html:not([data-theme="dark"])) .portal .welcome,
+:global(html:not([data-theme="dark"])) .portal .welcome-hero {
+  background:
+    radial-gradient(circle at 86% 22%, rgba(34, 211, 238, 0.25), transparent 44%),
+    radial-gradient(circle at 18% 90%, rgba(167, 139, 250, 0.2), transparent 42%),
+    linear-gradient(135deg, #0b1829 0%, #122947 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #cbd8e8 !important;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .welcome-banner h2,
+:global(html:not([data-theme="dark"])) .portal .welcome h2,
+:global(html:not([data-theme="dark"])) .portal .welcome-hero h2 {
+  color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .welcome-banner p,
+:global(html:not([data-theme="dark"])) .portal .welcome p,
+:global(html:not([data-theme="dark"])) .portal .welcome-hero p {
+  color: #cbd5e1 !important;
+}
+
+/* Light Mode Cards, Panels & Tiles */
+:global(html:not([data-theme="dark"])) .portal .panel,
+:global(html:not([data-theme="dark"])) .portal .stat-card,
+:global(html:not([data-theme="dark"])) .portal .metric-action,
+:global(html:not([data-theme="dark"])) .portal .metric,
+:global(html:not([data-theme="dark"])) .portal .property-card,
+:global(html:not([data-theme="dark"])) .portal .owner-property-card,
+:global(html:not([data-theme="dark"])) .portal .property-showcase,
+:global(html:not([data-theme="dark"])) .portal .property-info,
+:global(html:not([data-theme="dark"])) .portal .property-body,
+:global(html:not([data-theme="dark"])) .portal .section-overview > div,
+:global(html:not([data-theme="dark"])) .portal .deposit-lease-card,
+:global(html:not([data-theme="dark"])) .portal .maintenance-callout,
+:global(html:not([data-theme="dark"])) .portal .empty,
+:global(html:not([data-theme="dark"])) .portal .request-card,
+:global(html:not([data-theme="dark"])) .portal .profile-card,
+:global(html:not([data-theme="dark"])) .portal .profile-summary {
+  background: #ffffff !important;
+  border: 1px solid #dbe5f1 !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05) !important;
+  color: #1e293b !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .property-info,
+:global(html:not([data-theme="dark"])) .portal .property-body {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .quick-actions button,
+:global(html:not([data-theme="dark"])) .portal .quick-grid button,
+:global(html:not([data-theme="dark"])) .portal .property-info-tile,
+:global(html:not([data-theme="dark"])) .portal .property-info-tile:first-child,
+:global(html:not([data-theme="dark"])) .portal .property-info-tile:last-child,
+:global(html:not([data-theme="dark"])) .portal .info-grid > div,
+:global(html:not([data-theme="dark"])) .portal .unit-tile,
+:global(html:not([data-theme="dark"])) .portal .deposit-highlights article,
+:global(html:not([data-theme="dark"])) .portal .property-fact {
+  background: #f8fbff !important;
+  border: 1px solid #dbe5f1 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .quick-actions button:hover,
+:global(html:not([data-theme="dark"])) .portal .quick-grid button:hover,
+:global(html:not([data-theme="dark"])) .portal .unit-tile:hover,
+:global(html:not([data-theme="dark"])) .portal .stat-card:hover,
+:global(html:not([data-theme="dark"])) .portal .metric:hover,
+:global(html:not([data-theme="dark"])) .portal .metric-action:hover,
+:global(html:not([data-theme="dark"])) .portal .property-card:hover,
+:global(html:not([data-theme="dark"])) .portal .owner-property-card:hover {
+  border-color: #06b6d4 !important;
+  box-shadow: 0 14px 32px rgba(6, 182, 212, 0.14) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .quick-actions strong,
+:global(html:not([data-theme="dark"])) .portal .quick-grid button span,
+:global(html:not([data-theme="dark"])) .portal .info-grid strong,
+:global(html:not([data-theme="dark"])) .portal .property-info-tile strong,
+:global(html:not([data-theme="dark"])) .portal .unit-tile > strong,
+:global(html:not([data-theme="dark"])) .portal .unit-tile h3,
+:global(html:not([data-theme="dark"])) .portal .deposit-highlights strong,
+:global(html:not([data-theme="dark"])) .portal .section-overview strong,
+:global(html:not([data-theme="dark"])) .portal .stat-card h2,
+:global(html:not([data-theme="dark"])) .portal .stat-value,
+:global(html:not([data-theme="dark"])) .portal .metric strong,
+:global(html:not([data-theme="dark"])) .portal .property-showcase-title h3,
+:global(html:not([data-theme="dark"])) .portal .property-fact strong,
+:global(html:not([data-theme="dark"])) .portal .property-meta strong,
+:global(html:not([data-theme="dark"])) .portal .property-bottom strong {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .stat-card p,
+:global(html:not([data-theme="dark"])) .portal .stat-label,
+:global(html:not([data-theme="dark"])) .portal .metric > span,
+:global(html:not([data-theme="dark"])) .portal .metric p,
+:global(html:not([data-theme="dark"])) .portal .metric small,
+:global(html:not([data-theme="dark"])) .portal .quick-actions small,
+:global(html:not([data-theme="dark"])) .portal .info-grid small,
+:global(html:not([data-theme="dark"])) .portal .property-info-tile span,
+:global(html:not([data-theme="dark"])) .portal .deposit-highlights span,
+:global(html:not([data-theme="dark"])) .portal .section-overview span,
+:global(html:not([data-theme="dark"])) .portal .property-fact small,
+:global(html:not([data-theme="dark"])) .portal .property-id-label {
+  color: #64748b !important;
+}
+
+/* Light Mode Charts & Pipeline */
+:global(html:not([data-theme="dark"])) .portal .chart-column > strong {
+  color: #334155 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .chart-column:last-child > strong {
+  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+  color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .bar-track {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .bar {
+  background: repeating-linear-gradient(
+    -45deg,
+    #64748b 0 4px,
+    rgba(100, 116, 139, 0.22) 4px 9px
+  ) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .chart-column:last-child .bar {
+  background: linear-gradient(180deg, #22d3ee 0%, #06b6d4 100%) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .pipeline-item,
+:global(html:not([data-theme="dark"])) .portal .distribution-legend > div {
+  color: #475569 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .pipeline-item strong,
+:global(html:not([data-theme="dark"])) .portal .distribution-legend > div strong,
+:global(html:not([data-theme="dark"])) .portal .ring-center strong {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .pipeline-track {
+  background: #e2ebf5 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .ring-center {
+  background: #ffffff !important;
+  box-shadow: inset 0 0 0 1px #dbe5f1 !important;
+}
+
+/* Light Mode Lists & Rows */
+:global(html:not([data-theme="dark"])) .portal .attention,
+:global(html:not([data-theme="dark"])) .portal .activity-item,
+:global(html:not([data-theme="dark"])) .portal .record-row,
+:global(html:not([data-theme="dark"])) .portal .application-mini,
+:global(html:not([data-theme="dark"])) .portal .settings-row,
+:global(html:not([data-theme="dark"])) .portal .info-line,
+:global(html:not([data-theme="dark"])) .portal .details dt,
+:global(html:not([data-theme="dark"])) .portal .details dd,
+:global(html:not([data-theme="dark"])) .portal .property-bottom,
+:global(html:not([data-theme="dark"])) .portal .card-actions,
+:global(html:not([data-theme="dark"])) .portal .property-card-footer,
+:global(html:not([data-theme="dark"])) .portal .request-footer {
+  border-color: #e2ebf5 !important;
+  color: #334155 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .attention:hover {
+  background: #f1f6fc !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .attention strong,
+:global(html:not([data-theme="dark"])) .portal .activity-copy strong,
+:global(html:not([data-theme="dark"])) .portal .record-row strong,
+:global(html:not([data-theme="dark"])) .portal .application-mini strong,
+:global(html:not([data-theme="dark"])) .portal .steps strong,
+:global(html:not([data-theme="dark"])) .portal .info-line strong,
+:global(html:not([data-theme="dark"])) .portal .details dd,
+:global(html:not([data-theme="dark"])) .portal .settings-row p,
+:global(html:not([data-theme="dark"])) .portal .activity-list p {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .attention b,
+:global(html:not([data-theme="dark"])) .portal .property-eyebrow {
+  color: #0891b2 !important;
+}
+
+/* Light Mode Buttons */
+:global(html:not([data-theme="dark"])) .portal .button.primary,
+:global(html:not([data-theme="dark"])) .portal .btn.primary,
+:global(html:not([data-theme="dark"])) .portal .property-view-button {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(6, 182, 212, 0.25) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .button.primary ion-icon,
+:global(html:not([data-theme="dark"])) .portal .btn.primary ion-icon,
+:global(html:not([data-theme="dark"])) .portal .property-view-button ion-icon {
+  color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .button.secondary,
+:global(html:not([data-theme="dark"])) .portal .btn.secondary,
+:global(html:not([data-theme="dark"])) .portal .text-button,
+:global(html:not([data-theme="dark"])) .portal .password-field button,
+:global(html:not([data-theme="dark"])) .portal .icon-button,
+:global(html:not([data-theme="dark"])) .portal table td .text-button,
+:global(html:not([data-theme="dark"])) .portal .row-actions .text-button {
+  background: #f8fbff !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd8e8 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .button.secondary:hover,
+:global(html:not([data-theme="dark"])) .portal .btn.secondary:hover,
+:global(html:not([data-theme="dark"])) .portal .text-button:hover,
+:global(html:not([data-theme="dark"])) .portal .password-field button:hover,
+:global(html:not([data-theme="dark"])) .portal .icon-button:hover {
+  background: #ecfeff !important;
+  border-color: #06b6d4 !important;
+  color: #0891b2 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .text-button.approve-text,
+:global(html:not([data-theme="dark"])) .portal .request-footer .text-button {
+  background: #ecfeff !important;
+  color: #0891b2 !important;
+  border-color: #a5f3fc !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .text-button.danger-text,
+:global(html:not([data-theme="dark"])) .portal .button.danger,
+:global(html:not([data-theme="dark"])) .portal .button.danger-button,
+:global(html:not([data-theme="dark"])) .portal .btn.danger,
+:global(html:not([data-theme="dark"])) .portal .property-delete-button {
+  background: #fff1f2 !important;
+  color: #e11d48 !important;
+  border: 1px solid #fecdd3 !important;
+}
+
+/* Light Mode Tables */
+:global(html:not([data-theme="dark"])) .portal .table-wrap {
+  background: #ffffff !important;
+  border: 1px solid #dbe5f1 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal th {
+  color: #475569 !important;
+  background: #f8fbff !important;
+  border-bottom: 1px solid #dbe5f1 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal td {
+  color: #334155 !important;
+  border-bottom: 1px solid #edf2f8 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal td strong {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal td small {
+  color: #64748b !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal tbody tr:nth-child(even),
+:global(html:not([data-theme="dark"])) .portal tbody tr:nth-child(even) td {
+  background: #f8fafc !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal tbody tr:hover,
+:global(html:not([data-theme="dark"])) .portal tbody tr:hover td {
+  background: #f0f9ff !important;
+}
+
+/* Light Mode Status Pills */
+:global(html:not([data-theme="dark"])) .portal .status-badge.good,
+:global(html:not([data-theme="dark"])) .portal .pill.good,
+:global(html:not([data-theme="dark"])) .portal .pill.success {
+  background: #ecfeff !important;
+  color: #0e7490 !important;
+  border: 1px solid #a5f3fc !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .status-badge.warning,
+:global(html:not([data-theme="dark"])) .portal .pill.warning,
+:global(html:not([data-theme="dark"])) .portal .pill.pending {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .status-badge.danger,
+:global(html:not([data-theme="dark"])) .portal .pill.danger,
+:global(html:not([data-theme="dark"])) .portal .pill.error {
+  background: #fff1f2 !important;
+  color: #be123c !important;
+  border: 1px solid #fecdd3 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .status-badge.neutral,
+:global(html:not([data-theme="dark"])) .portal .pill.neutral,
+:global(html:not([data-theme="dark"])) .portal .chips span {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Light Mode Inputs, Selects & Search */
+:global(html:not([data-theme="dark"])) .portal input,
+:global(html:not([data-theme="dark"])) .portal select,
+:global(html:not([data-theme="dark"])) .portal textarea,
+:global(html:not([data-theme="dark"])) .modal-content input,
+:global(html:not([data-theme="dark"])) .modal-content select,
+:global(html:not([data-theme="dark"])) .modal-content textarea,
+:global(html:not([data-theme="dark"])) .dialog-body label input,
+:global(html:not([data-theme="dark"])) .dialog-body label select,
+:global(html:not([data-theme="dark"])) .dialog-body label textarea,
+:global(html:not([data-theme="dark"])) .form-body input,
+:global(html:not([data-theme="dark"])) .form-body select,
+:global(html:not([data-theme="dark"])) .form-body textarea,
+:global(html:not([data-theme="dark"])) .billing-charge-form input,
+:global(html:not([data-theme="dark"])) .portal .filters input,
+:global(html:not([data-theme="dark"])) .portal .filters select,
+:global(html:not([data-theme="dark"])) .portal .filter-bar input,
+:global(html:not([data-theme="dark"])) .portal .filter-bar select,
+:global(html:not([data-theme="dark"])) .portal .filter-panel select,
+:global(html:not([data-theme="dark"])) .portal .filter-panel .searchbox,
+:global(html:not([data-theme="dark"])) .portal .audit-filters select,
+:global(html:not([data-theme="dark"])) .portal .record-search,
+:global(html:not([data-theme="dark"])) .portal .audit-filters .record-search {
+  border: 1px solid #cbd8e8 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  color-scheme: light !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .filter-panel .searchbox input,
+:global(html:not([data-theme="dark"])) .portal .record-search input {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal select option,
+:global(html:not([data-theme="dark"])) .modal-content select option,
+:global(html:not([data-theme="dark"])) .dialog-body select option,
+:global(html:not([data-theme="dark"])) .form-body select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal input::placeholder,
+:global(html:not([data-theme="dark"])) .portal textarea::placeholder,
+:global(html:not([data-theme="dark"])) .modal-content input::placeholder,
+:global(html:not([data-theme="dark"])) .form-body input::placeholder,
+:global(html:not([data-theme="dark"])) .form-body textarea::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal label,
+:global(html:not([data-theme="dark"])) .portal .filters label > span {
+  color: #334155 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .notice,
+:global(html:not([data-theme="dark"])) .portal .demo-notice,
+:global(html:not([data-theme="dark"])) .portal .inline-note,
+:global(html:not([data-theme="dark"])) .portal .lease-helper,
+:global(html:not([data-theme="dark"])) .portal .form-note,
+:global(html:not([data-theme="dark"])) .portal .form-summary,
+:global(html:not([data-theme="dark"])) .portal .lease-deposit-explainer {
+  background: #f0f9ff !important;
+  border: 1px solid #bae6fd !important;
+  color: #1e293b !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal footer,
+:global(html:not([data-theme="dark"])) .portal .workspace-footer,
+:global(html:not([data-theme="dark"])) .portal .page-footer {
+  border-top: 1px solid #e2ebf5 !important;
+  color: #64748b !important;
+}
+
+/* Light Mode Modals */
+:global(html:not([data-theme="dark"])) .modal-toolbar,
+:global(html:not([data-theme="dark"])) .billing-modal-toolbar,
+:global(html:not([data-theme="dark"])) .lease-modal-hero,
+:global(html:not([data-theme="dark"])) .owner-notice-hero,
+:global(html:not([data-theme="dark"])) .notice-hero,
+:global(html:not([data-theme="dark"])) .lease-confirm-hero,
+:global(html:not([data-theme="dark"])) .details-hero {
+  --background: #0f1e36 !important;
+  --color: #ffffff !important;
+  background: linear-gradient(135deg, #0b1829 0%, #122947 100%) !important;
+  border-bottom: 1px solid #dbe5f1 !important;
+  color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .modal-content,
+:global(html:not([data-theme="dark"])) .dialog-content,
+:global(html:not([data-theme="dark"])) .dialog-body,
+:global(html:not([data-theme="dark"])) .form-body,
+:global(html:not([data-theme="dark"])) .billing-modal-content,
+:global(html:not([data-theme="dark"])) .billing-dialog-body,
+:global(html:not([data-theme="dark"])) .billing-dialog-footer,
+:global(html:not([data-theme="dark"])) .lease-modal-shell,
+:global(html:not([data-theme="dark"])) .lease-modal-body,
+:global(html:not([data-theme="dark"])) .lease-modal-actions,
+:global(html:not([data-theme="dark"])) .owner-notice-shell,
+:global(html:not([data-theme="dark"])) .owner-notice-body,
+:global(html:not([data-theme="dark"])) .notice-shell,
+:global(html:not([data-theme="dark"])) .notice-content,
+:global(html:not([data-theme="dark"])) .lease-confirm-shell,
+:global(html:not([data-theme="dark"])) .lease-confirm-body,
+:global(html:not([data-theme="dark"])) .details-modal-shell,
+:global(html:not([data-theme="dark"])) .details-modal-content,
+:global(html:not([data-theme="dark"])) .details-modal-body {
+  --background: #ffffff !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body h2,
+:global(html:not([data-theme="dark"])) .dialog-body h3,
+:global(html:not([data-theme="dark"])) .billing-lead h2,
+:global(html:not([data-theme="dark"])) .billing-subheading,
+:global(html:not([data-theme="dark"])) .owner-notice-body h2,
+:global(html:not([data-theme="dark"])) .notice-content h2 {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body p,
+:global(html:not([data-theme="dark"])) .billing-lead p,
+:global(html:not([data-theme="dark"])) .owner-notice-body p,
+:global(html:not([data-theme="dark"])) .notice-content p {
+  color: #475569 !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body form > label,
+:global(html:not([data-theme="dark"])) .form-grid > label,
+:global(html:not([data-theme="dark"])) .form-body label,
+:global(html:not([data-theme="dark"])) .billing-charge-form label,
+:global(html:not([data-theme="dark"])) .lease-field {
+  color: #334155 !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body .details dt {
+  background: #f8fbff !important;
+  border-color: #dbe5f1 !important;
+  color: #64748b !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body .details dd,
+:global(html:not([data-theme="dark"])) .lease-summary > div,
+:global(html:not([data-theme="dark"])) .lease-confirm-property,
+:global(html:not([data-theme="dark"])) .lease-confirm-grid > div,
+:global(html:not([data-theme="dark"])) .billing-lease-option,
+:global(html:not([data-theme="dark"])) .billing-selected-summary,
+:global(html:not([data-theme="dark"])) .lease-money-input,
+:global(html:not([data-theme="dark"])) .details-summary > div,
+:global(html:not([data-theme="dark"])) .details-info-row {
+  background: #f8fbff !important;
+  border-color: #dbe5f1 !important;
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .lease-summary strong,
+:global(html:not([data-theme="dark"])) .lease-confirm-property strong,
+:global(html:not([data-theme="dark"])) .lease-confirm-grid strong,
+:global(html:not([data-theme="dark"])) .billing-lease-copy strong,
+:global(html:not([data-theme="dark"])) .billing-selected-summary strong,
+:global(html:not([data-theme="dark"])) .lease-money-input input,
+:global(html:not([data-theme="dark"])) .details-summary strong,
+:global(html:not([data-theme="dark"])) .details-info-key strong,
+:global(html:not([data-theme="dark"])) .details-info-value {
+  color: #0f172a !important;
+}
+
+:global(html:not([data-theme="dark"])) .billing-total-box {
+  background: linear-gradient(135deg, #ecfeff 0%, #e0f2fe 100%) !important;
+  border: 1px solid #a5f3fc !important;
+}
+
+:global(html:not([data-theme="dark"])) .billing-total-box strong {
+  color: #0e7490 !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-actions,
+:global(html:not([data-theme="dark"])) .form-actions,
+:global(html:not([data-theme="dark"])) .billing-dialog-footer,
+:global(html:not([data-theme="dark"])) .lease-modal-actions,
+:global(html:not([data-theme="dark"])) .lease-confirm-actions,
+:global(html:not([data-theme="dark"])) .notice-footer,
+:global(html:not([data-theme="dark"])) .details-row,
+:global(html:not([data-theme="dark"])) .details-footer {
+  border-color: #e2ebf5 !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-actions .button.secondary,
+:global(html:not([data-theme="dark"])) .form-actions .btn.secondary,
+:global(html:not([data-theme="dark"])) .billing-dialog-footer .button.secondary,
+:global(html:not([data-theme="dark"])) .lease-modal-actions .button.secondary,
+:global(html:not([data-theme="dark"])) .lease-confirm-actions .btn.secondary {
+  background: #f8fbff !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd8e8 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .audit-event-type,
+:global(html:not([data-theme="dark"])) .portal .audit-pagination,
+:global(html:not([data-theme="dark"])) .portal .audit-footnote {
+  color: #0f172a !important;
+}
+
+/* ─── Mobile Layout Parity (Light & Dark Modes) ─── */
+@media (max-width: 800px) {
+  :global(html:not([data-theme="dark"])) .portal .sidebar.sidebar-open,
+  :global(html:not([data-theme="dark"])) .portal .sidebar.mobile-open {
+    background: #ffffff !important;
+    border-right: 1px solid #dbe5f1 !important;
+    box-shadow: 16px 0 40px rgba(15, 23, 42, 0.18) !important;
+  }
+
+  :global(html:not([data-theme="dark"])) .portal .tenant-backdrop,
+  :global(html:not([data-theme="dark"])) .portal .owner-nav-backdrop,
+  :global(html:not([data-theme="dark"])) .portal .mobile-nav-backdrop {
+    background: rgba(15, 23, 42, 0.45) !important;
+  }
+
+  .topbar .topbar-actions,
+  .topbar .tenant-top-actions,
+  .topbar .owner-top-actions {
+    gap: 6px !important;
+  }
+
+  .topbar .topbar-profile,
+  .topbar .tenant-header-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    flex: 0 0 36px !important;
+    line-height: 32px !important;
+  }
+
+  .portal .workspace {
+    padding: 14px 14px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .portal .filters,
+  .portal .filter-bar,
+  .portal .filter-panel,
+  .portal .audit-filters {
+    align-items: stretch !important;
+  }
+
+  .portal .filters label,
+  .portal .filter-bar label,
+  .portal .audit-filters label,
+  .portal .filters .search-box,
+  .portal .filter-bar > input,
+  .portal .filter-bar > select,
+  .portal .filters > label:not(.search-box),
+  .portal .filter-panel .searchbox,
+  .portal .filter-panel select {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .portal .property-cover,
+  .portal .property-visual {
+    min-height: 168px !important;
+  }
+
+  .portal .unit-tile-media {
+    height: 118px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    --min-height: 58px !important;
+    padding-inline: 6px !important;
+  }
+
+  .portal .sidebar.sidebar-open,
+  .portal .sidebar.mobile-open,
+  .portal .tenant-backdrop,
+  .portal .owner-nav-backdrop,
+  .portal .mobile-nav-backdrop {
+    top: 58px !important;
+    height: calc(100dvh - 58px) !important;
+    max-height: calc(100dvh - 58px) !important;
+  }
+
+  .portal .unit-row-cell {
+    gap: 9px !important;
+  }
+
+  .portal .unit-row-thumb {
+    width: 46px !important;
+    height: 36px !important;
+  }
+}

@@ -14,6 +14,8 @@ import { listOwnerApplications, reviewRentalApplication, type RentalApplication 
 import { listOwnerLeases, prepareLease, finishLease, type RentalLease } from '@/services/leases';
 import NotificationCenter from '@/components/NotificationCenter.vue';
 import DocumentActions from '@/components/documents/DocumentActions.vue';
+import ThemeToggle from '@/components/ThemeToggle.vue';
+import { getPropertyPhoto, getUnitPhoto } from '@/services/propertyPhotos';
 import { listOwnerBills, listOwnerPayments, createBill, decidePayment, type RentalBill, type RentalPayment } from '@/services/billing';
 import { listOwnerMaintenance, updateMaintenanceStatus, type RentalMaintenanceRequest } from '@/services/maintenance';
 import {
@@ -1767,9 +1769,9 @@ async function logout() {
             <small>OWNER PORTAL</small>
           </div>
         </IonButtons>
-        <IonButtons slot="end">
+        <IonButtons slot="end" class="owner-top-actions">
+          <ThemeToggle />
           <NotificationCenter @open="openNotice" />
-
         </IonButtons>
       </IonToolbar>
     </IonHeader>
@@ -2015,12 +2017,20 @@ async function logout() {
                     :key="unit.id"
                     class="unit-tile"
                   >
-                    <span
-                      class="pill"
-                      :class="badgeClass(unitStatus(unit.id))"
-                    >
-                      {{ unitStatus(unit.id) }}
-                    </span>
+                    <div class="unit-tile-media">
+                      <img
+                        :src="getUnitPhoto(unit.id, unitLabel(unit.id))"
+                        :alt="unitLabel(unit.id)"
+                        class="unit-tile-photo"
+                        loading="lazy"
+                      />
+                      <span
+                        class="pill"
+                        :class="badgeClass(unitStatus(unit.id))"
+                      >
+                        {{ unitStatus(unit.id) }}
+                      </span>
+                    </div>
                     <h3>{{ unitLabel(unit.id) }}</h3>
                     <p>{{ propertyName(unit.propertyId) }}</p>
                     <strong>
@@ -2208,11 +2218,17 @@ async function logout() {
             <div class="property-list premium-property-list">
               <article v-for="property in filteredProperties" :key="property.id" class="property-card owner-property-card">
                 <div class="property-cover">
+                  <img
+                    :src="getPropertyPhoto(property.id, property.name)"
+                    :alt="property.name"
+                    class="property-cover-photo"
+                    loading="lazy"
+                  />
+                  <div class="cover-photo-scrim" aria-hidden="true"></div>
                   <div class="property-cover-top">
                     <span class="property-cover-kicker"><IonIcon :icon="businessOutline" /> RENTAL PROPERTY</span>
                     <span class="property-code">#{{ property.id }}</span>
                   </div>
-                  <IonIcon :icon="businessOutline" class="property-cover-icon" />
                   <div class="property-cover-bottom">
                     <span class="property-location">⌖ {{ property.address }}</span>
                     <span class="property-active-badge">{{ property.listing === 'suspended' ? 'SUSPENDED' : property.listing === 'archived' ? 'ARCHIVED' : 'REGISTERED' }}</span>
@@ -2268,7 +2284,20 @@ async function logout() {
                   </thead>
                   <tbody>
                     <tr v-for="unit in filteredUnits" :key="unit.id">
-                      <td><strong>{{ unitLabel(unit.id) }}</strong></td>
+                      <td>
+                        <div class="unit-row-cell">
+                          <img
+                            :src="getUnitPhoto(unit.id, unitLabel(unit.id))"
+                            :alt="unitLabel(unit.id)"
+                            class="unit-row-thumb"
+                            loading="lazy"
+                          />
+                          <div>
+                            <strong>{{ unitLabel(unit.id) }}</strong>
+                            <small>{{ unit.bedrooms }} BR Apartment Unit</small>
+                          </div>
+                        </div>
+                      </td>
                       <td>{{ propertyName(unit.propertyId) }}</td>
                       <td>{{ peso(unit.rent) }}</td>
                       <td>{{ unit.bedrooms }}</td>

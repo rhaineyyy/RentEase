@@ -23,6 +23,7 @@ import { SocialLogin } from '@capgo/capacitor-social-login';
 import api from '@/services/api';
 import type { AuthUser } from '@/services/auth';
 import { currentUser } from '@/services/auth';
+import { themeMode } from '@/services/theme';
 
 const props = defineProps<{ intent: 'login' | 'register'; role?: 'tenant' | 'owner'; disabled?: boolean }>();
 const emit = defineEmits<{ success: [user: AuthUser]; pending: [message: string]; error: [message: string] }>();
@@ -73,7 +74,7 @@ async function render() {
   });
   google.accounts.id.renderButton(host, {
     type: 'standard',
-    theme: 'filled_black',
+    theme: themeMode.value === 'dark' ? 'filled_black' : 'outline',
     size: 'large',
     text: 'continue_with',
     shape: 'pill',
@@ -155,12 +156,12 @@ onMounted(async () => {
   }
 });
 
-watch(() => [props.disabled, props.role], () => { void render(); });
+watch(() => [props.disabled, props.role, themeMode.value], () => { void render(); });
 </script>
 
 <style scoped>
 .google-continue { margin-top: 14px; }
 .google-button-host { display: flex; justify-content: center; min-height: 44px; }
-.google-note { margin: 8px 0 0; color: #6d7f96; font-size: 12px; line-height: 1.45; text-align: center; }
-.google-note.error { color: #a33c46; }
+.google-note { margin: 8px 0 0; color: #8b92a5; font-size: 12px; line-height: 1.45; text-align: center; }
+.google-note.error { color: #f472b6; }
 </style>

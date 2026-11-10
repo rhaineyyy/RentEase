@@ -12,6 +12,7 @@
                   <h2>RentEase</h2>
                   <p>OWNER • TENANT • ADMIN</p>
                 </div>
+                <ThemeToggle class="brand-theme-toggle" />
               </div>
 
               <div class="form-copy">
@@ -308,9 +309,12 @@
             <div class="property-showcase">
               <div class="property-card featured">
                 <div class="property-image large">
-                  <div class="window-grid">
-                    <span v-for="n in 9" :key="'a' + n"></span>
-                  </div>
+                  <img
+                    :src="getPropertyPhoto(1, 'Modern City Apartment')"
+                    alt="Modern City Apartment"
+                    class="featured-property-photo"
+                    loading="lazy"
+                  />
                 </div>
                 <div class="property-info">
                   <div class="property-tag">Featured rental</div>
@@ -325,7 +329,13 @@
 
               <div class="bottom-mini-cards">
                 <div class="mini-property">
-                  <div class="mini-thumb one"></div>
+                  <div class="mini-thumb one">
+                    <img
+                      :src="getUnitPhoto(1, 'Easy leasing')"
+                      alt="Modern studio unit"
+                      loading="lazy"
+                    />
+                  </div>
                   <div>
                     <strong>Easy leasing</strong>
                     <small>Fast and secure workflow</small>
@@ -333,7 +343,13 @@
                 </div>
 
                 <div class="mini-property">
-                  <div class="mini-thumb two"></div>
+                  <div class="mini-thumb two">
+                    <img
+                      :src="getUnitPhoto(2, 'Property dashboard')"
+                      alt="Modern apartment living room"
+                      loading="lazy"
+                    />
+                  </div>
                   <div>
                     <strong>Property dashboard</strong>
                     <small>Built for owners and tenants</small>
@@ -360,6 +376,8 @@ import { IonPage, IonContent, onIonViewWillEnter } from '@ionic/vue';
 import { API_BASE_URL } from '@/services/apiBase';
 import { dashboardPath, type AuthUser } from '@/services/auth';
 import GoogleContinue from '@/components/auth/GoogleContinue.vue';
+import ThemeToggle from '@/components/ThemeToggle.vue';
+import { getPropertyPhoto, getUnitPhoto } from '@/services/propertyPhotos';
 
 const router = useRouter();
 
@@ -507,12 +525,12 @@ const handleSignup = async () => {
 <style scoped>
 .signup-page {
   --background:
-    radial-gradient(circle at top left, rgba(34, 211, 238, 0.15), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(167, 139, 250, 0.14), transparent 34%),
-    linear-gradient(180deg, #06090f 0%, #090c14 45%, #0b0f18 100%);
-  color: #f3f4f6;
-  color-scheme: dark;
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+    radial-gradient(circle at top left, rgba(6, 182, 212, 0.14), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.12), transparent 34%),
+    linear-gradient(180deg, #f0f6fc 0%, #e8f1fb 45%, #e2edf8 100%);
+  color: #0f172a;
+  color-scheme: light;
+  font-family: 'Plus Jakarta Sans', Inter, "Segoe UI", Arial, sans-serif;
 }
 
 .signup-wrapper {
@@ -532,11 +550,11 @@ const handleSignup = async () => {
   grid-template-columns: minmax(380px, 0.92fr) minmax(460px, 1.08fr);
   border-radius: 30px;
   overflow: hidden;
-  background: #12151f;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid #d8e4f2;
   box-shadow:
-    0 28px 70px rgba(0, 0, 0, 0.68),
-    0 10px 25px rgba(0, 0, 0, 0.38);
+    0 28px 70px rgba(15, 23, 42, 0.12),
+    0 10px 25px rgba(15, 23, 42, 0.05);
   backdrop-filter: blur(12px);
 }
 
@@ -544,7 +562,7 @@ const handleSignup = async () => {
 .form-panel {
   position: relative;
   z-index: 2;
-  background: linear-gradient(180deg, #131620, #0f121a);
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
   display: flex;
   align-items: stretch;
   overflow: hidden;
@@ -559,7 +577,7 @@ const handleSignup = async () => {
   height: 100%;
   background: inherit;
   clip-path: polygon(0 0, 85% 0, 62% 8%, 96% 18%, 65% 29%, 100% 39%, 70% 50%, 100% 61%, 67% 72%, 95% 82%, 62% 92%, 84% 100%, 0 100%);
-  box-shadow: 14px 0 25px rgba(0, 0, 0, 0.35);
+  box-shadow: 14px 0 25px rgba(15, 23, 42, 0.08);
 }
 
 .form-panel-inner {
@@ -580,31 +598,40 @@ const handleSignup = async () => {
   margin-bottom: 16px;
 }
 
+.brand-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.brand-theme-toggle {
+  margin-left: auto;
+}
+
 .brand-badge {
   width: 44px;
   height: 44px;
   border-radius: 14px;
   display: grid;
   place-items: center;
-  color: #22d3ee;
+  color: #0891b2;
   font-size: 22px;
   font-weight: 900;
-  background: #171c28;
-  border: 1px solid rgba(34, 211, 238, 0.32);
-  box-shadow: 0 10px 22px rgba(34, 211, 238, 0.14);
+  background: #ecfeff;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow: 0 10px 22px rgba(6, 182, 212, 0.15);
 }
 
 .brand-copy h2 {
   margin: 0;
   font-size: 21px;
   font-weight: 900;
-  color: #ffffff;
+  color: #0f172a;
   letter-spacing: -0.6px;
 }
 
 .brand-copy h2::after {
   content: ".";
-  color: #22d3ee;
+  color: #06b6d4;
 }
 
 .brand-copy p {
@@ -612,7 +639,7 @@ const handleSignup = async () => {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.6px;
-  color: #7e869a;
+  color: #64748b;
 }
 
 .form-copy {
@@ -625,9 +652,9 @@ const handleSignup = async () => {
   min-height: 26px;
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(34, 211, 238, 0.14);
-  border: 1px solid rgba(34, 211, 238, 0.3);
-  color: #22d3ee;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: #0891b2;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1.3px;
@@ -638,7 +665,7 @@ const handleSignup = async () => {
   margin: 0 0 6px;
   font-size: clamp(32px, 3.2vw, 40px);
   line-height: 1;
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 900;
   letter-spacing: -1.5px;
 }
@@ -646,7 +673,7 @@ const handleSignup = async () => {
 .intro {
   margin: 0;
   max-width: 420px;
-  color: #9199ad;
+  color: #475569;
   font-size: 13px;
   line-height: 1.55;
 }
@@ -666,7 +693,7 @@ const handleSignup = async () => {
 .field-group label {
   display: block;
   margin-bottom: 5px;
-  color: #cbd5e1;
+  color: #334155;
   font-size: 12px;
   font-weight: 800;
 }
@@ -679,7 +706,7 @@ const handleSignup = async () => {
 }
 
 .mini-hint {
-  color: #7e869a;
+  color: #64748b;
   font-size: 11px;
   font-weight: 700;
 }
@@ -689,14 +716,15 @@ const handleSignup = async () => {
   align-items: center;
   min-height: 46px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #181c28;
+  border: 1px solid #cbd8e8;
+  background: #f8fbff;
   transition: 0.22s ease;
 }
 
 .input-shell:focus-within {
-  border-color: #22d3ee;
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.15);
+  border-color: #06b6d4;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.14);
 }
 
 .input-icon {
@@ -704,7 +732,7 @@ const handleSignup = async () => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  color: #828b9f;
+  color: #64748b;
 }
 
 .input-icon svg,
@@ -725,14 +753,14 @@ const handleSignup = async () => {
   border: none;
   outline: none;
   background: transparent;
-  color: #f3f4f6;
+  color: #0f172a;
   font-family: inherit;
   font-size: 13px;
   padding: 10px 10px 10px 0;
 }
 
 .input-shell input::placeholder {
-  color: #6e768a;
+  color: #94a3b8;
 }
 
 .input-shell input:disabled {
@@ -742,7 +770,7 @@ const handleSignup = async () => {
 .input-action {
   border: none;
   background: transparent;
-  color: #22d3ee;
+  color: #0891b2;
   font-size: 12px;
   font-weight: 800;
   font-family: inherit;
@@ -764,24 +792,24 @@ const handleSignup = async () => {
   height: 5px;
   flex: 1;
   border-radius: 999px;
-  background: #222634;
+  background: #dbe5f1;
   transition: 0.2s ease;
 }
 
 .strength-bars span.filled:nth-child(1) {
-  background: #f87171;
+  background: #f43f5e;
 }
 
 .strength-bars span.filled:nth-child(2) {
-  background: #fde047;
+  background: #f59e0b;
 }
 
 .strength-bars span.filled:nth-child(3) {
-  background: #a78bfa;
+  background: #8b5cf6;
 }
 
 .strength-bars span.filled:nth-child(4) {
-  background: #22d3ee;
+  background: #06b6d4;
 }
 
 .password-strength p {
@@ -791,19 +819,19 @@ const handleSignup = async () => {
 }
 
 .strength-weak {
-  color: #f87171;
+  color: #e11d48;
 }
 
 .strength-fair {
-  color: #fde047;
+  color: #d97706;
 }
 
 .strength-good {
-  color: #a78bfa;
+  color: #7c3aed;
 }
 
 .strength-strong {
-  color: #22d3ee;
+  color: #0891b2;
 }
 
 .role-grid {
@@ -820,8 +848,8 @@ const handleSignup = async () => {
   width: 100%;
   padding: 10px 12px;
   border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #181c28;
+  border: 1px solid #cbd8e8;
+  background: #f8fbff;
   text-align: left;
   cursor: pointer;
   transition: 0.22s ease;
@@ -829,13 +857,13 @@ const handleSignup = async () => {
 
 .role-card:hover:not(:disabled) {
   transform: translateY(-1px);
-  border-color: rgba(34, 211, 238, 0.38);
+  border-color: #06b6d4;
 }
 
 .role-card.selected {
-  border-color: #22d3ee;
-  background: rgba(34, 211, 238, 0.1);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14);
+  border-color: #06b6d4;
+  background: #ecfeff;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.14);
 }
 
 .role-card:disabled {
@@ -850,18 +878,18 @@ const handleSignup = async () => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  color: #9199ad;
-  background: #222634;
+  color: #475569;
+  background: #e2ebf5;
 }
 
 .role-icon.tenant {
-  background: #22d3ee;
-  color: #041217;
+  background: #06b6d4;
+  color: #ffffff;
 }
 
 .role-icon.owner {
-  background: #a78bfa;
-  color: #0b0c10;
+  background: #8b5cf6;
+  color: #ffffff;
 }
 
 .role-text {
@@ -871,13 +899,13 @@ const handleSignup = async () => {
 }
 
 .role-text strong {
-  color: #ffffff;
+  color: #0f172a;
   font-size: 12.5px;
   font-weight: 900;
 }
 
 .role-text small {
-  color: #8e96aa;
+  color: #64748b;
   font-size: 10.5px;
   line-height: 1.35;
 }
@@ -888,13 +916,13 @@ const handleSignup = async () => {
   flex-shrink: 0;
   margin-left: auto;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.22);
-  background: #14161e;
+  border: 2px solid #cbd8e8;
+  background: #ffffff;
   transition: 0.22s ease;
 }
 
 .role-card.selected .role-check {
-  border: 5px solid #22d3ee;
+  border: 5px solid #06b6d4;
 }
 
 .terms-box {
@@ -916,15 +944,15 @@ const handleSignup = async () => {
   flex-shrink: 0;
   margin-top: 2px;
   border-radius: 5px;
-  border: 1.5px solid rgba(255, 255, 255, 0.24);
-  background: #181c28;
+  border: 1.5px solid #94a3b8;
+  background: #ffffff;
   transition: 0.2s ease;
 }
 
 .terms-box input:checked + .terms-mark {
-  background: linear-gradient(135deg, #22d3ee, #06b6d4);
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
   border-color: transparent;
-  box-shadow: 0 8px 18px rgba(34, 211, 238, 0.26);
+  box-shadow: 0 8px 18px rgba(6, 182, 212, 0.26);
 }
 
 .terms-box input:checked + .terms-mark::after {
@@ -934,19 +962,19 @@ const handleSignup = async () => {
   top: 2px;
   width: 5px;
   height: 9px;
-  border-right: 2px solid #041217;
-  border-bottom: 2px solid #041217;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
   transform: rotate(45deg);
 }
 
 .terms-copy {
-  color: #8e96aa;
+  color: #475569;
   font-size: 11.5px;
   line-height: 1.45;
 }
 
 .terms-copy a {
-  color: #22d3ee;
+  color: #0891b2;
   font-weight: 800;
   text-decoration: none;
 }
@@ -965,9 +993,9 @@ const handleSignup = async () => {
 }
 
 .message-box.error {
-  border: 1px solid rgba(248, 113, 113, 0.34);
-  background: rgba(248, 113, 113, 0.12);
-  color: #fca5a5;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
 }
 
 .message-icon {
@@ -977,8 +1005,8 @@ const handleSignup = async () => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  background: rgba(248, 113, 113, 0.25);
-  color: #f87171;
+  background: rgba(244, 63, 94, 0.16);
+  color: #e11d48;
   font-size: 12px;
   font-weight: 900;
 }
@@ -987,7 +1015,7 @@ const handleSignup = async () => {
   display: block;
   margin-bottom: 2px;
   font-size: 12px;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .message-box p {
@@ -1006,19 +1034,19 @@ const handleSignup = async () => {
   padding: 11px 18px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
-  color: #041217;
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: #ffffff;
   font-family: inherit;
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 14px 26px rgba(34, 211, 238, 0.3);
+  box-shadow: 0 14px 26px rgba(6, 182, 212, 0.28);
   transition: 0.22s ease;
 }
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 18px 32px rgba(34, 211, 238, 0.42);
+  box-shadow: 0 18px 32px rgba(6, 182, 212, 0.38);
 }
 
 .submit-button:disabled {
@@ -1042,20 +1070,20 @@ const handleSignup = async () => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid rgba(4, 18, 23, 0.35);
-  border-top-color: #041217;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
   animation: spin 0.7s linear infinite;
 }
 
 .login-note {
   margin: 12px 0 0;
   text-align: center;
-  color: #8e96aa;
+  color: #64748b;
   font-size: 12.5px;
 }
 
 .login-note a {
-  color: #22d3ee;
+  color: #0891b2;
   font-weight: 900;
   text-decoration: none;
 }
@@ -1254,55 +1282,16 @@ const handleSignup = async () => {
   border-radius: 16px;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 30% 25%, rgba(34, 211, 238, 0.28), transparent 60%),
-    linear-gradient(135deg, #1b1f2e, #121520);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: grid;
-  place-items: center;
+  background: #121520;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.property-image.large::before {
-  content: "";
-  width: 68px;
-  height: 90px;
-  border-radius: 12px 12px 6px 6px;
-  background: linear-gradient(180deg, #252b3d, #181c29);
-  border: 1px solid rgba(34, 211, 238, 0.38);
-  box-shadow: 0 14px 20px rgba(0, 0, 0, 0.45);
-}
-
-.property-image.large::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 16px;
-  right: 16px;
-  height: 16px;
-  border-radius: 10px 10px 0 0;
-  background: rgba(34, 211, 238, 0.16);
-}
-
-.window-grid {
-  position: absolute;
-  width: 46px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  z-index: 2;
-}
-
-.window-grid span {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: #22d3ee;
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
-}
-
-.window-grid span:nth-child(even) {
-  background: #a78bfa;
-  box-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
+.featured-property-photo {
+  width: 100%;
+  height: 100%;
+  min-height: 118px;
+  object-fit: cover;
+  display: block;
 }
 
 .property-info {
@@ -1383,15 +1372,84 @@ const handleSignup = async () => {
   height: 38px;
   border-radius: 11px;
   flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
-.mini-thumb.one {
-  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+.mini-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.mini-thumb.two {
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+/* DARK MODE OVERRIDES */
+:global(html[data-theme="dark"]) .signup-page {
+  --background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.15), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(167, 139, 250, 0.14), transparent 34%),
+    linear-gradient(180deg, #06090f 0%, #090c14 45%, #0b0f18 100%);
+  color: #f3f4f6;
+  color-scheme: dark;
 }
+
+:global(html[data-theme="dark"]) .signup-card {
+  background: #12151f;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.68), 0 10px 25px rgba(0, 0, 0, 0.38);
+}
+
+:global(html[data-theme="dark"]) .form-panel {
+  background: linear-gradient(180deg, #131620, #0f121a);
+}
+
+:global(html[data-theme="dark"]) .form-panel::after {
+  box-shadow: 14px 0 25px rgba(0, 0, 0, 0.35);
+}
+
+:global(html[data-theme="dark"]) .brand-badge {
+  color: #22d3ee;
+  background: #171c28;
+  border-color: rgba(34, 211, 238, 0.32);
+  box-shadow: 0 10px 22px rgba(34, 211, 238, 0.14);
+}
+
+:global(html[data-theme="dark"]) .brand-copy h2 { color: #ffffff; }
+:global(html[data-theme="dark"]) .brand-copy h2::after { color: #22d3ee; }
+:global(html[data-theme="dark"]) .brand-copy p { color: #7e869a; }
+:global(html[data-theme="dark"]) .eyebrow { background: rgba(34, 211, 238, 0.14); border-color: rgba(34, 211, 238, 0.3); color: #22d3ee; }
+:global(html[data-theme="dark"]) .form-copy h1 { color: #ffffff; }
+:global(html[data-theme="dark"]) .intro { color: #9199ad; }
+:global(html[data-theme="dark"]) .field-group label { color: #cbd5e1; }
+:global(html[data-theme="dark"]) .mini-hint { color: #7e869a; }
+:global(html[data-theme="dark"]) .input-shell { border-color: rgba(255, 255, 255, 0.1); background: #181c28; }
+:global(html[data-theme="dark"]) .input-shell:focus-within { border-color: #22d3ee; background: #181c28; box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.15); }
+:global(html[data-theme="dark"]) .input-icon { color: #828b9f; }
+:global(html[data-theme="dark"]) .input-shell input { color: #f3f4f6; }
+:global(html[data-theme="dark"]) .input-shell input::placeholder { color: #6e768a; }
+:global(html[data-theme="dark"]) .input-action { color: #22d3ee; }
+:global(html[data-theme="dark"]) .strength-bars span { background: #222634; }
+:global(html[data-theme="dark"]) .role-card { border-color: rgba(255, 255, 255, 0.08); background: #181c28; }
+:global(html[data-theme="dark"]) .role-card:hover:not(:disabled) { border-color: rgba(34, 211, 238, 0.38); }
+:global(html[data-theme="dark"]) .role-card.selected { border-color: #22d3ee; background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14); }
+:global(html[data-theme="dark"]) .role-icon { color: #9199ad; background: #222634; }
+:global(html[data-theme="dark"]) .role-icon.tenant { background: #22d3ee; color: #041217; }
+:global(html[data-theme="dark"]) .role-icon.owner { background: #a78bfa; color: #0b0c10; }
+:global(html[data-theme="dark"]) .role-text strong { color: #ffffff; }
+:global(html[data-theme="dark"]) .role-text small { color: #8e96aa; }
+:global(html[data-theme="dark"]) .role-check { border-color: rgba(255, 255, 255, 0.22); background: #14161e; }
+:global(html[data-theme="dark"]) .role-card.selected .role-check { border-color: #22d3ee; }
+:global(html[data-theme="dark"]) .terms-mark { border-color: rgba(255, 255, 255, 0.24); background: #181c28; }
+:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark { background: linear-gradient(135deg, #22d3ee, #06b6d4); }
+:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark::after { border-right-color: #041217; border-bottom-color: #041217; }
+:global(html[data-theme="dark"]) .terms-copy { color: #8e96aa; }
+:global(html[data-theme="dark"]) .terms-copy a { color: #22d3ee; }
+:global(html[data-theme="dark"]) .message-box.error { border-color: rgba(248, 113, 113, 0.34); background: rgba(248, 113, 113, 0.12); color: #fca5a5; }
+:global(html[data-theme="dark"]) .message-box strong { color: #ffffff; }
+:global(html[data-theme="dark"]) .submit-button { background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%); color: #041217; box-shadow: 0 14px 26px rgba(34, 211, 238, 0.3); }
+:global(html[data-theme="dark"]) .spinner { border-color: rgba(4, 18, 23, 0.35); border-top-color: #041217; }
+:global(html[data-theme="dark"]) .login-note { color: #8e96aa; }
+:global(html[data-theme="dark"]) .login-note a { color: #22d3ee; }
 
 .mini-property strong {
   display: block;
@@ -1626,10 +1684,8 @@ a:focus-visible {
   .stat-card span { font-size: 10px; line-height: 1.35; }
   .property-showcase { gap: 8px; margin-top: 10px; }
   .property-card.featured { grid-template-columns: 115px 1fr; gap: 12px; padding: 10px; border-radius: 16px; }
-  .property-image.large { min-height: 92px; border-radius: 12px; }
-  .property-image.large::before { width: 52px; height: 68px; }
-  .window-grid { width: 36px; gap: 4px; }
-  .window-grid span { width: 6px; height: 6px; }
+  .property-image.large { min-height: 92px; max-height: 98px; border-radius: 12px; }
+  .featured-property-photo { min-height: 92px; max-height: 98px; }
   .property-tag { min-height: 20px; padding: 2px 8px; margin-bottom: 4px; font-size: 9px; }
   .property-info h3 { font-size: 15px; margin-bottom: 2px; }
   .property-info p { font-size: 11px; margin-bottom: 6px; line-height: 1.35; }
