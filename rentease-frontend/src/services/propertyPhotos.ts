@@ -1,9 +1,61 @@
+import { ref } from 'vue';
+
 /**
  * Curated high-resolution online photos (Unsplash architectural & interior photography)
- * for apartments/properties and individual rental units.
- * Selection is deterministic based on ID and name so every property and unit
- * consistently displays its own realistic photo across all portals.
+ * for apartments/properties and individual rental units, plus persistent custom photo
+ * uploads from the Property Owner portal.
  */
+
+const CUSTOM_PHOTOS_STORAGE_KEY = 'rentease_custom_photos_v1';
+
+interface CustomPhotoStore {
+  properties: Record<string, string>;
+  units: Record<string, string>;
+}
+
+function loadCustomPhotoStore(): CustomPhotoStore {
+  if (typeof window === 'undefined') {
+    return { properties: {}, units: {} };
+  }
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_PHOTOS_STORAGE_KEY);
+    if (!raw) return { properties: {}, units: {} };
+    const parsed = JSON.parse(raw);
+    return {
+      properties:
+        parsed && typeof parsed.properties === 'object' && parsed.properties
+          ? { ...parsed.properties }
+          : {},
+      units:
+        parsed && typeof parsed.units === 'object' && parsed.units
+          ? { ...parsed.units }
+          : {},
+    };
+  } catch {
+    return { properties: {}, units: {} };
+  }
+}
+
+const customPhotoStore = ref<CustomPhotoStore>(loadCustomPhotoStore());
+
+function persistCustomPhotoStore(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      CUSTOM_PHOTOS_STORAGE_KEY,
+      JSON.stringify(customPhotoStore.value),
+    );
+  } catch (err) {
+    console.warn('[RentEase] Unable to persist custom photo in localStorage:', err);
+  }
+}
+
+function normalizeKey(value?: string | number | null): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
 
 const PROPERTY_EXTERIOR_PHOTOS: readonly string[] = [
   // Modern mid-rise & high-rise residential apartment buildings
@@ -41,7 +93,7 @@ function stableIndex(seed: string | number | null | undefined, length: number): 
   return hash % length;
 }
 
-export function getPropertyPhoto(
+export function getDefaultPropertyPhoto(
   id?: string | number | null,
   name?: string | null,
 ): string {
@@ -53,7 +105,7 @@ export function getPropertyPhoto(
   return PROPERTY_EXTERIOR_PHOTOS[stableIndex(key, PROPERTY_EXTERIOR_PHOTOS.length)];
 }
 
-export function getUnitPhoto(
+export function getDefaultUnitPhoto(
   id?: string | number | null,
   label?: string | null,
 ): string {
@@ -63,4 +115,166 @@ export function getUnitPhoto(
   }
   const key = `${id ?? ''}-${label ?? ''}`;
   return UNIT_INTERIOR_PHOTOS[stableIndex(key, UNIT_INTERIOR_PHOTOS.length)];
+}
+
+export function getCustomPropertyPhoto(
+  id?: string | number | null,
+  name?: string | null,
+): string {
+  const store = customPhotoStore.value.properties;
+  const numericId = Number(id);
+  if (Number.isFinite(numericId) && numericId > 0 && store[`id:${numericId}`]) {
+    return store[`id:${numericId}`];
+  }
+  const normName = normalizeKey(name);
+  if (normName && store[`name:${normName}`]) {
+    return store[`name:${normName}`];
+  }
+  return '';
+}
+
+export function getCustomUnitPhoto(
+  id?: string | number | null,
+  label?: string | null,
+): string {
+  const store = customPhotoStore.value.units;
+  const numericId = Number(id);
+  if (Number.isFinite(numericId) && numericId > 0 && store[`id:${numericId}`]) {
+    return store[`id:${numericId}`];
+  }
+  const normLabel = normalizeKey(label);
+  if (normLabel && store[`label:${normLabel}`]) {
+    return store[`label:${normLabel}`];
+  }
+  return '';
+}
+
+export function getPropertyPhoto(
+  id?: string | number | null,
+  name?: string | null,
+): string {
+  return getCustomPropertyPhoto(id, name) || getDefaultPropertyPhoto(id, name);
+}
+
+export function getUnitPhoto(
+  id?: string | number | null,
+  label?: string | null,
+): string {
+  return getCustomUnitPhoto(id, label) || getDefaultUnitPhoto(id, label);
+}
+
+export function setCustomPropertyPhoto(
+  id: string | number | null | undefined,
+  name: string | null | undefined,
+  photoDataUrl: string | null | undefined,
+): void {
+  const next = { ...customPhotoStore.value.properties };
+  const numericId = Number(id);
+  const normName = normalizeKey(name);
+  const cleanUrl = String(photoDataUrl ?? '').trim();
+
+  if (cleanUrl) {
+    if (Number.isFinite(numericId) && numericId > 0) {
+      next[`id:${numericId}`] = cleanUrl;
+    }
+    if (normName) {
+      next[`name:${normName}`] = cleanUrl;
+    }
+  } else {
+    if (Number.isFinite(numericId) && numericId > 0) {
+      delete next[`id:${numericId}`];
+    }
+    if (normName) {
+      delete next[`name:${normName}`];
+    }
+  }
+
+  customPhotoStore.value = {
+    ...customPhotoStore.value,
+    properties: next,
+  };
+  persistCustomPhotoStore();
+}
+
+export function setCustomUnitPhoto(
+  id: string | number | null | undefined,
+  labels: string | Array<string | null | undefined> | null | undefined,
+  photoDataUrl: string | null | undefined,
+): void {
+  const next = { ...customPhotoStore.value.units };
+  const numericId = Number(id);
+  const labelList = Array.isArray(labels) ? labels : [labels];
+  const cleanUrl = String(photoDataUrl ?? '').trim();
+
+  if (cleanUrl) {
+    if (Number.isFinite(numericId) && numericId > 0) {
+      next[`id:${numericId}`] = cleanUrl;
+    }
+    for (const item of labelList) {
+      const norm = normalizeKey(item);
+      if (norm) next[`label:${norm}`] = cleanUrl;
+    }
+  } else {
+    if (Number.isFinite(numericId) && numericId > 0) {
+      delete next[`id:${numericId}`];
+    }
+    for (const item of labelList) {
+      const norm = normalizeKey(item);
+      if (norm) delete next[`label:${norm}`];
+    }
+  }
+
+  customPhotoStore.value = {
+    ...customPhotoStore.value,
+    units: next,
+  };
+  persistCustomPhotoStore();
+}
+
+export function compressUploadedPhoto(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      reject(new Error('Please choose a JPG, PNG, or WebP image file.'));
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      reject(new Error('Please choose an image smaller than 8 MB.'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('The image file could not be read.'));
+    reader.onload = () => {
+      const rawResult = String(reader.result ?? '');
+      const img = new Image();
+      img.onerror = () => resolve(rawResult);
+      img.onload = () => {
+        try {
+          const maxWidth = 960;
+          const maxHeight = 640;
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.max(1, Math.round(width * ratio));
+            height = Math.max(1, Math.round(height * ratio));
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(rawResult);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+          resolve(compressed || rawResult);
+        } catch {
+          resolve(rawResult);
+        }
+      };
+      img.src = rawResult;
+    };
+    reader.readAsDataURL(file);
+  });
 }

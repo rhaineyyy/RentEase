@@ -38,9 +38,9 @@ import { themeMode, setTheme } from '@/services/theme';
   gap: 3px;
   padding: 3px;
   border-radius: 999px;
-  background: #eef4fa;
-  border: 1px solid #d5e2f0;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+  background: #e6f0fa;
+  border: 1px solid #c5dbf4;
+  box-shadow: inset 0 1px 2px rgba(13, 45, 132, 0.05);
   flex-shrink: 0;
 }
 
@@ -54,7 +54,7 @@ import { themeMode, setTheme } from '@/services/theme';
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #52657d;
+  color: #4b5e7a;
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   font-size: 11px;
   font-weight: 800;
@@ -70,13 +70,13 @@ import { themeMode, setTheme } from '@/services/theme';
 }
 
 .theme-option:hover {
-  color: #0f172a;
+  color: #0b132b;
 }
 
 .theme-option.active {
-  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 55%, #1a5cff 100%);
   color: #ffffff;
-  box-shadow: 0 3px 10px rgba(6, 182, 212, 0.28);
+  box-shadow: 0 3px 10px rgba(10, 69, 255, 0.28);
 }
 
 :global(html[data-theme="dark"]) .theme-switcher {

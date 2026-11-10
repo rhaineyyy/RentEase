@@ -1087,10 +1087,12 @@
 .portal .btn.secondary,
 .portal .text-button,
 .portal .password-field button,
-.portal .icon-button {
+.password-field button,
+.portal .icon-button,
+.modal-heading .icon-button {
   background: #1c1f2b !important;
-  color: #e5e7eb !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f3f4f6 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 999px !important;
   box-shadow: none !important;
 }
@@ -1099,9 +1101,11 @@
 .portal .btn.secondary:hover,
 .portal .text-button:hover,
 .portal .password-field button:hover,
-.portal .icon-button:hover {
+.password-field button:hover,
+.portal .icon-button:hover,
+.modal-heading .icon-button:hover {
   background: #252938 !important;
-  border-color: rgba(34, 211, 238, 0.42) !important;
+  border-color: rgba(34, 211, 238, 0.48) !important;
   color: #ffffff !important;
 }
 
@@ -1340,23 +1344,45 @@
   font-weight: 500;
 }
 
-/* ─── Inline Notices, Helpers & Empty States ─── */
+/* ─── Inline Notices, Helpers & Empty States (Portal + All Modals) ─── */
 .portal .notice,
 .portal .demo-notice,
 .portal .inline-note,
 .portal .lease-helper,
 .portal .form-note,
 .portal .form-summary,
-.portal .lease-deposit-explainer {
-  background: #191c26 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 14px !important;
-  color: #cbd5e1 !important;
+.portal .lease-deposit-explainer,
+.inline-note,
+.lease-helper,
+.form-note,
+.form-summary,
+.lease-deposit-explainer,
+.lease-confirm-note,
+.helper,
+.dialog-body .helper,
+.dialog-body p.helper,
+.lease-completion-note,
+.deposit-amount-hint {
+  background: rgba(34, 211, 238, 0.1) !important;
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 12px !important;
+  color: #e2e8f0 !important;
+}
+
+.lease-completion-note strong,
+.deposit-amount-hint strong,
+.lease-confirm-note strong,
+.form-summary strong,
+.helper strong {
+  color: #22d3ee !important;
 }
 
 .portal .inline-note ion-icon,
 .portal .demo-notice ion-icon,
-.portal .deposit-explainer-heading {
+.portal .deposit-explainer-heading,
+.inline-note ion-icon,
+.lease-confirm-note ion-icon,
+.deposit-explainer-heading {
   color: #22d3ee !important;
 }
 
@@ -1373,7 +1399,266 @@
   color: #6e768a !important;
 }
 
+/* ─── File Upload Inputs & Select Chevrons in Modals ─── */
+.dialog-body input[type="file"],
+.form-body input[type="file"],
+.modal-content input[type="file"] {
+  padding: 7px 10px !important;
+  background: #191c26 !important;
+  color: #e2e8f0 !important;
+  border: 1px dashed rgba(34, 211, 238, 0.35) !important;
+}
+
+.dialog-body input[type="file"]::file-selector-button,
+.form-body input[type="file"]::file-selector-button,
+.modal-content input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.42);
+  background: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.dialog-body label select,
+.form-body select,
+.modal-content select {
+  appearance: none;
+  padding-right: 36px !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #22d3ee 50%),
+    linear-gradient(135deg, #22d3ee 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px) !important;
+  background-size: 6px 6px, 6px 6px !important;
+  background-repeat: no-repeat !important;
+}
+
+/* ─── Owner Property & Unit Photo Uploader ─── */
+.rental-photo-uploader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #181b26 !important;
+  border: 1px solid rgba(34, 211, 238, 0.25) !important;
+}
+
+.photo-uploader-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.photo-uploader-head strong {
+  color: #f8fafc !important;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.photo-source-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.photo-source-badge.custom {
+  background: rgba(34, 211, 238, 0.16);
+  border-color: rgba(34, 211, 238, 0.42);
+  color: #22d3ee;
+}
+
+.photo-uploader-body {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.photo-preview-frame {
+  width: 148px;
+  height: 102px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #0f131d;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+.photo-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-uploader-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.photo-upload-trigger {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.16) !important;
+  border: 1px solid rgba(34, 211, 238, 0.44) !important;
+  color: #22d3ee !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.photo-upload-trigger:hover {
+  background: rgba(34, 211, 238, 0.24) !important;
+  transform: translateY(-1px);
+}
+
+.photo-upload-trigger input[type="file"] {
+  display: none !important;
+}
+
+.photo-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #232736 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #e2e8f0 !important;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.photo-reset-btn:hover {
+  border-color: rgba(244, 114, 182, 0.45) !important;
+  color: #f472b6 !important;
+}
+
+.photo-uploader-controls small {
+  color: #94a3b8 !important;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+@media (max-width: 540px) {
+  .photo-uploader-body {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-preview-frame {
+    width: 100%;
+    height: 148px;
+  }
+}
+
 /* ─── All Dashboard Modals (Admin, Owner, Tenant) ─── */
+.record-modal-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: min(88dvh, 760px);
+  background: #14161e !important;
+  color: #e5e7eb !important;
+  overflow: hidden;
+}
+
+.record-modal-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px !important;
+}
+
+.modal-header-copy {
+  min-width: 0;
+}
+
+.modal-header-copy p {
+  margin: 0 0 4px !important;
+  color: #22d3ee !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+}
+
+.modal-header-copy h2 {
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+.dialog-scroll-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modal-close-btn,
+.lease-close,
+.details-close-icon,
+.modal-heading .icon-button {
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.modal-close-btn:hover,
+.lease-close:hover,
+.details-close-icon:hover,
+.modal-heading .icon-button:hover {
+  background: rgba(34, 211, 238, 0.22) !important;
+  border-color: #22d3ee !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.modal-close-btn ion-icon,
+.lease-close ion-icon,
+.details-close-icon ion-icon,
+.modal-heading .icon-button ion-icon {
+  font-size: 20px !important;
+  color: currentColor !important;
+  pointer-events: none;
+}
+
 .modal-toolbar,
 .billing-modal-toolbar,
 .lease-modal-hero,
@@ -1383,7 +1668,7 @@
   --background: #191c26 !important;
   --color: #ffffff !important;
   background: linear-gradient(135deg, #181b26 0%, #12141d 100%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
   color: #ffffff !important;
 }
 
@@ -1410,6 +1695,7 @@
   color: #e5e7eb !important;
 }
 
+.modal-heading h2,
 .dialog-body h2,
 .dialog-body h3,
 .billing-lead h2,
@@ -1420,25 +1706,28 @@
   color: #ffffff !important;
 }
 
-.dialog-body p,
+.modal-heading p,
+.modal-content form > p,
+.dialog-body p:not(.helper):not(.lease-completion-note):not(.deposit-amount-hint),
 .billing-lead p,
 .owner-notice-body p,
 .notice-content p {
-  color: #9ca3af !important;
+  color: #cbd5e1 !important;
 }
 
+.modal-content form > label,
 .dialog-body form > label,
 .form-grid > label,
 .form-body label,
 .billing-charge-form label,
 .lease-field {
-  color: #cbd5e1 !important;
+  color: #e2e8f0 !important;
 }
 
 .dialog-body .details dt {
   background: #181b24 !important;
-  border-color: rgba(255, 255, 255, 0.07) !important;
-  color: #8b92a5 !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  color: #94a3b8 !important;
 }
 
 .dialog-body .details dd,
@@ -1449,7 +1738,7 @@
 .billing-selected-summary,
 .lease-money-input {
   background: #191c26 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
   color: #ffffff !important;
 }
 
@@ -1467,7 +1756,7 @@
 .lease-confirm-grid span,
 .billing-lease-copy small,
 .billing-selected-summary small {
-  color: #8b92a5 !important;
+  color: #94a3b8 !important;
 }
 
 .billing-lease-rent,
@@ -1486,6 +1775,7 @@
   color: #22d3ee !important;
 }
 
+.modal-actions,
 .dialog-actions,
 .form-actions,
 .billing-dialog-footer,
@@ -1493,9 +1783,10 @@
 .lease-confirm-actions,
 .notice-footer,
 .details-row {
-  border-color: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+.modal-actions .button.primary,
 .dialog-actions .button.primary,
 .form-actions .btn.primary,
 .billing-dialog-footer .button.primary,
@@ -1510,14 +1801,15 @@
   font-weight: 800 !important;
 }
 
+.modal-actions .button.secondary,
 .dialog-actions .button.secondary,
 .form-actions .btn.secondary,
 .billing-dialog-footer .button.secondary,
 .lease-modal-actions .button.secondary,
 .lease-confirm-actions .btn.secondary {
   background: #1c1f2b !important;
-  color: #e5e7eb !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f3f4f6 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 999px !important;
 }
 
@@ -2361,103 +2653,109 @@
   margin-right: 8px;
 }
 
-/* ─── Light Mode (Default) — Electric Cyan & Purple Editorial Design System ─── */
+/* ─── Light Mode (Default) — Icy-Sky & Royal Cobalt Blue Design System ─── */
 :global(html:not([data-theme="dark"]) body) {
-  background: #f4f7fb !important;
-  color: #0f172a !important;
+  background: #edf4fc !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal,
 :global(html:not([data-theme="dark"])) .dialog-content,
 :global(html:not([data-theme="dark"])) .modal-content {
-  --background: #f4f7fb;
-  --ion-background-color: #f4f7fb;
-  --ion-text-color: #0f172a;
-  --re-navy: #0f172a;
-  --re-blue: #06b6d4;
-  --re-teal: #8b5cf6;
-  --re-canvas: #f4f7fb;
+  --background: #edf4fc;
+  --ion-background-color: #edf4fc;
+  --ion-text-color: #0b132b;
+  --re-navy: #0b132b;
+  --re-blue: #0a45ff;
+  --re-teal: #0284c7;
+  --re-canvas: #edf4fc;
   --re-card: #ffffff;
-  --re-ink: #0f172a;
-  --re-muted: #64748b;
-  --re-line: #dbe5f1;
-  --navy: #0f172a;
-  --teal: #0891b2;
-  --line: #dbe5f1;
-  --muted: #64748b;
-  background: #f4f7fb !important;
-  color: #1e293b !important;
+  --re-ink: #0b132b;
+  --re-muted: #4b5e7a;
+  --re-line: #d4e3f5;
+  --navy: #0b132b;
+  --teal: #0a45ff;
+  --line: #d4e3f5;
+  --muted: #4b5e7a;
+  background: #edf4fc !important;
+  color: #0b132b !important;
   color-scheme: light;
 }
 
 :global(html:not([data-theme="dark"])) .topbar {
   --background: #ffffff !important;
-  --color: #0f172a !important;
-  --border-color: #e2ebf5 !important;
+  --color: #0b132b !important;
+  --border-color: #d8e6f6 !important;
   background: #ffffff !important;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 0 4px 18px rgba(13, 45, 132, 0.06) !important;
 }
 
 :global(html:not([data-theme="dark"])) .topbar ion-title,
 :global(html:not([data-theme="dark"])) .topbar ion-button {
-  --color: #0f172a !important;
-  color: #0f172a !important;
+  --color: #0b132b !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .brand-mark,
 :global(html:not([data-theme="dark"])) .owner-brand-mark,
 :global(html:not([data-theme="dark"])) .tenant-logo {
-  background: #ecfeff !important;
-  color: #0891b2 !important;
-  border: 1px solid rgba(6, 182, 212, 0.35) !important;
-  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.14) !important;
+  background: linear-gradient(145deg, #091945 0%, #102a71 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(16, 42, 113, 0.28) !important;
+  box-shadow: 0 8px 18px rgba(10, 32, 90, 0.22) !important;
+}
+
+:global(html:not([data-theme="dark"])) .brand-mark ion-icon,
+:global(html:not([data-theme="dark"])) .owner-brand-mark ion-icon,
+:global(html:not([data-theme="dark"])) .tenant-logo ion-icon {
+  color: #7dd3fc !important;
 }
 
 :global(html:not([data-theme="dark"])) .brand,
 :global(html:not([data-theme="dark"])) .owner-brand-text strong,
 :global(html:not([data-theme="dark"])) .brand-wordmark strong {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .brand-dot,
 :global(html:not([data-theme="dark"])) .owner-brand-text strong span,
 :global(html:not([data-theme="dark"])) .brand-mark span {
-  color: #06b6d4 !important;
+  color: #0a45ff !important;
 }
 
 :global(html:not([data-theme="dark"])) .brand-tag,
 :global(html:not([data-theme="dark"])) .brand-subtitle,
 :global(html:not([data-theme="dark"])) .owner-brand-text small,
 :global(html:not([data-theme="dark"])) .brand-wordmark small {
-  color: #64748b !important;
+  color: #5c6f8c !important;
 }
 
 :global(html:not([data-theme="dark"])) .mobile-menu-button,
 :global(html:not([data-theme="dark"])) .owner-menu-toggle,
 :global(html:not([data-theme="dark"])) .mobile-toggle {
-  background: #f1f6fc !important;
-  color: #0f172a !important;
-  border: 1px solid #d5e2f0 !important;
+  background: #e6f0fa !important;
+  color: #0b132b !important;
+  border: 1px solid #c8ddf4 !important;
 }
 
 :global(html:not([data-theme="dark"])) .topbar .global-search {
-  background: #f1f6fc !important;
-  border: 1px solid #d5e2f0 !important;
-  color: #64748b !important;
+  background: #e6f0fa !important;
+  border: 1px solid #c8ddf4 !important;
+  color: #4b5e7a !important;
 }
 
 :global(html:not([data-theme="dark"])) .topbar .global-search input {
-  color: #0f172a !important;
-  -webkit-text-fill-color: #0f172a !important;
+  color: #0b132b !important;
+  -webkit-text-fill-color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .topbar .global-search input::placeholder {
-  color: #64748b !important;
-  -webkit-text-fill-color: #64748b !important;
+  color: #647896 !important;
+  -webkit-text-fill-color: #647896 !important;
 }
 
 :global(html:not([data-theme="dark"])) .topbar .global-search button {
-  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 55%, #1a5cff 100%) !important;
   color: #ffffff !important;
 }
 
@@ -2466,57 +2764,57 @@
 :global(html:not([data-theme="dark"])) .portal .sidebar {
   background: #ffffff !important;
   color: #1e293b !important;
-  border-color: #e2ebf5 !important;
-  border-right: 1px solid #e2ebf5 !important;
-  box-shadow: 10px 0 30px rgba(15, 23, 42, 0.05) !important;
+  border-color: #d8e6f6 !important;
+  border-right: 1px solid #d8e6f6 !important;
+  box-shadow: 10px 0 30px rgba(13, 45, 132, 0.05) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-profile,
 :global(html:not([data-theme="dark"])) .portal .account,
 :global(html:not([data-theme="dark"])) .portal .owner {
-  background: #f8fbff !important;
-  border: 1px solid #dbe5f1 !important;
-  color: #0f172a !important;
+  background: #f2f8ff !important;
+  border: 1px solid #cfe2f7 !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-profile:hover,
 :global(html:not([data-theme="dark"])) .portal .account:hover {
-  border-color: #06b6d4 !important;
-  background: #ecfeff !important;
+  border-color: #0a45ff !important;
+  background: #e6f1ff !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-profile strong,
 :global(html:not([data-theme="dark"])) .portal .account strong,
 :global(html:not([data-theme="dark"])) .portal .owner strong,
 :global(html:not([data-theme="dark"])) .portal .account-name strong {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-profile small,
 :global(html:not([data-theme="dark"])) .portal .account small,
 :global(html:not([data-theme="dark"])) .portal .owner small,
 :global(html:not([data-theme="dark"])) .portal .account-name small {
-  color: #64748b !important;
+  color: #5c6f8c !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .nav-label,
 :global(html:not([data-theme="dark"])) .portal .nav-caption {
-  color: #64748b !important;
+  color: #5c6f8c !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar nav button {
-  color: #475569 !important;
+  color: #334766 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar nav button:hover {
-  background: #f1f6fc !important;
-  color: #0f172a !important;
+  background: #eaf3fd !important;
+  color: #0d2d84 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar nav button.active {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 55%, #1a5cff 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.28) !important;
+  box-shadow: 0 10px 22px rgba(10, 69, 255, 0.28) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar nav button.active ion-icon,
@@ -2526,40 +2824,40 @@
 
 :global(html:not([data-theme="dark"])) .portal .nav-count,
 :global(html:not([data-theme="dark"])) .portal .sidebar nav b {
-  background: #ecfeff !important;
-  color: #0891b2 !important;
-  border-color: #a5f3fc !important;
+  background: #e1effc !important;
+  color: #0d2d84 !important;
+  border-color: #b8d7f8 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar nav button.active .nav-count,
 :global(html:not([data-theme="dark"])) .portal .sidebar nav button.active b {
   background: rgba(255, 255, 255, 0.24) !important;
   color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-note,
 :global(html:not([data-theme="dark"])) .portal .sidebar-help {
-  background: linear-gradient(145deg, #ecfeff 0%, #e0f2fe 100%) !important;
-  border: 1px solid #a5f3fc !important;
-  color: #0f172a !important;
-  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.1) !important;
+  background: linear-gradient(135deg, #f0f7ff 0%, #dcf0ff 55%, #e8f5ff 100%) !important;
+  border: 1px solid #bdd9f7 !important;
+  color: #0b132b !important;
+  box-shadow: 0 8px 20px rgba(13, 45, 132, 0.08) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-note strong,
 :global(html:not([data-theme="dark"])) .portal .sidebar-help strong {
-  color: #0e7490 !important;
+  color: #0d2d84 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-note p,
 :global(html:not([data-theme="dark"])) .portal .sidebar-help p {
-  color: #334155 !important;
+  color: #334766 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-note .note-icon,
 :global(html:not([data-theme="dark"])) .portal .sidebar-help ion-icon {
-  background: rgba(6, 182, 212, 0.16) !important;
-  color: #0891b2 !important;
+  background: rgba(10, 69, 255, 0.14) !important;
+  color: #0a45ff !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .sidebar-logout,
@@ -2580,8 +2878,8 @@
 
 /* Light Mode Workspace & Headings */
 :global(html:not([data-theme="dark"])) .portal .workspace {
-  background: #f4f7fb !important;
-  color: #1e293b !important;
+  background: linear-gradient(145deg, #e8f2fc 0%, #f3f8fe 52%, #eaf3fd 100%) !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal h1,
@@ -2594,13 +2892,13 @@
 :global(html:not([data-theme="dark"])) .portal h3,
 :global(html:not([data-theme="dark"])) .portal .property-info h2,
 :global(html:not([data-theme="dark"])) .portal .property-title-row h3 {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .eyebrow,
 :global(html:not([data-theme="dark"])) .portal .mini-kicker,
 :global(html:not([data-theme="dark"])) .portal .heading-trail strong {
-  color: #0891b2 !important;
+  color: #0a45ff !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .heading-trail,
@@ -2614,32 +2912,54 @@
 :global(html:not([data-theme="dark"])) .portal .mini-date,
 :global(html:not([data-theme="dark"])) .portal .insight-footnote,
 :global(html:not([data-theme="dark"])) .portal .heading-date {
-  color: #64748b !important;
+  color: #4b5e7a !important;
 }
 
-/* Light Mode Welcome Banner */
+/* Light Mode Welcome Banner — Icy-Sky & Royal Cobalt Blue (matches Screenshot 5) */
 :global(html:not([data-theme="dark"])) .portal .welcome-banner,
 :global(html:not([data-theme="dark"])) .portal .welcome,
 :global(html:not([data-theme="dark"])) .portal .welcome-hero {
   background:
-    radial-gradient(circle at 86% 22%, rgba(34, 211, 238, 0.25), transparent 44%),
-    radial-gradient(circle at 18% 90%, rgba(167, 139, 250, 0.2), transparent 42%),
-    linear-gradient(135deg, #0b1829 0%, #122947 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid #cbd8e8 !important;
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14) !important;
+    radial-gradient(circle at 86% 24%, rgba(2, 165, 255, 0.24), transparent 44%),
+    radial-gradient(circle at 18% 90%, rgba(10, 69, 255, 0.12), transparent 44%),
+    linear-gradient(135deg, #f0f7ff 0%, #dcf0ff 52%, #e8f5ff 100%) !important;
+  color: #0b132b !important;
+  border: 1px solid #c2dcf7 !important;
+  box-shadow: 0 16px 34px rgba(13, 45, 132, 0.1) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .welcome-banner h2,
 :global(html:not([data-theme="dark"])) .portal .welcome h2,
 :global(html:not([data-theme="dark"])) .portal .welcome-hero h2 {
-  color: #ffffff !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .welcome-banner p,
 :global(html:not([data-theme="dark"])) .portal .welcome p,
 :global(html:not([data-theme="dark"])) .portal .welcome-hero p {
-  color: #cbd5e1 !important;
+  color: #334766 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .welcome-cta:not(.outline),
+:global(html:not([data-theme="dark"])) .portal .welcome .btn.light:not(.outline) {
+  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 55%, #1a5cff 100%) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 10px 22px rgba(10, 69, 255, 0.28) !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .welcome-cta.outline,
+:global(html:not([data-theme="dark"])) .portal .welcome .btn.light.outline {
+  background: #ffffff !important;
+  color: #0d2d84 !important;
+  border: 1px solid #b8d7f8 !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal .welcome-visual {
+  background: linear-gradient(145deg, #091945 0%, #102a71 100%) !important;
+  border: 1px solid rgba(10, 69, 255, 0.28) !important;
+  color: #38bdf8 !important;
+  box-shadow: 0 12px 24px rgba(9, 25, 69, 0.2) !important;
 }
 
 /* Light Mode Cards, Panels & Tiles */
@@ -2660,9 +2980,9 @@
 :global(html:not([data-theme="dark"])) .portal .profile-card,
 :global(html:not([data-theme="dark"])) .portal .profile-summary {
   background: #ffffff !important;
-  border: 1px solid #dbe5f1 !important;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05) !important;
-  color: #1e293b !important;
+  border: 1px solid #d4e3f5 !important;
+  box-shadow: 0 10px 26px rgba(13, 45, 132, 0.06) !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .property-info,
@@ -2680,8 +3000,8 @@
 :global(html:not([data-theme="dark"])) .portal .unit-tile,
 :global(html:not([data-theme="dark"])) .portal .deposit-highlights article,
 :global(html:not([data-theme="dark"])) .portal .property-fact {
-  background: #f8fbff !important;
-  border: 1px solid #dbe5f1 !important;
+  background: #f4f9ff !important;
+  border: 1px solid #d4e3f5 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .quick-actions button:hover,
@@ -2692,8 +3012,8 @@
 :global(html:not([data-theme="dark"])) .portal .metric-action:hover,
 :global(html:not([data-theme="dark"])) .portal .property-card:hover,
 :global(html:not([data-theme="dark"])) .portal .owner-property-card:hover {
-  border-color: #06b6d4 !important;
-  box-shadow: 0 14px 32px rgba(6, 182, 212, 0.14) !important;
+  border-color: #0a45ff !important;
+  box-shadow: 0 14px 32px rgba(10, 69, 255, 0.14) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .quick-actions strong,
@@ -2711,7 +3031,7 @@
 :global(html:not([data-theme="dark"])) .portal .property-fact strong,
 :global(html:not([data-theme="dark"])) .portal .property-meta strong,
 :global(html:not([data-theme="dark"])) .portal .property-bottom strong {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .stat-card p,
@@ -2726,54 +3046,54 @@
 :global(html:not([data-theme="dark"])) .portal .section-overview span,
 :global(html:not([data-theme="dark"])) .portal .property-fact small,
 :global(html:not([data-theme="dark"])) .portal .property-id-label {
-  color: #64748b !important;
+  color: #5c6f8c !important;
 }
 
 /* Light Mode Charts & Pipeline */
 :global(html:not([data-theme="dark"])) .portal .chart-column > strong {
-  color: #334155 !important;
+  color: #334766 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .chart-column:last-child > strong {
-  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 100%) !important;
   color: #ffffff !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .bar-track {
-  background: #f1f5f9 !important;
-  border: 1px solid #e2e8f0 !important;
+  background: #edf4fc !important;
+  border: 1px solid #d4e3f5 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .bar {
   background: repeating-linear-gradient(
     -45deg,
-    #64748b 0 4px,
-    rgba(100, 116, 139, 0.22) 4px 9px
+    #5c6f8c 0 4px,
+    rgba(92, 111, 140, 0.22) 4px 9px
   ) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .chart-column:last-child .bar {
-  background: linear-gradient(180deg, #22d3ee 0%, #06b6d4 100%) !important;
+  background: linear-gradient(180deg, #1a5cff 0%, #0033ff 100%) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .pipeline-item,
 :global(html:not([data-theme="dark"])) .portal .distribution-legend > div {
-  color: #475569 !important;
+  color: #334766 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .pipeline-item strong,
 :global(html:not([data-theme="dark"])) .portal .distribution-legend > div strong,
 :global(html:not([data-theme="dark"])) .portal .ring-center strong {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .pipeline-track {
-  background: #e2ebf5 !important;
+  background: #dcebfa !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .ring-center {
   background: #ffffff !important;
-  box-shadow: inset 0 0 0 1px #dbe5f1 !important;
+  box-shadow: inset 0 0 0 1px #d4e3f5 !important;
 }
 
 /* Light Mode Lists & Rows */
@@ -2789,12 +3109,12 @@
 :global(html:not([data-theme="dark"])) .portal .card-actions,
 :global(html:not([data-theme="dark"])) .portal .property-card-footer,
 :global(html:not([data-theme="dark"])) .portal .request-footer {
-  border-color: #e2ebf5 !important;
-  color: #334155 !important;
+  border-color: #dce9f8 !important;
+  color: #334766 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .attention:hover {
-  background: #f1f6fc !important;
+  background: #edf5fe !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .attention strong,
@@ -2806,21 +3126,30 @@
 :global(html:not([data-theme="dark"])) .portal .details dd,
 :global(html:not([data-theme="dark"])) .portal .settings-row p,
 :global(html:not([data-theme="dark"])) .portal .activity-list p {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .attention b,
 :global(html:not([data-theme="dark"])) .portal .property-eyebrow {
-  color: #0891b2 !important;
+  color: #0a45ff !important;
 }
 
-/* Light Mode Buttons */
+/* Light Mode Buttons — Royal Cobalt Blue */
 :global(html:not([data-theme="dark"])) .portal .button.primary,
 :global(html:not([data-theme="dark"])) .portal .btn.primary,
-:global(html:not([data-theme="dark"])) .portal .property-view-button {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+:global(html:not([data-theme="dark"])) .portal .property-view-button,
+:global(html:not([data-theme="dark"])) .portal .record-search button,
+:global(html:not([data-theme="dark"])) .modal-actions .button.primary,
+:global(html:not([data-theme="dark"])) .dialog-actions .button.primary,
+:global(html:not([data-theme="dark"])) .form-actions .btn.primary,
+:global(html:not([data-theme="dark"])) .billing-dialog-footer .button.primary,
+:global(html:not([data-theme="dark"])) .lease-modal-actions .button.primary,
+:global(html:not([data-theme="dark"])) .lease-confirm-actions .btn.primary,
+:global(html:not([data-theme="dark"])) .notice-confirm,
+:global(html:not([data-theme="dark"])) .owner-notice-ok {
+  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 55%, #1a5cff 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 6px 18px rgba(6, 182, 212, 0.25) !important;
+  box-shadow: 0 8px 20px rgba(10, 69, 255, 0.26) !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .button.primary ion-icon,
@@ -2833,29 +3162,31 @@
 :global(html:not([data-theme="dark"])) .portal .btn.secondary,
 :global(html:not([data-theme="dark"])) .portal .text-button,
 :global(html:not([data-theme="dark"])) .portal .password-field button,
+:global(html:not([data-theme="dark"])) .password-field button,
 :global(html:not([data-theme="dark"])) .portal .icon-button,
 :global(html:not([data-theme="dark"])) .portal table td .text-button,
 :global(html:not([data-theme="dark"])) .portal .row-actions .text-button {
-  background: #f8fbff !important;
-  color: #1e293b !important;
-  border: 1px solid #cbd8e8 !important;
+  background: #f0f7ff !important;
+  color: #0d2d84 !important;
+  border: 1px solid #c2dcf7 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .button.secondary:hover,
 :global(html:not([data-theme="dark"])) .portal .btn.secondary:hover,
 :global(html:not([data-theme="dark"])) .portal .text-button:hover,
 :global(html:not([data-theme="dark"])) .portal .password-field button:hover,
+:global(html:not([data-theme="dark"])) .password-field button:hover,
 :global(html:not([data-theme="dark"])) .portal .icon-button:hover {
-  background: #ecfeff !important;
-  border-color: #06b6d4 !important;
-  color: #0891b2 !important;
+  background: #e1effc !important;
+  border-color: #0a45ff !important;
+  color: #0033ff !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .text-button.approve-text,
 :global(html:not([data-theme="dark"])) .portal .request-footer .text-button {
-  background: #ecfeff !important;
-  color: #0891b2 !important;
-  border-color: #a5f3fc !important;
+  background: #e1effc !important;
+  color: #0d2d84 !important;
+  border-color: #b8d7f8 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .text-button.danger-text,
@@ -2871,45 +3202,45 @@
 /* Light Mode Tables */
 :global(html:not([data-theme="dark"])) .portal .table-wrap {
   background: #ffffff !important;
-  border: 1px solid #dbe5f1 !important;
+  border: 1px solid #d4e3f5 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal th {
-  color: #475569 !important;
-  background: #f8fbff !important;
-  border-bottom: 1px solid #dbe5f1 !important;
+  color: #4b5e7a !important;
+  background: #f2f8ff !important;
+  border-bottom: 1px solid #d4e3f5 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal td {
-  color: #334155 !important;
-  border-bottom: 1px solid #edf2f8 !important;
+  color: #334766 !important;
+  border-bottom: 1px solid #e6f0fa !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal td strong {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal td small {
-  color: #64748b !important;
+  color: #5c6f8c !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal tbody tr:nth-child(even),
 :global(html:not([data-theme="dark"])) .portal tbody tr:nth-child(even) td {
-  background: #f8fafc !important;
+  background: #f8fbff !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal tbody tr:hover,
 :global(html:not([data-theme="dark"])) .portal tbody tr:hover td {
-  background: #f0f9ff !important;
+  background: #edf5fe !important;
 }
 
 /* Light Mode Status Pills */
 :global(html:not([data-theme="dark"])) .portal .status-badge.good,
 :global(html:not([data-theme="dark"])) .portal .pill.good,
 :global(html:not([data-theme="dark"])) .portal .pill.success {
-  background: #ecfeff !important;
-  color: #0e7490 !important;
-  border: 1px solid #a5f3fc !important;
+  background: #e1effc !important;
+  color: #0d2d84 !important;
+  border: 1px solid #b8d7f8 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .status-badge.warning,
@@ -2931,12 +3262,12 @@
 :global(html:not([data-theme="dark"])) .portal .status-badge.neutral,
 :global(html:not([data-theme="dark"])) .portal .pill.neutral,
 :global(html:not([data-theme="dark"])) .portal .chips span {
-  background: #f1f5f9 !important;
-  color: #475569 !important;
-  border: 1px solid #e2e8f0 !important;
+  background: #eef4fb !important;
+  color: #334766 !important;
+  border: 1px solid #d4e3f5 !important;
 }
 
-/* Light Mode Inputs, Selects & Search */
+/* Light Mode Inputs, Selects & Search (Soft Ice-Blue Fill matching Screenshot 5) */
 :global(html:not([data-theme="dark"])) .portal input,
 :global(html:not([data-theme="dark"])) .portal select,
 :global(html:not([data-theme="dark"])) .portal textarea,
@@ -2959,11 +3290,47 @@
 :global(html:not([data-theme="dark"])) .portal .audit-filters select,
 :global(html:not([data-theme="dark"])) .portal .record-search,
 :global(html:not([data-theme="dark"])) .portal .audit-filters .record-search {
-  border: 1px solid #cbd8e8 !important;
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  -webkit-text-fill-color: #0f172a !important;
+  border: 1px solid #c5dbf4 !important;
+  background-color: #eaf2fc !important;
+  color: #0b132b !important;
+  -webkit-text-fill-color: #0b132b !important;
   color-scheme: light !important;
+}
+
+:global(html:not([data-theme="dark"])) .portal input:focus,
+:global(html:not([data-theme="dark"])) .portal select:focus,
+:global(html:not([data-theme="dark"])) .portal textarea:focus,
+:global(html:not([data-theme="dark"])) .modal-content input:focus,
+:global(html:not([data-theme="dark"])) .modal-content select:focus,
+:global(html:not([data-theme="dark"])) .dialog-body label :is(input, select, textarea):focus,
+:global(html:not([data-theme="dark"])) .form-body :is(input, select, textarea):focus {
+  background-color: #f4f9ff !important;
+  border-color: #0a45ff !important;
+  outline: 3px solid rgba(10, 69, 255, 0.14) !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body label select,
+:global(html:not([data-theme="dark"])) .form-body select,
+:global(html:not([data-theme="dark"])) .modal-content select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, #0d2d84 50%),
+    linear-gradient(135deg, #0d2d84 50%, transparent 50%) !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body input[type="file"],
+:global(html:not([data-theme="dark"])) .form-body input[type="file"],
+:global(html:not([data-theme="dark"])) .modal-content input[type="file"] {
+  background: #f0f7ff !important;
+  color: #0b132b !important;
+  border: 1px dashed #93c5fd !important;
+}
+
+:global(html:not([data-theme="dark"])) .dialog-body input[type="file"]::file-selector-button,
+:global(html:not([data-theme="dark"])) .form-body input[type="file"]::file-selector-button,
+:global(html:not([data-theme="dark"])) .modal-content input[type="file"]::file-selector-button {
+  border: 1px solid #93c5fd;
+  background: #dceeff;
+  color: #0d2d84;
 }
 
 :global(html:not([data-theme="dark"])) .portal .filter-panel .searchbox input,
@@ -2977,7 +3344,7 @@
 :global(html:not([data-theme="dark"])) .dialog-body select option,
 :global(html:not([data-theme="dark"])) .form-body select option {
   background: #ffffff !important;
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal input::placeholder,
@@ -2985,13 +3352,13 @@
 :global(html:not([data-theme="dark"])) .modal-content input::placeholder,
 :global(html:not([data-theme="dark"])) .form-body input::placeholder,
 :global(html:not([data-theme="dark"])) .form-body textarea::placeholder {
-  color: #94a3b8 !important;
-  -webkit-text-fill-color: #94a3b8 !important;
+  color: #6b7f9e !important;
+  -webkit-text-fill-color: #6b7f9e !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal label,
 :global(html:not([data-theme="dark"])) .portal .filters label > span {
-  color: #334155 !important;
+  color: #1e293b !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .notice,
@@ -3000,20 +3367,89 @@
 :global(html:not([data-theme="dark"])) .portal .lease-helper,
 :global(html:not([data-theme="dark"])) .portal .form-note,
 :global(html:not([data-theme="dark"])) .portal .form-summary,
-:global(html:not([data-theme="dark"])) .portal .lease-deposit-explainer {
-  background: #f0f9ff !important;
-  border: 1px solid #bae6fd !important;
-  color: #1e293b !important;
+:global(html:not([data-theme="dark"])) .portal .lease-deposit-explainer,
+:global(html:not([data-theme="dark"])) .inline-note,
+:global(html:not([data-theme="dark"])) .lease-helper,
+:global(html:not([data-theme="dark"])) .form-note,
+:global(html:not([data-theme="dark"])) .form-summary,
+:global(html:not([data-theme="dark"])) .lease-deposit-explainer,
+:global(html:not([data-theme="dark"])) .lease-confirm-note,
+:global(html:not([data-theme="dark"])) .helper,
+:global(html:not([data-theme="dark"])) .dialog-body .helper,
+:global(html:not([data-theme="dark"])) .dialog-body p.helper,
+:global(html:not([data-theme="dark"])) .lease-completion-note,
+:global(html:not([data-theme="dark"])) .deposit-amount-hint {
+  background: #eaf4ff !important;
+  border: 1px solid #b8d7f8 !important;
+  color: #1e3a5f !important;
+}
+
+:global(html:not([data-theme="dark"])) .lease-completion-note strong,
+:global(html:not([data-theme="dark"])) .deposit-amount-hint strong,
+:global(html:not([data-theme="dark"])) .lease-confirm-note strong,
+:global(html:not([data-theme="dark"])) .form-summary strong,
+:global(html:not([data-theme="dark"])) .helper strong {
+  color: #0d2d84 !important;
+}
+
+/* Light Mode Photo Uploader */
+:global(html:not([data-theme="dark"])) .rental-photo-uploader {
+  background: #f4f9ff !important;
+  border: 1px solid #c2dcf7 !important;
+}
+
+:global(html:not([data-theme="dark"])) .photo-uploader-head strong {
+  color: #0b132b !important;
+}
+
+:global(html:not([data-theme="dark"])) .photo-source-badge {
+  background: #e2ecf7 !important;
+  border-color: #c5d6ea !important;
+  color: #334766 !important;
+}
+
+:global(html:not([data-theme="dark"])) .photo-source-badge.custom {
+  background: #dceeff !important;
+  border-color: #93c5fd !important;
+  color: #0d2d84 !important;
+}
+
+:global(html:not([data-theme="dark"])) .photo-preview-frame {
+  border-color: #c2dcf7 !important;
+  background: #e6f0fa !important;
+  box-shadow: 0 6px 14px rgba(13, 45, 132, 0.08) !important;
+}
+
+:global(html:not([data-theme="dark"])) .photo-upload-trigger {
+  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 55%, #1a5cff 100%) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 14px rgba(10, 69, 255, 0.22) !important;
+}
+
+:global(html:not([data-theme="dark"])) .photo-reset-btn {
+  background: #ffffff !important;
+  border: 1px solid #c2dcf7 !important;
+  color: #334766 !important;
+}
+
+:global(html:not([data-theme="dark"])) .photo-uploader-controls small {
+  color: #4b5e7a !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal footer,
 :global(html:not([data-theme="dark"])) .portal .workspace-footer,
 :global(html:not([data-theme="dark"])) .portal .page-footer {
-  border-top: 1px solid #e2ebf5 !important;
-  color: #64748b !important;
+  border-top: 1px solid #d8e6f6 !important;
+  color: #5c6f8c !important;
 }
 
 /* Light Mode Modals */
+:global(html:not([data-theme="dark"])) .record-modal-shell {
+  background: #ffffff !important;
+  color: #0b132b !important;
+}
+
 :global(html:not([data-theme="dark"])) .modal-toolbar,
 :global(html:not([data-theme="dark"])) .billing-modal-toolbar,
 :global(html:not([data-theme="dark"])) .lease-modal-hero,
@@ -3021,11 +3457,33 @@
 :global(html:not([data-theme="dark"])) .notice-hero,
 :global(html:not([data-theme="dark"])) .lease-confirm-hero,
 :global(html:not([data-theme="dark"])) .details-hero {
-  --background: #0f1e36 !important;
+  --background: #091945 !important;
   --color: #ffffff !important;
-  background: linear-gradient(135deg, #0b1829 0%, #122947 100%) !important;
-  border-bottom: 1px solid #dbe5f1 !important;
+  background: linear-gradient(135deg, #091945 0%, #102a71 100%) !important;
+  border-bottom: 1px solid #d4e3f5 !important;
   color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .modal-header-copy p {
+  color: #7dd3fc !important;
+}
+
+:global(html:not([data-theme="dark"])) .modal-header-copy h2 {
+  color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .modal-close-btn,
+:global(html:not([data-theme="dark"])) .lease-close,
+:global(html:not([data-theme="dark"])) .details-close-icon {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  color: #ffffff !important;
+}
+
+:global(html:not([data-theme="dark"])) .modal-heading .icon-button {
+  background: #eaf2fc !important;
+  border: 1px solid #c2dcf7 !important;
+  color: #0d2d84 !important;
 }
 
 :global(html:not([data-theme="dark"])) .modal-content,
@@ -3049,37 +3507,42 @@
 :global(html:not([data-theme="dark"])) .details-modal-body {
   --background: #ffffff !important;
   background: #ffffff !important;
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
+:global(html:not([data-theme="dark"])) .modal-heading h2,
 :global(html:not([data-theme="dark"])) .dialog-body h2,
 :global(html:not([data-theme="dark"])) .dialog-body h3,
 :global(html:not([data-theme="dark"])) .billing-lead h2,
 :global(html:not([data-theme="dark"])) .billing-subheading,
 :global(html:not([data-theme="dark"])) .owner-notice-body h2,
-:global(html:not([data-theme="dark"])) .notice-content h2 {
-  color: #0f172a !important;
+:global(html:not([data-theme="dark"])) .notice-content h2,
+:global(html:not([data-theme="dark"])) .lease-confirm-heading h2 {
+  color: #0b132b !important;
 }
 
-:global(html:not([data-theme="dark"])) .dialog-body p,
+:global(html:not([data-theme="dark"])) .modal-heading p,
+:global(html:not([data-theme="dark"])) .modal-content form > p,
+:global(html:not([data-theme="dark"])) .dialog-body p:not(.helper):not(.lease-completion-note):not(.deposit-amount-hint),
 :global(html:not([data-theme="dark"])) .billing-lead p,
 :global(html:not([data-theme="dark"])) .owner-notice-body p,
 :global(html:not([data-theme="dark"])) .notice-content p {
-  color: #475569 !important;
+  color: #334766 !important;
 }
 
+:global(html:not([data-theme="dark"])) .modal-content form > label,
 :global(html:not([data-theme="dark"])) .dialog-body form > label,
 :global(html:not([data-theme="dark"])) .form-grid > label,
 :global(html:not([data-theme="dark"])) .form-body label,
 :global(html:not([data-theme="dark"])) .billing-charge-form label,
 :global(html:not([data-theme="dark"])) .lease-field {
-  color: #334155 !important;
+  color: #1e293b !important;
 }
 
 :global(html:not([data-theme="dark"])) .dialog-body .details dt {
-  background: #f8fbff !important;
-  border-color: #dbe5f1 !important;
-  color: #64748b !important;
+  background: #f2f8ff !important;
+  border-color: #d4e3f5 !important;
+  color: #4b5e7a !important;
 }
 
 :global(html:not([data-theme="dark"])) .dialog-body .details dd,
@@ -3091,9 +3554,9 @@
 :global(html:not([data-theme="dark"])) .lease-money-input,
 :global(html:not([data-theme="dark"])) .details-summary > div,
 :global(html:not([data-theme="dark"])) .details-info-row {
-  background: #f8fbff !important;
-  border-color: #dbe5f1 !important;
-  color: #0f172a !important;
+  background: #f4f9ff !important;
+  border-color: #d4e3f5 !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .lease-summary strong,
@@ -3105,18 +3568,19 @@
 :global(html:not([data-theme="dark"])) .details-summary strong,
 :global(html:not([data-theme="dark"])) .details-info-key strong,
 :global(html:not([data-theme="dark"])) .details-info-value {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 :global(html:not([data-theme="dark"])) .billing-total-box {
-  background: linear-gradient(135deg, #ecfeff 0%, #e0f2fe 100%) !important;
-  border: 1px solid #a5f3fc !important;
+  background: linear-gradient(135deg, #f0f7ff 0%, #dcf0ff 100%) !important;
+  border: 1px solid #b8d7f8 !important;
 }
 
 :global(html:not([data-theme="dark"])) .billing-total-box strong {
-  color: #0e7490 !important;
+  color: #0d2d84 !important;
 }
 
+:global(html:not([data-theme="dark"])) .modal-actions,
 :global(html:not([data-theme="dark"])) .dialog-actions,
 :global(html:not([data-theme="dark"])) .form-actions,
 :global(html:not([data-theme="dark"])) .billing-dialog-footer,
@@ -3125,23 +3589,24 @@
 :global(html:not([data-theme="dark"])) .notice-footer,
 :global(html:not([data-theme="dark"])) .details-row,
 :global(html:not([data-theme="dark"])) .details-footer {
-  border-color: #e2ebf5 !important;
+  border-color: #d8e6f6 !important;
 }
 
+:global(html:not([data-theme="dark"])) .modal-actions .button.secondary,
 :global(html:not([data-theme="dark"])) .dialog-actions .button.secondary,
 :global(html:not([data-theme="dark"])) .form-actions .btn.secondary,
 :global(html:not([data-theme="dark"])) .billing-dialog-footer .button.secondary,
 :global(html:not([data-theme="dark"])) .lease-modal-actions .button.secondary,
 :global(html:not([data-theme="dark"])) .lease-confirm-actions .btn.secondary {
-  background: #f8fbff !important;
-  color: #1e293b !important;
-  border: 1px solid #cbd8e8 !important;
+  background: #f0f7ff !important;
+  color: #0d2d84 !important;
+  border: 1px solid #c2dcf7 !important;
 }
 
 :global(html:not([data-theme="dark"])) .portal .audit-event-type,
 :global(html:not([data-theme="dark"])) .portal .audit-pagination,
 :global(html:not([data-theme="dark"])) .portal .audit-footnote {
-  color: #0f172a !important;
+  color: #0b132b !important;
 }
 
 /* ─── Mobile Layout Parity (Light & Dark Modes) ─── */

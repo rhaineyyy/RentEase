@@ -15,7 +15,17 @@ import { listOwnerLeases, prepareLease, finishLease, type RentalLease } from '@/
 import NotificationCenter from '@/components/NotificationCenter.vue';
 import DocumentActions from '@/components/documents/DocumentActions.vue';
 import ThemeToggle from '@/components/ThemeToggle.vue';
-import { getPropertyPhoto, getUnitPhoto } from '@/services/propertyPhotos';
+import {
+  getPropertyPhoto,
+  getUnitPhoto,
+  getDefaultPropertyPhoto,
+  getDefaultUnitPhoto,
+  getCustomPropertyPhoto,
+  getCustomUnitPhoto,
+  setCustomPropertyPhoto,
+  setCustomUnitPhoto,
+  compressUploadedPhoto,
+} from '@/services/propertyPhotos';
 import { listOwnerBills, listOwnerPayments, createBill, decidePayment, type RentalBill, type RentalPayment } from '@/services/billing';
 import { listOwnerMaintenance, updateMaintenanceStatus, type RentalMaintenanceRequest } from '@/services/maintenance';
 import {
@@ -1299,6 +1309,8 @@ const form = reactive({
   mobile: '',
   address: '',
   avatar: '',
+  photoUrl: '',
+  photoChanged: false,
   number: '',
   propertyId: '',
   rent: '',
@@ -1313,6 +1325,8 @@ function resetForm() {
     mobile: '',
     address: '',
     avatar: '',
+    photoUrl: '',
+    photoChanged: false,
     number: '',
     propertyId: '',
     rent: '',
@@ -1345,6 +1359,7 @@ function presentDialog(type: string, id = 0) {
     if (property) {
       form.name = property.name;
       form.address = property.address;
+      form.photoUrl = getCustomPropertyPhoto(property.id, property.name);
     }
   }
   if (type === 'unit') {
@@ -1356,6 +1371,7 @@ function presentDialog(type: string, id = 0) {
         rent: String(unit.rent),
         bedrooms: String(unit.bedrooms),
         capacity: String(unit.capacity),
+        photoUrl: getCustomUnitPhoto(unit.id, `Unit ${unit.number}`),
       });
     } else {
       form.propertyId = propertyFilter.value !== 'ALL'
@@ -1372,7 +1388,8 @@ function presentDialog(type: string, id = 0) {
   }
   if (type === 'maintenance') {
     const request = state.maintenance.find(item => item.id === id);
-    form.status = request?.status ?? 'PENDING';
+    const transitions = request ? (maintenanceTransitions[request.status] ?? []) : [];
+    form.status = transitions[0] ?? request?.status ?? 'PENDING';
   }
   dialogOpen.value = true;
 }
@@ -1421,6 +1438,26 @@ const dialogTitle = computed(() => {
   };
   return names[dialog.value] ?? 'Details';
 });
+async function uploadRentalPhoto(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  try {
+    form.photoUrl = await compressUploadedPhoto(file);
+    form.photoChanged = true;
+    formError.value = '';
+  } catch (err: any) {
+    formError.value = err?.message || 'Unable to process the selected photo.';
+  } finally {
+    input.value = '';
+  }
+}
+
+function clearRentalPhoto() {
+  form.photoUrl = '';
+  form.photoChanged = true;
+}
+
 async function saveProperty() {
   if (savingRental.value) return;
   const name = form.name.trim();
@@ -1432,10 +1469,12 @@ async function saveProperty() {
   savingRental.value = true;
   formError.value = '';
   try {
-    if (selectedId.value) {
-      await updateProperty(selectedId.value, { property_name: name, address });
-    } else {
-      await createProperty({ property_name: name, address });
+    const saved = selectedId.value
+      ? await updateProperty(selectedId.value, { property_name: name, address })
+      : await createProperty({ property_name: name, address });
+    const propId = Number(saved?.property_id || selectedId.value || 0);
+    if (form.photoChanged || form.photoUrl) {
+      setCustomPropertyPhoto(propId, name, form.photoUrl || null);
     }
     await refreshRentalCatalog();
     closeDialog();
@@ -1540,6 +1579,14 @@ async function saveUnit() {
     // Do not claim success until the API has returned a valid database record.
     if (!saved || !Number(saved.unit_id)) {
       throw new Error('The server did not confirm that the unit was saved.');
+    }
+    if (form.photoChanged || form.photoUrl) {
+      const propName = propertyName(propertyId);
+      setCustomUnitPhoto(
+        Number(saved.unit_id),
+        [`Unit ${unitNumber}`, `${propName}-Unit ${unitNumber}`],
+        form.photoUrl || null,
+      );
     }
     console.info('[RentEase] PostgreSQL saved unit:', saved);
     unitSaveStatus.value = `Unit ${saved.unit_number} saved successfully.`;
@@ -2830,64 +2877,63 @@ async function logout() {
       </div>
     </IonModal>
     <IonModal :is-open="billingModalOpen" class="billing-workflow-modal" :backdrop-dismiss="!financeSaving" @didDismiss="closeBillingModal">
-      <IonHeader>
-        <IonToolbar class="billing-modal-toolbar">
-          <div slot="start" class="billing-modal-heading">
+      <div class="record-modal-shell billing-modal-shell">
+        <header class="billing-modal-toolbar record-modal-header">
+          <div class="billing-modal-heading">
             <span class="billing-eyebrow">BILLING WORKSPACE · STEP {{ billingStep }} OF 2</span>
             <strong>Create Monthly Bill</strong>
           </div>
-          <IonButtons slot="end"><IonButton aria-label="Close billing window" :disabled="financeSaving" @click="closeBillingModal"><IonIcon :icon="closeOutline" /></IonButton></IonButtons>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent class="billing-modal-content">
-        <div class="billing-dialog-body">
-          <div class="billing-progress"><span :class="{ active: billingStep === 1, done: billingStep === 2 }">1 · Select Tenant</span><span :class="{ active: billingStep === 2 }">2 · Bill Charges</span></div>
-          <template v-if="billingStep === 1">
-            <div class="billing-lead"><h2>Select an active lease</h2><p>Choose the tenant and rental unit for this month's statement.</p></div>
-            <div class="billing-lease-options" role="radiogroup" aria-label="Active leases for billing">
-              <label v-for="lease in eligibleBillingLeases" :key="lease.id" class="billing-lease-option" :class="{ selected: billingForm.leaseId === lease.id }">
-                <input v-model.number="billingForm.leaseId" type="radio" name="billing-lease" :value="lease.id" />
-                <span class="billing-lease-avatar">{{ lease.tenant.slice(0,1).toUpperCase() }}</span>
-                <span class="billing-lease-copy"><strong>{{ lease.tenant }}</strong><small>{{ unitProperty(lease.unitId) }} · {{ unitLabel(lease.unitId) }}</small></span>
-                <span class="billing-lease-rent">{{ peso(lease.rent) }}<small>/ month</small></span>
-              </label>
-            </div>
-          </template>
-          <form v-else id="billing-new-form" class="billing-charge-form" @submit.prevent="submitMonthlyBill">
-            <div class="billing-selected-summary"><span>Billing for</span><strong>{{ chosenBillingLease?.tenant }} · {{ chosenBillingLease ? unitLabel(chosenBillingLease.unitId) : '' }}</strong><small>Base rent: {{ peso(chosenBillingLease?.rent || 0) }}</small></div>
-            <div class="billing-date-grid"><label>Billing Period<input v-model="billingForm.month" type="date" required /><small>Choose the first day of the billing month.</small></label><label>Payment Due Date<input v-model="billingForm.due" type="date" :min="dateOffset(0)" required /></label></div>
-            <p class="billing-subheading">Additional charges</p>
-            <div class="billing-charges-grid"><label>Water (₱)<input v-model="billingForm.water" type="number" min="0" step="0.01" required /></label><label>Electricity (₱)<input v-model="billingForm.electricity" type="number" min="0" step="0.01" required /></label><label>Other (₱)<input v-model="billingForm.other" type="number" min="0" step="0.01" required /></label></div>
-            <div class="billing-total-box"><span>Estimated bill total<small>Base rent + additional charges</small></span><strong>{{ peso(estimatedBillTotal) }}</strong></div>
-          </form>
-          <p v-if="billingError" class="billing-error" role="alert">{{ billingError }}</p>
+          <button type="button" class="modal-close-btn" aria-label="Close billing window" :disabled="financeSaving" @click="closeBillingModal"><IonIcon :icon="closeOutline" /></button>
+        </header>
+        <div class="billing-modal-content dialog-scroll-body">
+          <div class="billing-dialog-body">
+            <div class="billing-progress"><span :class="{ active: billingStep === 1, done: billingStep === 2 }">1 · Select Tenant</span><span :class="{ active: billingStep === 2 }">2 · Bill Charges</span></div>
+            <template v-if="billingStep === 1">
+              <div class="billing-lead"><h2>Select an active lease</h2><p>Choose the tenant and rental unit for this month's statement.</p></div>
+              <div class="billing-lease-options" role="radiogroup" aria-label="Active leases for billing">
+                <label v-for="lease in eligibleBillingLeases" :key="lease.id" class="billing-lease-option" :class="{ selected: billingForm.leaseId === lease.id }">
+                  <input v-model.number="billingForm.leaseId" type="radio" name="billing-lease" :value="lease.id" />
+                  <span class="billing-lease-avatar">{{ lease.tenant.slice(0,1).toUpperCase() }}</span>
+                  <span class="billing-lease-copy"><strong>{{ lease.tenant }}</strong><small>{{ unitProperty(lease.unitId) }} · {{ unitLabel(lease.unitId) }}</small></span>
+                  <span class="billing-lease-rent">{{ peso(lease.rent) }}<small>/ month</small></span>
+                </label>
+              </div>
+            </template>
+            <form v-else id="billing-new-form" class="billing-charge-form" @submit.prevent="submitMonthlyBill">
+              <div class="billing-selected-summary"><span>Billing for</span><strong>{{ chosenBillingLease?.tenant }} · {{ chosenBillingLease ? unitLabel(chosenBillingLease.unitId) : '' }}</strong><small>Base rent: {{ peso(chosenBillingLease?.rent || 0) }}</small></div>
+              <div class="billing-date-grid"><label>Billing Period<input v-model="billingForm.month" type="date" required /><small>Choose the first day of the billing month.</small></label><label>Payment Due Date<input v-model="billingForm.due" type="date" :min="dateOffset(0)" required /></label></div>
+              <p class="billing-subheading">Additional charges</p>
+              <div class="billing-charges-grid"><label>Water (₱)<input v-model="billingForm.water" type="number" min="0" step="0.01" required /></label><label>Electricity (₱)<input v-model="billingForm.electricity" type="number" min="0" step="0.01" required /></label><label>Other (₱)<input v-model="billingForm.other" type="number" min="0" step="0.01" required /></label></div>
+              <div class="billing-total-box"><span>Estimated bill total<small>Base rent + additional charges</small></span><strong>{{ peso(estimatedBillTotal) }}</strong></div>
+            </form>
+            <p v-if="billingError" class="billing-error" role="alert">{{ billingError }}</p>
+          </div>
         </div>
-      </IonContent>
-      <div class="billing-dialog-footer"><button type="button" class="button secondary" :disabled="financeSaving" @click="billingStep === 1 ? closeBillingModal() : (billingStep = 1, billingError = '')">{{ billingStep === 1 ? 'Cancel' : 'Back' }}</button><button v-if="billingStep === 1" type="button" class="button primary" @click="advanceBilling">Continue to Charges →</button><button v-else type="button" class="button primary" :disabled="financeSaving" @click="submitMonthlyBill">{{ financeSaving ? 'Creating Bill...' : 'Create Monthly Bill' }}</button></div>
+        <div class="billing-dialog-footer"><button type="button" class="button secondary" :disabled="financeSaving" @click="billingStep === 1 ? closeBillingModal() : (billingStep = 1, billingError = '')">{{ billingStep === 1 ? 'Cancel' : 'Back' }}</button><button v-if="billingStep === 1" type="button" class="button primary" @click="advanceBilling">Continue to Charges →</button><button v-else type="button" class="button primary" :disabled="financeSaving" @click="submitMonthlyBill">{{ financeSaving ? 'Creating Bill...' : 'Create Monthly Bill' }}</button></div>
+      </div>
     </IonModal>
     <IonModal
       :is-open="dialogOpen"
       class="record-modal"
       @didDismiss="closeDialog"
     >
-      <IonHeader>
-        <IonToolbar class="modal-toolbar">
-          <IonTitle>
+      <div class="record-modal-shell">
+        <header class="modal-toolbar record-modal-header">
+          <div class="modal-header-copy">
             <div class="owner-dialog-kicker">RENTEASE · OWNER WORKSPACE</div>
             <div class="owner-dialog-title">{{ dialogTitle }}</div>
-          </IonTitle>
-          <IonButtons slot="end">
-            <IonButton
-              aria-label="Close dialog"
-              @click="closeDialog"
-            >
-              <IonIcon :icon="closeOutline" />
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent class="dialog-content">
-        <div class="dialog-body">
+          </div>
+          <button
+            type="button"
+            class="modal-close-btn"
+            aria-label="Close dialog"
+            @click="closeDialog"
+          >
+            <IonIcon :icon="closeOutline" />
+          </button>
+        </header>
+        <div class="dialog-content dialog-scroll-body">
+          <div class="dialog-body">
           <button
             v-if="dialogBackLabel"
             type="button"
@@ -2913,6 +2959,7 @@ async function logout() {
                 v-model="form.name"
                 required
                 maxlength="100"
+                placeholder="e.g. West77 Apartments"
               />
             </label>
             <label>
@@ -2922,8 +2969,50 @@ async function logout() {
                 required
                 rows="3"
                 maxlength="250"
+                placeholder="Complete street address and city"
               ></textarea>
             </label>
+            <div class="rental-photo-uploader">
+              <div class="photo-uploader-head">
+                <div>
+                  <strong>Property Photo</strong>
+                  <small>{{ selectedId ? 'Update the exterior photo for this property or keep the current one.' : 'Upload a photo for this new property or use the realistic default preview.' }}</small>
+                </div>
+                <span class="photo-source-badge" :class="{ custom: !!form.photoUrl }">
+                  {{ form.photoUrl ? 'Custom Photo' : 'Default Photo' }}
+                </span>
+              </div>
+              <div class="photo-uploader-body">
+                <div class="photo-preview-frame">
+                  <img
+                    :src="form.photoUrl || getDefaultPropertyPhoto(selectedId, form.name || 'Property')"
+                    :alt="form.name || 'Property preview'"
+                    class="photo-preview-img"
+                  />
+                </div>
+                <div class="photo-uploader-controls">
+                  <label class="photo-upload-trigger">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      @change="uploadRentalPhoto"
+                    />
+                    <span>{{ form.photoUrl ? 'Change Property Photo' : 'Upload Property Photo' }}</span>
+                  </label>
+                  <button
+                    v-if="form.photoUrl"
+                    type="button"
+                    class="button secondary photo-reset-btn"
+                    @click="clearRentalPhoto"
+                  >
+                    Reset to Default Photo
+                  </button>
+                  <p class="helper photo-uploader-hint">
+                    Supports JPG, PNG, or WebP. Automatically optimized for web &amp; mobile cards.
+                  </p>
+                </div>
+              </div>
+            </div>
             <div class="dialog-actions">
               <button
                 type="button"
@@ -2933,7 +3022,7 @@ async function logout() {
                 Cancel
               </button>
               <button class="button primary" type="submit">
-                {{ savingRental ? 'Saving…' : 'Save Property' }}
+                {{ savingRental ? 'Saving…' : selectedId ? 'Update Property' : 'Save Property' }}
               </button>
             </div>
           </form>
@@ -2994,6 +3083,47 @@ async function logout() {
                   required
                 />
               </label>
+            </div>
+            <div class="rental-photo-uploader">
+              <div class="photo-uploader-head">
+                <div>
+                  <strong>Rental Unit Photo</strong>
+                  <small>{{ selectedId ? 'Update the interior photo for this unit if needed.' : 'Upload an interior photo for this new unit or keep the realistic default photo.' }}</small>
+                </div>
+                <span class="photo-source-badge" :class="{ custom: !!form.photoUrl }">
+                  {{ form.photoUrl ? 'Custom Photo' : 'Default Photo' }}
+                </span>
+              </div>
+              <div class="photo-uploader-body">
+                <div class="photo-preview-frame">
+                  <img
+                    :src="form.photoUrl || getDefaultUnitPhoto(selectedId, `Unit ${form.number || '1'}`)"
+                    :alt="`Unit ${form.number || ''} preview`"
+                    class="photo-preview-img"
+                  />
+                </div>
+                <div class="photo-uploader-controls">
+                  <label class="photo-upload-trigger">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      @change="uploadRentalPhoto"
+                    />
+                    <span>{{ form.photoUrl ? 'Change Unit Photo' : 'Upload Unit Photo' }}</span>
+                  </label>
+                  <button
+                    v-if="form.photoUrl"
+                    type="button"
+                    class="button secondary photo-reset-btn"
+                    @click="clearRentalPhoto"
+                  >
+                    Reset to Default Photo
+                  </button>
+                  <p class="helper photo-uploader-hint">
+                    Supports JPG, PNG, or WebP. Shown in unit cards, tables, and tenant browse listings.
+                  </p>
+                </div>
+              </div>
             </div>
             <p class="helper">
               Rental unit details and availability are kept up to date.
@@ -3367,7 +3497,13 @@ async function logout() {
             </dl>
             <label>
               Update Status
-              <select v-model="form.status">
+              <select v-model="form.status" :disabled="!(maintenanceTransitions[selectedMaintenance.status]?.length)">
+                <option
+                  v-if="!(maintenanceTransitions[selectedMaintenance.status]?.length)"
+                  :value="selectedMaintenance.status"
+                >
+                  {{ selectedMaintenance.status }} (No further status changes)
+                </option>
                 <option
                   v-for="option in maintenanceTransitions[selectedMaintenance.status] ?? []"
                   :key="option"
@@ -3391,8 +3527,9 @@ async function logout() {
               </button>
             </div>
           </form>
+          </div>
         </div>
-      </IonContent>
+      </div>
     </IonModal>
   </IonPage>
 </template>
