@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getMyProfile, saveMyProfile, changeMyEmail } from '@/services/profile';
+import { API_BASE_URL } from '@/services/apiBase';
 import { reactive, ref, computed, onMounted } from 'vue';
 import { useSectionReturn } from '@/composables/sectionReturn';
 import { useRouter } from 'vue-router';
@@ -49,7 +50,7 @@ import {
 } from 'ionicons/icons';
 
 const router = useRouter();
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = API_BASE_URL;
 
 const usersLoading = ref(false);
 const overviewLoading = ref(false);
