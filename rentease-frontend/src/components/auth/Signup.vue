@@ -1384,24 +1384,24 @@ const handleSignup = async () => {
   display: block;
 }
 
-/* DARK MODE OVERRIDES */
+/* DARK MODE OVERRIDES — Matches Reference Dark Mode Screenshot */
 :global(html[data-theme="dark"]) .signup-page {
   --background:
-    radial-gradient(circle at top left, rgba(34, 211, 238, 0.15), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(167, 139, 250, 0.14), transparent 34%),
-    linear-gradient(180deg, #06090f 0%, #090c14 45%, #0b0f18 100%);
+    radial-gradient(circle at 12% 18%, rgba(6, 182, 212, 0.26), transparent 42%),
+    radial-gradient(circle at 88% 82%, rgba(14, 165, 233, 0.16), transparent 42%),
+    linear-gradient(135deg, #041d2e 0%, #071928 38%, #070b12 100%);
   color: #f3f4f6;
   color-scheme: dark;
 }
 
 :global(html[data-theme="dark"]) .signup-card {
-  background: #12151f;
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.68), 0 10px 25px rgba(0, 0, 0, 0.38);
+  background: #0f131c;
+  border-color: rgba(56, 189, 248, 0.14);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.72), 0 10px 25px rgba(0, 0, 0, 0.42);
 }
 
 :global(html[data-theme="dark"]) .form-panel {
-  background: linear-gradient(180deg, #131620, #0f121a);
+  background: linear-gradient(180deg, #111621 0%, #0c1018 100%);
 }
 
 :global(html[data-theme="dark"]) .form-panel::after {
@@ -1410,85 +1410,84 @@ const handleSignup = async () => {
 
 :global(html[data-theme="dark"]) .brand-badge {
   color: #22d3ee;
-  background: #171c28;
-  border-color: rgba(34, 211, 238, 0.32);
-  box-shadow: 0 10px 22px rgba(34, 211, 238, 0.14);
+  background: #101929;
+  border-color: rgba(34, 211, 238, 0.36);
+  box-shadow: 0 10px 22px rgba(34, 211, 238, 0.16);
 }
 
 :global(html[data-theme="dark"]) .brand-copy h2 { color: #ffffff; }
 :global(html[data-theme="dark"]) .brand-copy h2::after { color: #22d3ee; }
 :global(html[data-theme="dark"]) .brand-copy p { color: #7e869a; }
-:global(html[data-theme="dark"]) .eyebrow { background: rgba(34, 211, 238, 0.14); border-color: rgba(34, 211, 238, 0.3); color: #22d3ee; }
+:global(html[data-theme="dark"]) .eyebrow { background: rgba(14, 116, 144, 0.32); border-color: rgba(56, 189, 248, 0.34); color: #38bdf8; }
 :global(html[data-theme="dark"]) .form-copy h1 { color: #ffffff; }
 :global(html[data-theme="dark"]) .intro { color: #9199ad; }
-:global(html[data-theme="dark"]) .field-group label { color: #cbd5e1; }
+:global(html[data-theme="dark"]) .field-group label { color: #e2e8f0; }
 :global(html[data-theme="dark"]) .mini-hint { color: #7e869a; }
-:global(html[data-theme="dark"]) .input-shell { border-color: rgba(255, 255, 255, 0.1); background: #181c28; }
-:global(html[data-theme="dark"]) .input-shell:focus-within { border-color: #22d3ee; background: #181c28; box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.15); }
-:global(html[data-theme="dark"]) .input-icon { color: #828b9f; }
-:global(html[data-theme="dark"]) .input-shell input { color: #f3f4f6; }
+:global(html[data-theme="dark"]) .input-shell { border-color: rgba(148, 163, 184, 0.16); background: #141923; }
+:global(html[data-theme="dark"]) .input-shell:focus-within { border-color: #22d3ee; background: #161c28; box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18); }
+:global(html[data-theme="dark"]) .input-icon { color: #7e869a; }
+:global(html[data-theme="dark"]) .input-shell input { color: #f8fafc; }
 :global(html[data-theme="dark"]) .input-shell input::placeholder { color: #6e768a; }
 :global(html[data-theme="dark"]) .input-action { color: #22d3ee; }
-:global(html[data-theme="dark"]) .strength-bars span { background: #222634; }
-:global(html[data-theme="dark"]) .role-card { border-color: rgba(255, 255, 255, 0.08); background: #181c28; }
-:global(html[data-theme="dark"]) .role-card:hover:not(:disabled) { border-color: rgba(34, 211, 238, 0.38); }
-:global(html[data-theme="dark"]) .role-card.selected { border-color: #22d3ee; background: rgba(34, 211, 238, 0.1); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14); }
-:global(html[data-theme="dark"]) .role-icon { color: #9199ad; background: #222634; }
-:global(html[data-theme="dark"]) .role-icon.tenant { background: #22d3ee; color: #041217; }
-:global(html[data-theme="dark"]) .role-icon.owner { background: #a78bfa; color: #0b0c10; }
+:global(html[data-theme="dark"]) .strength-bars span { background: #1f2533; }
+:global(html[data-theme="dark"]) .role-card { border-color: rgba(148, 163, 184, 0.16); background: #141923; }
+:global(html[data-theme="dark"]) .role-card:hover:not(:disabled) { border-color: rgba(34, 211, 238, 0.42); }
+:global(html[data-theme="dark"]) .role-card.selected { border-color: #22d3ee; background: rgba(0, 198, 255, 0.12); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.16); }
+:global(html[data-theme="dark"]) .role-icon { color: #9199ad; background: #1d2433; }
+:global(html[data-theme="dark"]) .role-icon.tenant { background: linear-gradient(135deg, #00c6ff, #22d3ee); color: #031520; }
+:global(html[data-theme="dark"]) .role-icon.owner { background: linear-gradient(135deg, #a855f7, #7e22ce); color: #ffffff; }
 :global(html[data-theme="dark"]) .role-text strong { color: #ffffff; }
 :global(html[data-theme="dark"]) .role-text small { color: #8e96aa; }
-:global(html[data-theme="dark"]) .role-check { border-color: rgba(255, 255, 255, 0.22); background: #14161e; }
+:global(html[data-theme="dark"]) .role-check { border-color: rgba(255, 255, 255, 0.24); background: #10141d; }
 :global(html[data-theme="dark"]) .role-card.selected .role-check { border-color: #22d3ee; }
-:global(html[data-theme="dark"]) .terms-mark { border-color: rgba(255, 255, 255, 0.24); background: #181c28; }
-:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark { background: linear-gradient(135deg, #22d3ee, #06b6d4); }
-:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark::after { border-right-color: #041217; border-bottom-color: #041217; }
+:global(html[data-theme="dark"]) .terms-mark { border-color: rgba(255, 255, 255, 0.24); background: #141923; }
+:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark { background: linear-gradient(135deg, #00c6ff, #22d3ee); }
+:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark::after { border-right-color: #031520; border-bottom-color: #031520; }
 :global(html[data-theme="dark"]) .terms-copy { color: #8e96aa; }
 :global(html[data-theme="dark"]) .terms-copy a { color: #22d3ee; }
 :global(html[data-theme="dark"]) .message-box.error { border-color: rgba(248, 113, 113, 0.34); background: rgba(248, 113, 113, 0.12); color: #fca5a5; }
 :global(html[data-theme="dark"]) .message-box strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .submit-button { background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%); color: #041217; box-shadow: 0 14px 26px rgba(34, 211, 238, 0.3); }
-:global(html[data-theme="dark"]) .spinner { border-color: rgba(4, 18, 23, 0.35); border-top-color: #041217; }
+:global(html[data-theme="dark"]) .submit-button { background: linear-gradient(90deg, #00c6ff 0%, #00e1ff 55%, #22d3ee 100%); color: #031520; box-shadow: 0 12px 28px rgba(0, 212, 255, 0.38); }
+:global(html[data-theme="dark"]) .spinner { border-color: rgba(3, 21, 32, 0.35); border-top-color: #031520; }
 :global(html[data-theme="dark"]) .login-note { color: #8e96aa; }
 :global(html[data-theme="dark"]) .login-note a { color: #22d3ee; }
 :global(html[data-theme="dark"]) .visual-panel {
   border-left-color: rgba(255, 255, 255, 0.06);
   background:
-    radial-gradient(circle at 18% 24%, rgba(34, 211, 238, 0.24), transparent 30%),
-    radial-gradient(circle at 82% 18%, rgba(167, 139, 250, 0.22), transparent 32%),
-    radial-gradient(circle at 72% 75%, rgba(14, 165, 233, 0.16), transparent 32%),
-    linear-gradient(135deg, #07090e 0%, #0c101a 52%, #0f1624 100%);
+    radial-gradient(circle at 54% 40%, rgba(0, 195, 255, 0.22), transparent 44%),
+    radial-gradient(circle at 82% 18%, rgba(34, 211, 238, 0.18), transparent 32%),
+    linear-gradient(180deg, #080c14 0%, #05070b 100%);
 }
 :global(html[data-theme="dark"]) .visual-overlay {
   background:
-    linear-gradient(180deg, rgba(8, 10, 16, 0.25), rgba(8, 10, 16, 0.05)),
-    radial-gradient(circle at bottom left, rgba(34, 211, 238, 0.07), transparent 30%);
+    linear-gradient(180deg, rgba(6, 9, 14, 0.2), rgba(4, 6, 10, 0.45)),
+    radial-gradient(circle at bottom left, rgba(0, 195, 255, 0.1), transparent 34%);
 }
 :global(html[data-theme="dark"]) .visual-panel::before,
-:global(html[data-theme="dark"]) .visual-panel::after { border-color: rgba(255, 255, 255, 0.07); }
-:global(html[data-theme="dark"]) .floating-card { background: rgba(24, 28, 40, 0.85); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 16px 28px rgba(0, 0, 0, 0.45); color: #ffffff; }
+:global(html[data-theme="dark"]) .visual-panel::after { border-color: rgba(56, 189, 248, 0.1); }
+:global(html[data-theme="dark"]) .floating-card { background: #111722; border-color: rgba(56, 189, 248, 0.24); box-shadow: 0 16px 28px rgba(0, 0, 0, 0.5); color: #ffffff; }
 :global(html[data-theme="dark"]) .top-card strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .top-card small { color: #9ca3b8; }
-:global(html[data-theme="dark"]) .mini-icon { background: rgba(34, 211, 238, 0.16); color: #22d3ee; }
-:global(html[data-theme="dark"]) .visual-badge { background: rgba(34, 211, 238, 0.14); border-color: rgba(34, 211, 238, 0.32); color: #22d3ee; }
+:global(html[data-theme="dark"]) .top-card small { color: #94a3b8; }
+:global(html[data-theme="dark"]) .mini-icon { background: rgba(14, 116, 144, 0.32); color: #22d3ee; }
+:global(html[data-theme="dark"]) .visual-badge { background: rgba(14, 116, 144, 0.32); border-color: rgba(56, 189, 248, 0.34); color: #38bdf8; }
 :global(html[data-theme="dark"]) .visual-content h2 { color: #ffffff; }
-:global(html[data-theme="dark"]) .visual-content p { color: #9ca3b8; }
-:global(html[data-theme="dark"]) .stat-card { background: rgba(24, 28, 40, 0.8); border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35); }
+:global(html[data-theme="dark"]) .visual-content p { color: #94a3b8; }
+:global(html[data-theme="dark"]) .stat-card { background: #111722; border-color: rgba(148, 163, 184, 0.16); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4); }
 :global(html[data-theme="dark"]) .stat-card strong { color: #22d3ee; }
-:global(html[data-theme="dark"]) .stat-card:nth-child(2) strong { color: #a78bfa; }
+:global(html[data-theme="dark"]) .stat-card:nth-child(2) strong { color: #a855f7; }
 :global(html[data-theme="dark"]) .stat-card:nth-child(3) strong { color: #38bdf8; }
 :global(html[data-theme="dark"]) .stat-card span { color: #cbd5e1; }
-:global(html[data-theme="dark"]) .property-card.featured { background: rgba(24, 28, 40, 0.85); border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 18px 32px rgba(0, 0, 0, 0.45); }
-:global(html[data-theme="dark"]) .property-image.large { background: #121520; border-color: rgba(255, 255, 255, 0.14); }
-:global(html[data-theme="dark"]) .property-tag { background: rgba(34, 211, 238, 0.15); border-color: rgba(34, 211, 238, 0.32); color: #22d3ee; }
+:global(html[data-theme="dark"]) .property-card.featured { background: #111722; border-color: rgba(148, 163, 184, 0.16); box-shadow: 0 18px 32px rgba(0, 0, 0, 0.5); }
+:global(html[data-theme="dark"]) .property-image.large { background: #0c1018; border-color: rgba(56, 189, 248, 0.22); }
+:global(html[data-theme="dark"]) .property-tag { background: rgba(14, 116, 144, 0.32); border-color: rgba(56, 189, 248, 0.34); color: #38bdf8; }
 :global(html[data-theme="dark"]) .property-info h3 { color: #ffffff; }
-:global(html[data-theme="dark"]) .property-info p { color: #9ca3b8; }
-:global(html[data-theme="dark"]) .property-meta span { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.08); color: #e2e8f0; }
-:global(html[data-theme="dark"]) .mini-property { background: rgba(24, 28, 40, 0.8); border-color: rgba(255, 255, 255, 0.08); }
-:global(html[data-theme="dark"]) .mini-thumb { border-color: rgba(255, 255, 255, 0.16); }
+:global(html[data-theme="dark"]) .property-info p { color: #94a3b8; }
+:global(html[data-theme="dark"]) .property-meta span { background: #161d2b; border-color: rgba(148, 163, 184, 0.16); color: #e2e8f0; }
+:global(html[data-theme="dark"]) .mini-property { background: #111722; border-color: rgba(148, 163, 184, 0.16); }
+:global(html[data-theme="dark"]) .mini-thumb { border-color: rgba(56, 189, 248, 0.24); }
 :global(html[data-theme="dark"]) .mini-property strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .mini-property small { color: #9ca3b8; }
-:global(html[data-theme="dark"]) .visual-footer { color: #7e869a; }
+:global(html[data-theme="dark"]) .mini-property small { color: #94a3b8; }
+:global(html[data-theme="dark"]) .visual-footer { color: #64748b; }
 
 .mini-property strong {
   display: block;
