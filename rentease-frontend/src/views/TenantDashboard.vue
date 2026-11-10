@@ -12,7 +12,7 @@ import { listMySettlements, type DepositSettlement } from '@/services/depositSet
 import { printDepositSettlement } from '@/services/printDepositSettlement';
 import { getMyProfile, saveMyProfile, changeMyEmail, deleteMyAccount } from '@/services/profile';
 import { listMyMaintenance, createMaintenanceRequest, type RentalMaintenanceRequest, type MaintenancePriority } from '@/services/maintenance';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonModal, IonIcon } from '@ionic/vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonModal, IonIcon, alertController } from '@ionic/vue';
 import NotificationCenter from '@/components/NotificationCenter.vue';
 import DocumentActions from '@/components/documents/DocumentActions.vue';
 import { gridOutline, documentTextOutline, cardOutline, constructOutline, personOutline, logOutOutline, homeOutline, searchOutline, paperPlaneOutline, locationOutline, arrowForwardOutline, timeOutline, informationCircleOutline, closeOutline, addOutline, walletOutline, keyOutline, shieldCheckmarkOutline, notificationsOutline, checkmarkCircleOutline, menuOutline, chevronForwardOutline } from 'ionicons/icons';
@@ -450,7 +450,28 @@ async function deleteAccount() {
     deletingAccount.value = false;
   }
 }
-async function logout() { try { await logoutUser(); await router.replace('/login'); } catch { await alertBox('Logout failed', 'Please try again.'); } }
+async function logout() {
+  const alert = await alertController.create({
+    header: 'Confirm Logout',
+    message: 'Are you sure you want to log out of your tenant account?',
+    cssClass: 'rentease-messagebox',
+    backdropDismiss: false,
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      { text: 'Logout', role: 'confirm' },
+    ],
+  });
+  await alert.present();
+  const { role } = await alert.onDidDismiss();
+  if (role !== 'confirm') return;
+
+  try {
+    await logoutUser();
+    await router.replace('/login');
+  } catch {
+    await alertBox('Logout failed', 'Please try again.');
+  }
+}
 onMounted(async () => {
   try {
     const user = await restoreSession();

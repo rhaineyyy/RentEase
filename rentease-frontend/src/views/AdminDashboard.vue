@@ -245,7 +245,8 @@ async function showCustomAlert(headerText: string, messageText: string) {
 
 async function showConfirmDialog(
   headerText: string,
-  messageText: string
+  messageText: string,
+  confirmText = 'Confirm'
 ): Promise<boolean> {
   const alert = await alertController.create({
     header: headerText,
@@ -254,7 +255,7 @@ async function showConfirmDialog(
     backdropDismiss: false,
     buttons: [
       { text: 'Cancel', role: 'cancel' },
-      { text: 'Confirm', role: 'confirm' },
+      { text: confirmText, role: 'confirm' },
     ],
   });
 
@@ -809,7 +810,8 @@ async function triggerSystemMaintenance() {
 async function logout() {
   const confirmed = await showConfirmDialog(
     'Confirm Logout',
-    'Are you sure you want to log out of your admin account?'
+    'Are you sure you want to log out of your admin account?',
+    'Logout'
   );
 
   if (!confirmed) return;

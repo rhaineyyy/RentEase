@@ -1728,6 +1728,13 @@ async function resetDemo() {
   notify('Temporary display data cleared. Your rental records remain unchanged.');
 }
 async function logout() {
+  const confirmed = await systemConfirm(
+    'Are you sure you want to log out of your owner account?',
+    'Confirm Logout',
+    'Logout',
+  );
+  if (!confirmed) return;
+
   try {
     await logoutUser();
   } catch (error) {
