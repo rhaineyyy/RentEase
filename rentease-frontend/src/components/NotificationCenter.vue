@@ -141,39 +141,24 @@ onUnmounted(() => {
 
 <style scoped>
 .notice-center { position: relative; }
-.notice-bell { position: relative; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #d5e2f0; border-radius: 50%; background: #f8fbff; color: #1e293b; cursor: pointer; transition: background 0.18s, border-color 0.18s, color 0.18s; }
-.notice-bell:hover { background: #ecfeff; border-color: #06b6d4; color: #0891b2; }
-.notice-bell.light { color: #1e293b; }
+.notice-bell { position: relative; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 50%; background: #161821; color: #e2e8f0; cursor: pointer; transition: background 0.18s, border-color 0.18s, color 0.18s; }
+.notice-bell:hover { background: #1f2230; border-color: rgba(34, 211, 238, 0.38); color: #ffffff; }
+.notice-bell.light { color: #e2e8f0; }
 .notice-bell ion-icon { font-size: 19px; }
 .notice-count { position: absolute; top: 1px; right: 1px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 99px; background: #f43f5e; color: white; font-size: 10px; font-weight: 800; line-height: 16px; }
-.notice-panel { max-height: min(420px, 70vh); overflow: auto; padding: 14px; border: 1px solid #d8e4f2; border-radius: 18px; background: #ffffff; color: #0f172a; box-shadow: 0 22px 48px rgba(15, 23, 42, 0.16); }
+.notice-panel { max-height: min(420px, 70vh); overflow: auto; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 18px; background: #131620; color: #f3f4f6; box-shadow: 0 22px 48px rgba(0, 0, 0, 0.65); }
 .notice-head, .notice-head button, li button { font: inherit; }
-.notice-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e2ebf5; }
-.notice-head strong { color: #0f172a; font-size: 14px; }
-.notice-head button { border: 0; background: transparent; color: #0891b2; font-size: 12px; font-weight: 700; cursor: pointer; }
+.notice-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.notice-head strong { color: #ffffff; font-size: 14px; }
+.notice-head button { border: 0; background: transparent; color: #22d3ee; font-size: 12px; font-weight: 700; cursor: pointer; }
 .notice-head button:disabled { opacity: 0.45; cursor: not-allowed; }
-.notice-empty, .notice-error { margin: 8px 0; color: #64748b; font-size: 13px; }
-.notice-error { color: #e11d48; }
+.notice-empty, .notice-error { margin: 8px 0; color: #8b92a5; font-size: 13px; }
+.notice-error { color: #f472b6; }
 ul { list-style: none; margin: 0; padding: 0; }
-li + li { border-top: 1px solid #edf2f8; }
+li + li { border-top: 1px solid rgba(255, 255, 255, 0.06); }
 li button { display: grid; gap: 3px; width: 100%; padding: 10px 8px; border: 0; border-radius: 10px; background: transparent; text-align: left; cursor: pointer; transition: background 0.15s; }
-li button:hover { background: #f1f7fd; }
-li.unread button { background: rgba(6, 182, 212, 0.1); }
-li strong { color: #0f172a; font-size: 13px; }
-li span, li small { color: #64748b; font-size: 12px; line-height: 1.4; }
-
-:global(html[data-theme="dark"]) .notice-bell { border-color: rgba(255, 255, 255, 0.08); background: #161821; color: #e2e8f0; }
-:global(html[data-theme="dark"]) .notice-bell:hover { background: #1f2230; border-color: rgba(34, 211, 238, 0.38); color: #ffffff; }
-:global(html[data-theme="dark"]) .notice-bell.light { color: #e2e8f0; }
-:global(html[data-theme="dark"]) .notice-panel { border-color: rgba(255, 255, 255, 0.09); background: #131620; color: #f3f4f6; box-shadow: 0 22px 48px rgba(0, 0, 0, 0.65); }
-:global(html[data-theme="dark"]) .notice-head { border-bottom-color: rgba(255, 255, 255, 0.06); }
-:global(html[data-theme="dark"]) .notice-head strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .notice-head button { color: #22d3ee; }
-:global(html[data-theme="dark"]) .notice-empty { color: #8b92a5; }
-:global(html[data-theme="dark"]) .notice-error { color: #f472b6; }
-:global(html[data-theme="dark"]) li + li { border-top-color: rgba(255, 255, 255, 0.06); }
-:global(html[data-theme="dark"]) li button:hover { background: rgba(255, 255, 255, 0.04); }
-:global(html[data-theme="dark"]) li.unread button { background: rgba(34, 211, 238, 0.09); }
-:global(html[data-theme="dark"]) li strong { color: #ffffff; }
-:global(html[data-theme="dark"]) li span, :global(html[data-theme="dark"]) li small { color: #9ca3af; }
+li button:hover { background: rgba(255, 255, 255, 0.04); }
+li.unread button { background: rgba(34, 211, 238, 0.09); }
+li strong { color: #ffffff; font-size: 13px; }
+li span, li small { color: #9ca3af; font-size: 12px; line-height: 1.4; }
 </style>

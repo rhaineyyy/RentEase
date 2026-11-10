@@ -525,11 +525,11 @@ const handleSignup = async () => {
 <style scoped>
 .signup-page {
   --background:
-    radial-gradient(circle at top left, rgba(6, 182, 212, 0.14), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.12), transparent 34%),
-    linear-gradient(180deg, #f0f6fc 0%, #e8f1fb 45%, #e2edf8 100%);
-  color: #0f172a;
-  color-scheme: light;
+    radial-gradient(circle at 12% 18%, rgba(6, 182, 212, 0.26), transparent 42%),
+    radial-gradient(circle at 88% 82%, rgba(14, 165, 233, 0.16), transparent 42%),
+    linear-gradient(135deg, #041d2e 0%, #071928 38%, #070b12 100%);
+  color: #f3f4f6;
+  color-scheme: dark;
   font-family: 'Plus Jakarta Sans', Inter, "Segoe UI", Arial, sans-serif;
 }
 
@@ -550,11 +550,11 @@ const handleSignup = async () => {
   grid-template-columns: minmax(380px, 0.92fr) minmax(460px, 1.08fr);
   border-radius: 30px;
   overflow: hidden;
-  background: #ffffff;
-  border: 1px solid #d8e4f2;
+  background: #0f131c;
+  border: 1px solid rgba(56, 189, 248, 0.14);
   box-shadow:
-    0 28px 70px rgba(15, 23, 42, 0.12),
-    0 10px 25px rgba(15, 23, 42, 0.05);
+    0 30px 80px rgba(0, 0, 0, 0.72),
+    0 10px 25px rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(12px);
 }
 
@@ -562,7 +562,7 @@ const handleSignup = async () => {
 .form-panel {
   position: relative;
   z-index: 2;
-  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  background: linear-gradient(180deg, #111621 0%, #0c1018 100%);
   display: flex;
   align-items: stretch;
   overflow: hidden;
@@ -577,7 +577,7 @@ const handleSignup = async () => {
   height: 100%;
   background: inherit;
   clip-path: polygon(0 0, 85% 0, 62% 8%, 96% 18%, 65% 29%, 100% 39%, 70% 50%, 100% 61%, 67% 72%, 95% 82%, 62% 92%, 84% 100%, 0 100%);
-  box-shadow: 14px 0 25px rgba(15, 23, 42, 0.08);
+  box-shadow: 14px 0 25px rgba(0, 0, 0, 0.35);
 }
 
 .form-panel-inner {
@@ -613,25 +613,25 @@ const handleSignup = async () => {
   border-radius: 14px;
   display: grid;
   place-items: center;
-  color: #60a5fa;
+  color: #22d3ee;
   font-size: 22px;
   font-weight: 900;
-  background: linear-gradient(145deg, #091945 0%, #102a71 100%);
-  border: 1px solid #1e3a8a;
-  box-shadow: 0 10px 22px rgba(16, 42, 113, 0.24);
+  background: #101929;
+  border: 1px solid rgba(34, 211, 238, 0.36);
+  box-shadow: 0 10px 22px rgba(34, 211, 238, 0.16);
 }
 
 .brand-copy h2 {
   margin: 0;
   font-size: 21px;
   font-weight: 900;
-  color: #0b132b;
+  color: #ffffff;
   letter-spacing: -0.6px;
 }
 
 .brand-copy h2::after {
   content: ".";
-  color: #0d2d84;
+  color: #22d3ee;
 }
 
 .brand-copy p {
@@ -639,7 +639,7 @@ const handleSignup = async () => {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.6px;
-  color: #64748b;
+  color: #7e869a;
 }
 
 .form-copy {
@@ -652,9 +652,9 @@ const handleSignup = async () => {
   min-height: 26px;
   padding: 5px 11px;
   border-radius: 999px;
-  background: #dceeff;
-  border: 1px solid #bddaff;
-  color: #0f2963;
+  background: rgba(14, 116, 144, 0.32);
+  border: 1px solid rgba(56, 189, 248, 0.34);
+  color: #38bdf8;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1.3px;
@@ -665,7 +665,7 @@ const handleSignup = async () => {
   margin: 0 0 6px;
   font-size: clamp(32px, 3.2vw, 40px);
   line-height: 1;
-  color: #0b132b;
+  color: #ffffff;
   font-weight: 900;
   letter-spacing: -1.5px;
 }
@@ -673,7 +673,7 @@ const handleSignup = async () => {
 .intro {
   margin: 0;
   max-width: 420px;
-  color: #475569;
+  color: #9199ad;
   font-size: 13px;
   line-height: 1.55;
 }
@@ -693,7 +693,7 @@ const handleSignup = async () => {
 .field-group label {
   display: block;
   margin-bottom: 5px;
-  color: #1e293b;
+  color: #e2e8f0;
   font-size: 12px;
   font-weight: 800;
 }
@@ -706,7 +706,7 @@ const handleSignup = async () => {
 }
 
 .mini-hint {
-  color: #64748b;
+  color: #7e869a;
   font-size: 11px;
   font-weight: 700;
 }
@@ -716,15 +716,15 @@ const handleSignup = async () => {
   align-items: center;
   min-height: 46px;
   border-radius: 14px;
-  border: 1px solid #cfe0f5;
-  background: #e6f0fa;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: #141923;
   transition: 0.22s ease;
 }
 
 .input-shell:focus-within {
-  border-color: #0d47ff;
-  background: #f2f7fd;
-  box-shadow: 0 0 0 4px rgba(13, 71, 255, 0.14);
+  border-color: #22d3ee;
+  background: #161c28;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18);
 }
 
 .input-icon {
@@ -732,7 +732,7 @@ const handleSignup = async () => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  color: #64748b;
+  color: #7e869a;
 }
 
 .input-icon svg,
@@ -753,14 +753,14 @@ const handleSignup = async () => {
   border: none;
   outline: none;
   background: transparent;
-  color: #0b132b;
+  color: #f8fafc;
   font-family: inherit;
   font-size: 13px;
   padding: 10px 10px 10px 0;
 }
 
 .input-shell input::placeholder {
-  color: #64748b;
+  color: #6e768a;
 }
 
 .input-shell input:disabled {
@@ -770,7 +770,7 @@ const handleSignup = async () => {
 .input-action {
   border: none;
   background: transparent;
-  color: #0d2d84;
+  color: #22d3ee;
   font-size: 12px;
   font-weight: 800;
   font-family: inherit;
@@ -792,7 +792,7 @@ const handleSignup = async () => {
   height: 5px;
   flex: 1;
   border-radius: 999px;
-  background: #dbe5f1;
+  background: #1f2533;
   transition: 0.2s ease;
 }
 
@@ -805,11 +805,11 @@ const handleSignup = async () => {
 }
 
 .strength-bars span.filled:nth-child(3) {
-  background: #8b5cf6;
+  background: #a855f7;
 }
 
 .strength-bars span.filled:nth-child(4) {
-  background: #06b6d4;
+  background: #22d3ee;
 }
 
 .password-strength p {
@@ -819,19 +819,19 @@ const handleSignup = async () => {
 }
 
 .strength-weak {
-  color: #e11d48;
+  color: #f472b6;
 }
 
 .strength-fair {
-  color: #d97706;
+  color: #facc15;
 }
 
 .strength-good {
-  color: #7c3aed;
+  color: #a78bfa;
 }
 
 .strength-strong {
-  color: #0891b2;
+  color: #22d3ee;
 }
 
 .role-grid {
@@ -848,8 +848,8 @@ const handleSignup = async () => {
   width: 100%;
   padding: 10px 12px;
   border-radius: 15px;
-  border: 1px solid #cbd8e8;
-  background: #f8fbff;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: #141923;
   text-align: left;
   cursor: pointer;
   transition: 0.22s ease;
@@ -857,13 +857,13 @@ const handleSignup = async () => {
 
 .role-card:hover:not(:disabled) {
   transform: translateY(-1px);
-  border-color: #0d47ff;
+  border-color: rgba(34, 211, 238, 0.42);
 }
 
 .role-card.selected {
-  border-color: #0d47ff;
-  background: #e6f0fa;
-  box-shadow: 0 0 0 3px rgba(13, 71, 255, 0.14);
+  border-color: #22d3ee;
+  background: rgba(0, 198, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.16);
 }
 
 .role-card:disabled {
@@ -878,17 +878,17 @@ const handleSignup = async () => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  color: #475569;
-  background: #dce8f6;
+  color: #9199ad;
+  background: #1d2433;
 }
 
 .role-icon.tenant {
-  background: #0d47ff;
-  color: #ffffff;
+  background: linear-gradient(135deg, #00c6ff, #22d3ee);
+  color: #031520;
 }
 
 .role-icon.owner {
-  background: #7c3aed;
+  background: linear-gradient(135deg, #a855f7, #7e22ce);
   color: #ffffff;
 }
 
@@ -899,13 +899,13 @@ const handleSignup = async () => {
 }
 
 .role-text strong {
-  color: #0b132b;
+  color: #ffffff;
   font-size: 12.5px;
   font-weight: 900;
 }
 
 .role-text small {
-  color: #475569;
+  color: #8e96aa;
   font-size: 10.5px;
   line-height: 1.35;
 }
@@ -916,13 +916,13 @@ const handleSignup = async () => {
   flex-shrink: 0;
   margin-left: auto;
   border-radius: 50%;
-  border: 2px solid #b8c9e0;
-  background: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  background: #10141d;
   transition: 0.22s ease;
 }
 
 .role-card.selected .role-check {
-  border: 5px solid #0d47ff;
+  border: 5px solid #22d3ee;
 }
 
 .terms-box {
@@ -944,15 +944,15 @@ const handleSignup = async () => {
   flex-shrink: 0;
   margin-top: 2px;
   border-radius: 5px;
-  border: 1.5px solid #94a3b8;
-  background: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  background: #141923;
   transition: 0.2s ease;
 }
 
 .terms-box input:checked + .terms-mark {
-  background: linear-gradient(135deg, #0033ff, #1a5cff);
+  background: linear-gradient(135deg, #00c6ff, #22d3ee);
   border-color: transparent;
-  box-shadow: 0 8px 18px rgba(10, 69, 255, 0.26);
+  box-shadow: 0 8px 18px rgba(0, 212, 255, 0.26);
 }
 
 .terms-box input:checked + .terms-mark::after {
@@ -962,19 +962,19 @@ const handleSignup = async () => {
   top: 2px;
   width: 5px;
   height: 9px;
-  border-right: 2px solid #ffffff;
-  border-bottom: 2px solid #ffffff;
+  border-right: 2px solid #031520;
+  border-bottom: 2px solid #031520;
   transform: rotate(45deg);
 }
 
 .terms-copy {
-  color: #475569;
+  color: #8e96aa;
   font-size: 11.5px;
   line-height: 1.45;
 }
 
 .terms-copy a {
-  color: #0d2d84;
+  color: #22d3ee;
   font-weight: 800;
   text-decoration: none;
 }
@@ -993,9 +993,9 @@ const handleSignup = async () => {
 }
 
 .message-box.error {
-  border: 1px solid #fecdd3;
-  background: #fff1f2;
-  color: #be123c;
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
 }
 
 .message-icon {
@@ -1005,8 +1005,8 @@ const handleSignup = async () => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  background: rgba(244, 63, 94, 0.16);
-  color: #e11d48;
+  background: rgba(248, 113, 113, 0.22);
+  color: #fca5a5;
   font-size: 12px;
   font-weight: 900;
 }
@@ -1015,7 +1015,7 @@ const handleSignup = async () => {
   display: block;
   margin-bottom: 2px;
   font-size: 12px;
-  color: #0f172a;
+  color: #ffffff;
 }
 
 .message-box p {
@@ -1034,19 +1034,19 @@ const handleSignup = async () => {
   padding: 11px 18px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(90deg, #0033ff 0%, #0a45ff 55%, #1a5cff 100%);
-  color: #ffffff;
+  background: linear-gradient(90deg, #00c6ff 0%, #00e1ff 55%, #22d3ee 100%);
+  color: #031520;
   font-family: inherit;
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 14px 26px rgba(10, 69, 255, 0.3);
+  box-shadow: 0 12px 28px rgba(0, 212, 255, 0.38);
   transition: 0.22s ease;
 }
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 18px 32px rgba(10, 69, 255, 0.4);
+  box-shadow: 0 16px 32px rgba(0, 212, 255, 0.46);
 }
 
 .submit-button:disabled {
@@ -1070,20 +1070,20 @@ const handleSignup = async () => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #ffffff;
+  border: 2px solid rgba(3, 21, 32, 0.35);
+  border-top-color: #031520;
   animation: spin 0.7s linear infinite;
 }
 
 .login-note {
   margin: 12px 0 0;
   text-align: center;
-  color: #64748b;
+  color: #8e96aa;
   font-size: 12.5px;
 }
 
 .login-note a {
-  color: #0d2d84;
+  color: #22d3ee;
   font-weight: 900;
   text-decoration: none;
 }
@@ -1092,7 +1092,7 @@ const handleSignup = async () => {
   text-decoration: underline;
 }
 
-/* RIGHT HERO PANEL (Light Mode: Icy-Sky & Royal Cobalt Blue) */
+/* RIGHT HERO PANEL (Dark Mode) */
 .visual-panel {
   position: relative;
   overflow: hidden;
@@ -1100,20 +1100,19 @@ const handleSignup = async () => {
   flex-direction: column;
   justify-content: space-between;
   padding: 24px 30px 20px 52px;
-  border-left: 1px solid #d8e8f8;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   background:
-    radial-gradient(circle at 18% 24%, rgba(125, 211, 252, 0.42), transparent 34%),
-    radial-gradient(circle at 82% 18%, rgba(147, 197, 253, 0.38), transparent 36%),
-    radial-gradient(circle at 72% 75%, rgba(56, 189, 248, 0.25), transparent 34%),
-    linear-gradient(135deg, #f0f7ff 0%, #dcf0ff 52%, #e8f5ff 100%);
+    radial-gradient(circle at 54% 40%, rgba(0, 195, 255, 0.22), transparent 44%),
+    radial-gradient(circle at 82% 18%, rgba(34, 211, 238, 0.18), transparent 32%),
+    linear-gradient(180deg, #080c14 0%, #05070b 100%);
 }
 
 .visual-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(219, 238, 254, 0.3)),
-    radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.12), transparent 30%);
+    linear-gradient(180deg, rgba(6, 9, 14, 0.2), rgba(4, 6, 10, 0.45)),
+    radial-gradient(circle at bottom left, rgba(0, 195, 255, 0.1), transparent 34%);
   pointer-events: none;
 }
 
@@ -1122,7 +1121,7 @@ const handleSignup = async () => {
   content: "";
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(15, 37, 87, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.1);
   pointer-events: none;
 }
 
@@ -1149,25 +1148,25 @@ const handleSignup = async () => {
   gap: 10px;
   padding: 10px 14px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.88);
+  background: #111722;
   backdrop-filter: blur(12px);
-  border: 1px solid #c7dbf4;
-  box-shadow: 0 12px 26px rgba(15, 37, 87, 0.1);
-  color: #0b132b;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
 }
 
 .top-card strong {
   display: block;
   font-size: 13px;
   font-weight: 900;
-  color: #0b132b;
+  color: #ffffff;
 }
 
 .top-card small {
   display: block;
   margin-top: 1px;
   font-size: 10.5px;
-  color: #475569;
+  color: #94a3b8;
 }
 
 .mini-icon {
@@ -1177,8 +1176,8 @@ const handleSignup = async () => {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  background: #dceeff;
-  color: #0d2d84;
+  background: rgba(14, 116, 144, 0.32);
+  color: #22d3ee;
 }
 
 .visual-content {
@@ -1194,17 +1193,17 @@ const handleSignup = async () => {
   min-height: 28px;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #dceeff;
-  color: #0f2963;
+  background: rgba(14, 116, 144, 0.32);
+  color: #38bdf8;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1.3px;
-  border: 1px solid #bddaff;
+  border: 1px solid rgba(56, 189, 248, 0.34);
 }
 
 .visual-content h2 {
   margin: 10px 0 8px;
-  color: #0b132b;
+  color: #ffffff;
   font-size: clamp(26px, 2.7vw, 38px);
   line-height: 1.1;
   font-weight: 900;
@@ -1214,7 +1213,7 @@ const handleSignup = async () => {
 .visual-content p {
   margin: 0;
   max-width: 520px;
-  color: #334155;
+  color: #94a3b8;
   font-size: 13px;
   line-height: 1.55;
 }
@@ -1229,30 +1228,30 @@ const handleSignup = async () => {
 .stat-card {
   padding: 12px 12px;
   border-radius: 15px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid #c7dbf4;
+  background: #111722;
+  border: 1px solid rgba(148, 163, 184, 0.16);
   backdrop-filter: blur(10px);
-  box-shadow: 0 10px 22px rgba(15, 37, 87, 0.08);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
 }
 
 .stat-card strong {
   display: block;
-  color: #0d2d84;
+  color: #22d3ee;
   font-size: 12px;
   font-weight: 900;
   margin-bottom: 4px;
 }
 
 .stat-card:nth-child(2) strong {
-  color: #6d28d9;
+  color: #a855f7;
 }
 
 .stat-card:nth-child(3) strong {
-  color: #0284c7;
+  color: #38bdf8;
 }
 
 .stat-card span {
-  color: #334155;
+  color: #cbd5e1;
   font-size: 11px;
   line-height: 1.45;
 }
@@ -1272,10 +1271,10 @@ const handleSignup = async () => {
   align-items: stretch;
   padding: 13px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #c7dbf4;
+  background: #111722;
+  border: 1px solid rgba(148, 163, 184, 0.16);
   backdrop-filter: blur(12px);
-  box-shadow: 0 14px 28px rgba(15, 37, 87, 0.1);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.5);
 }
 
 .property-image.large {
@@ -1283,8 +1282,8 @@ const handleSignup = async () => {
   border-radius: 16px;
   position: relative;
   overflow: hidden;
-  background: #e2ebf5;
-  border: 1px solid #c7dbf4;
+  background: #0c1018;
+  border: 1px solid rgba(56, 189, 248, 0.22);
 }
 
 .featured-property-photo {
@@ -1309,9 +1308,9 @@ const handleSignup = async () => {
   padding: 4px 10px;
   margin-bottom: 6px;
   border-radius: 999px;
-  background: #dceeff;
-  border: 1px solid #bddaff;
-  color: #0f2963;
+  background: rgba(14, 116, 144, 0.32);
+  border: 1px solid rgba(56, 189, 248, 0.34);
+  color: #38bdf8;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1px;
@@ -1319,7 +1318,7 @@ const handleSignup = async () => {
 
 .property-info h3 {
   margin: 0 0 4px;
-  color: #0b132b;
+  color: #ffffff;
   font-size: 18px;
   font-weight: 900;
   letter-spacing: -0.5px;
@@ -1327,7 +1326,7 @@ const handleSignup = async () => {
 
 .property-info p {
   margin: 0 0 8px;
-  color: #475569;
+  color: #94a3b8;
   font-size: 12px;
   line-height: 1.45;
 }
@@ -1344,9 +1343,9 @@ const handleSignup = async () => {
   min-height: 24px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #e1effc;
-  border: 1px solid #c5dbf5;
-  color: #0f2557;
+  background: #161d2b;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: #e2e8f0;
   font-size: 10.5px;
   font-weight: 800;
 }
@@ -1363,8 +1362,8 @@ const handleSignup = async () => {
   gap: 10px;
   padding: 10px 12px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid #c7dbf4;
+  background: #111722;
+  border: 1px solid rgba(148, 163, 184, 0.16);
   backdrop-filter: blur(10px);
 }
 
@@ -1374,7 +1373,7 @@ const handleSignup = async () => {
   border-radius: 11px;
   flex-shrink: 0;
   overflow: hidden;
-  border: 1px solid #c7dbf4;
+  border: 1px solid rgba(56, 189, 248, 0.24);
 }
 
 .mini-thumb img {
@@ -1384,121 +1383,16 @@ const handleSignup = async () => {
   display: block;
 }
 
-/* DARK MODE OVERRIDES — Matches Reference Dark Mode Screenshot */
-:global(html[data-theme="dark"]) .signup-page {
-  --background:
-    radial-gradient(circle at 12% 18%, rgba(6, 182, 212, 0.26), transparent 42%),
-    radial-gradient(circle at 88% 82%, rgba(14, 165, 233, 0.16), transparent 42%),
-    linear-gradient(135deg, #041d2e 0%, #071928 38%, #070b12 100%);
-  color: #f3f4f6;
-  color-scheme: dark;
-}
-
-:global(html[data-theme="dark"]) .signup-card {
-  background: #0f131c;
-  border-color: rgba(56, 189, 248, 0.14);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.72), 0 10px 25px rgba(0, 0, 0, 0.42);
-}
-
-:global(html[data-theme="dark"]) .form-panel {
-  background: linear-gradient(180deg, #111621 0%, #0c1018 100%);
-}
-
-:global(html[data-theme="dark"]) .form-panel::after {
-  box-shadow: 14px 0 25px rgba(0, 0, 0, 0.35);
-}
-
-:global(html[data-theme="dark"]) .brand-badge {
-  color: #22d3ee;
-  background: #101929;
-  border-color: rgba(34, 211, 238, 0.36);
-  box-shadow: 0 10px 22px rgba(34, 211, 238, 0.16);
-}
-
-:global(html[data-theme="dark"]) .brand-copy h2 { color: #ffffff; }
-:global(html[data-theme="dark"]) .brand-copy h2::after { color: #22d3ee; }
-:global(html[data-theme="dark"]) .brand-copy p { color: #7e869a; }
-:global(html[data-theme="dark"]) .eyebrow { background: rgba(14, 116, 144, 0.32); border-color: rgba(56, 189, 248, 0.34); color: #38bdf8; }
-:global(html[data-theme="dark"]) .form-copy h1 { color: #ffffff; }
-:global(html[data-theme="dark"]) .intro { color: #9199ad; }
-:global(html[data-theme="dark"]) .field-group label { color: #e2e8f0; }
-:global(html[data-theme="dark"]) .mini-hint { color: #7e869a; }
-:global(html[data-theme="dark"]) .input-shell { border-color: rgba(148, 163, 184, 0.16); background: #141923; }
-:global(html[data-theme="dark"]) .input-shell:focus-within { border-color: #22d3ee; background: #161c28; box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18); }
-:global(html[data-theme="dark"]) .input-icon { color: #7e869a; }
-:global(html[data-theme="dark"]) .input-shell input { color: #f8fafc; }
-:global(html[data-theme="dark"]) .input-shell input::placeholder { color: #6e768a; }
-:global(html[data-theme="dark"]) .input-action { color: #22d3ee; }
-:global(html[data-theme="dark"]) .strength-bars span { background: #1f2533; }
-:global(html[data-theme="dark"]) .role-card { border-color: rgba(148, 163, 184, 0.16); background: #141923; }
-:global(html[data-theme="dark"]) .role-card:hover:not(:disabled) { border-color: rgba(34, 211, 238, 0.42); }
-:global(html[data-theme="dark"]) .role-card.selected { border-color: #22d3ee; background: rgba(0, 198, 255, 0.12); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.16); }
-:global(html[data-theme="dark"]) .role-icon { color: #9199ad; background: #1d2433; }
-:global(html[data-theme="dark"]) .role-icon.tenant { background: linear-gradient(135deg, #00c6ff, #22d3ee); color: #031520; }
-:global(html[data-theme="dark"]) .role-icon.owner { background: linear-gradient(135deg, #a855f7, #7e22ce); color: #ffffff; }
-:global(html[data-theme="dark"]) .role-text strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .role-text small { color: #8e96aa; }
-:global(html[data-theme="dark"]) .role-check { border-color: rgba(255, 255, 255, 0.24); background: #10141d; }
-:global(html[data-theme="dark"]) .role-card.selected .role-check { border-color: #22d3ee; }
-:global(html[data-theme="dark"]) .terms-mark { border-color: rgba(255, 255, 255, 0.24); background: #141923; }
-:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark { background: linear-gradient(135deg, #00c6ff, #22d3ee); }
-:global(html[data-theme="dark"]) .terms-box input:checked + .terms-mark::after { border-right-color: #031520; border-bottom-color: #031520; }
-:global(html[data-theme="dark"]) .terms-copy { color: #8e96aa; }
-:global(html[data-theme="dark"]) .terms-copy a { color: #22d3ee; }
-:global(html[data-theme="dark"]) .message-box.error { border-color: rgba(248, 113, 113, 0.34); background: rgba(248, 113, 113, 0.12); color: #fca5a5; }
-:global(html[data-theme="dark"]) .message-box strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .submit-button { background: linear-gradient(90deg, #00c6ff 0%, #00e1ff 55%, #22d3ee 100%); color: #031520; box-shadow: 0 12px 28px rgba(0, 212, 255, 0.38); }
-:global(html[data-theme="dark"]) .spinner { border-color: rgba(3, 21, 32, 0.35); border-top-color: #031520; }
-:global(html[data-theme="dark"]) .login-note { color: #8e96aa; }
-:global(html[data-theme="dark"]) .login-note a { color: #22d3ee; }
-:global(html[data-theme="dark"]) .visual-panel {
-  border-left-color: rgba(255, 255, 255, 0.06);
-  background:
-    radial-gradient(circle at 54% 40%, rgba(0, 195, 255, 0.22), transparent 44%),
-    radial-gradient(circle at 82% 18%, rgba(34, 211, 238, 0.18), transparent 32%),
-    linear-gradient(180deg, #080c14 0%, #05070b 100%);
-}
-:global(html[data-theme="dark"]) .visual-overlay {
-  background:
-    linear-gradient(180deg, rgba(6, 9, 14, 0.2), rgba(4, 6, 10, 0.45)),
-    radial-gradient(circle at bottom left, rgba(0, 195, 255, 0.1), transparent 34%);
-}
-:global(html[data-theme="dark"]) .visual-panel::before,
-:global(html[data-theme="dark"]) .visual-panel::after { border-color: rgba(56, 189, 248, 0.1); }
-:global(html[data-theme="dark"]) .floating-card { background: #111722; border-color: rgba(56, 189, 248, 0.24); box-shadow: 0 16px 28px rgba(0, 0, 0, 0.5); color: #ffffff; }
-:global(html[data-theme="dark"]) .top-card strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .top-card small { color: #94a3b8; }
-:global(html[data-theme="dark"]) .mini-icon { background: rgba(14, 116, 144, 0.32); color: #22d3ee; }
-:global(html[data-theme="dark"]) .visual-badge { background: rgba(14, 116, 144, 0.32); border-color: rgba(56, 189, 248, 0.34); color: #38bdf8; }
-:global(html[data-theme="dark"]) .visual-content h2 { color: #ffffff; }
-:global(html[data-theme="dark"]) .visual-content p { color: #94a3b8; }
-:global(html[data-theme="dark"]) .stat-card { background: #111722; border-color: rgba(148, 163, 184, 0.16); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4); }
-:global(html[data-theme="dark"]) .stat-card strong { color: #22d3ee; }
-:global(html[data-theme="dark"]) .stat-card:nth-child(2) strong { color: #a855f7; }
-:global(html[data-theme="dark"]) .stat-card:nth-child(3) strong { color: #38bdf8; }
-:global(html[data-theme="dark"]) .stat-card span { color: #cbd5e1; }
-:global(html[data-theme="dark"]) .property-card.featured { background: #111722; border-color: rgba(148, 163, 184, 0.16); box-shadow: 0 18px 32px rgba(0, 0, 0, 0.5); }
-:global(html[data-theme="dark"]) .property-image.large { background: #0c1018; border-color: rgba(56, 189, 248, 0.22); }
-:global(html[data-theme="dark"]) .property-tag { background: rgba(14, 116, 144, 0.32); border-color: rgba(56, 189, 248, 0.34); color: #38bdf8; }
-:global(html[data-theme="dark"]) .property-info h3 { color: #ffffff; }
-:global(html[data-theme="dark"]) .property-info p { color: #94a3b8; }
-:global(html[data-theme="dark"]) .property-meta span { background: #161d2b; border-color: rgba(148, 163, 184, 0.16); color: #e2e8f0; }
-:global(html[data-theme="dark"]) .mini-property { background: #111722; border-color: rgba(148, 163, 184, 0.16); }
-:global(html[data-theme="dark"]) .mini-thumb { border-color: rgba(56, 189, 248, 0.24); }
-:global(html[data-theme="dark"]) .mini-property strong { color: #ffffff; }
-:global(html[data-theme="dark"]) .mini-property small { color: #94a3b8; }
-:global(html[data-theme="dark"]) .visual-footer { color: #64748b; }
-
 .mini-property strong {
   display: block;
   margin-bottom: 2px;
-  color: #0b132b;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 900;
 }
 
 .mini-property small {
-  color: #475569;
+  color: #94a3b8;
   font-size: 10.5px;
 }
 
@@ -1510,7 +1404,7 @@ const handleSignup = async () => {
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 10px;
-  color: #475569;
+  color: #64748b;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.2px;
