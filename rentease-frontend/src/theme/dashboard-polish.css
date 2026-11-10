@@ -1363,8 +1363,16 @@
     width: min(300px, calc(100vw - 48px)) !important;
     height: calc(100dvh - 64px) !important;
     max-height: calc(100dvh - 64px) !important;
+    padding-top: 14px !important;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  .portal .sidebar-profile,
+  .portal .account,
+  .portal .owner {
+    position: relative !important;
+    top: auto !important;
   }
 
   .portal .tenant-backdrop,
