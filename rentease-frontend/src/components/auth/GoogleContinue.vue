@@ -73,7 +73,7 @@ async function render() {
   });
   google.accounts.id.renderButton(host, {
     type: 'standard',
-    theme: 'outline',
+    theme: 'filled_black',
     size: 'large',
     text: 'continue_with',
     shape: 'pill',
@@ -161,24 +161,6 @@ watch(() => [props.disabled, props.role], () => { void render(); });
 <style scoped>
 .google-continue { margin-top: 14px; }
 .google-button-host { display: flex; justify-content: center; min-height: 44px; }
-.google-native-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: min(100%, 360px);
-  min-height: 48px;
-  padding: 0 18px;
-  border: 1px solid #d5d9de;
-  border-radius: 999px;
-  background: #fff;
-  color: #30343b;
-  font: 600 14px Arial, sans-serif;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-.google-native-button:disabled { opacity: .65; cursor: wait; }
-.google-mark { color: #4285f4; font-size: 19px; font-weight: 800; }
 .google-note { margin: 8px 0 0; color: #6d7f96; font-size: 12px; line-height: 1.45; text-align: center; }
 .google-note.error { color: #a33c46; }
 </style>

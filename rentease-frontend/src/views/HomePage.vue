@@ -26,9 +26,15 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue
 </script>
 
 <style scoped>
+ion-page,
+ion-content {
+  --background: #0b0c10;
+  --color: #f3f4f6;
+  color: #f3f4f6;
+}
+
 #container {
   text-align: center;
-  
   position: absolute;
   left: 0;
   right: 0;
@@ -39,18 +45,18 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue
 #container strong {
   font-size: 20px;
   line-height: 26px;
+  color: #ffffff;
 }
 
 #container p {
   font-size: 16px;
   line-height: 22px;
-  
-  color: #8c8c8c;
-  
+  color: #8e96aa;
   margin: 0;
 }
 
 #container a {
+  color: #22d3ee;
   text-decoration: none;
 }
 </style>

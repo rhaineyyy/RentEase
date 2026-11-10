@@ -943,7 +943,7 @@ async function logout() {
             </div>
           </div>
 
-          <div v-if="overviewError" class="notice" role="alert" style="margin-bottom:16px;color:#a52d2d">
+          <div v-if="overviewError" class="notice" role="alert" style="margin-bottom:16px;color:#f472b6">
             PostgreSQL overview: {{ overviewError }}
             <button type="button" class="button secondary" @click="fetchPlatformOverview">Retry</button>
           </div>

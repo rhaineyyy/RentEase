@@ -1,48 +1,49 @@
-/* RentEase shared theme */
+/* RentEase shared theme — Dark Onyx & Electric Cyan / Purple Design System */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --ion-color-primary: #163B73;
-  --ion-color-primary-rgb: 22, 59, 115;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #12253f;
-  --ion-color-primary-tint: #2b4363;
+  --ion-color-primary: #22d3ee;
+  --ion-color-primary-rgb: 34, 211, 238;
+  --ion-color-primary-contrast: #041217;
+  --ion-color-primary-contrast-rgb: 4, 18, 23;
+  --ion-color-primary-shade: #06b6d4;
+  --ion-color-primary-tint: #38bdf8;
 
-  --ion-color-secondary: #17A7B8;
-  --ion-color-secondary-rgb: 23, 167, 184;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #0a635c;
-  --ion-color-secondary-tint: #238079;
+  --ion-color-secondary: #a78bfa;
+  --ion-color-secondary-rgb: 167, 139, 250;
+  --ion-color-secondary-contrast: #0b0c10;
+  --ion-color-secondary-contrast-rgb: 11, 12, 16;
+  --ion-color-secondary-shade: #8b5cf6;
+  --ion-color-secondary-tint: #c4b5fd;
 
-  --ion-background-color: #F4F7FC;
-  --ion-background-color-rgb: 244, 247, 251;
+  --ion-background-color: #090b10;
+  --ion-background-color-rgb: 9, 11, 16;
 
-  --ion-card-background: #FFFFFF;
-  --ion-text-color: #142B49;
-  --ion-text-color-rgb: 20, 43, 73;
-  --ion-text-color-step-600: #52637A;
+  --ion-card-background: #131620;
+  --ion-text-color: #f3f4f6;
+  --ion-text-color-rgb: 243, 244, 246;
+  --ion-text-color-step-600: #9ca3af;
 
-  --ion-toolbar-background: #FFFFFF;
-  --ion-toolbar-color: #142B49;
+  --ion-toolbar-background: #090b10;
+  --ion-toolbar-color: #f3f4f6;
 
-  --ion-item-background: #FFFFFF;
-  --ion-item-color: #142B49;
+  --ion-item-background: #131620;
+  --ion-item-color: #f3f4f6;
 
-  --ion-placeholder-color: #64748B;
+  --ion-placeholder-color: #7c8498;
   --ion-placeholder-opacity: 1;
 
-  --rentease-border: #E2E8F0;
-  --rentease-success: #15803D;
-  --rentease-warning: #B45309;
-  --rentease-error: #B91C1C;
+  --rentease-border: rgba(255, 255, 255, 0.07);
+  --rentease-success: #22d3ee;
+  --rentease-warning: #facc15;
+  --rentease-error: #f472b6;
 }
 
 body {
   background-color: var(--ion-background-color);
   color: var(--ion-text-color);
   font-family:
+    Inter,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
@@ -57,26 +58,27 @@ body {
  * Their styles must be global.
  */
 ion-alert.rentease-messagebox {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --background: #ffffff;
+  --background: #14161e;
   --min-width: 320px;
-  --width: min(480px, calc(100vw - 32px));
-  --max-width: 480px;
-  --backdrop-opacity: 0.48;
+  --width: min(460px, calc(100vw - 32px));
+  --max-width: 460px;
+  --backdrop-opacity: 0.68;
 }
 
 ion-alert.rentease-messagebox .alert-wrapper {
-  background: #ffffff;
-  border: 0;
-  border-radius: 16px;
+  background: #14161e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 22px 60px rgb(22 59 115 / 28%);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
 }
 
 ion-alert.rentease-messagebox .alert-head {
-  padding: 14px 18px 12px;
-  background: linear-gradient(105deg, #163b73 0%, #1d56c4 72%, #17a7b8 130%);
+  padding: 18px 20px 14px;
+  background: #191c26;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 ion-alert.rentease-messagebox .alert-title {
@@ -91,11 +93,11 @@ ion-alert.rentease-messagebox .alert-title {
 ion-alert.rentease-messagebox .alert-sub-title,
 ion-alert.rentease-messagebox .alert-message {
   min-height: 0;
-  padding: 16px 18px 6px;
-  color: #1c334e;
-  font-size: 15px;
+  padding: 18px 20px 10px;
+  color: #cbd5e1;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
   white-space: normal;
   overflow-wrap: break-word;
   text-transform: none;
@@ -105,37 +107,42 @@ ion-alert.rentease-messagebox .alert-button-group {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
-  padding: 10px 16px 14px;
-  border-top: 1px solid #d7e4f4;
-  background: #f3f8fd;
+  padding: 12px 18px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #101219;
 }
 
 ion-alert.rentease-messagebox .alert-button {
   flex: 0 0 auto;
   width: auto;
-  height: 36px !important;
-  min-width: 92px;
-  min-height: 36px !important;
-  max-height: 36px !important;
+  height: 38px !important;
+  min-width: 96px;
+  min-height: 38px !important;
+  max-height: 38px !important;
   margin: 0 !important;
-  padding: 0 14px !important;
-  border: 1px solid #d5deea;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #163b73;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 36px !important;
+  padding: 0 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: #1c1f2b;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 38px !important;
   text-transform: none;
+}
+
+ion-alert.rentease-messagebox .alert-button-role-cancel {
+  color: #cbd5e1;
 }
 
 ion-alert.rentease-messagebox .alert-button-role-confirm,
 ion-alert.rentease-messagebox .alert-button:last-of-type {
   border-color: transparent;
-  background: #236be1;
-  color: #ffffff;
+  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  color: #041217;
+  box-shadow: 0 8px 18px rgba(34, 211, 238, 0.25);
 }
 
 ion-alert.rentease-messagebox .alert-button-inner {
@@ -144,73 +151,60 @@ ion-alert.rentease-messagebox .alert-button-inner {
 }
 
 ion-alert.rentease-messagebox .alert-input-group {
-  padding-top: 8px;
+  padding: 8px 20px 12px;
 }
 
 ion-alert.rentease-messagebox .alert-input {
   box-sizing: border-box;
   width: 100%;
-  min-height: 100px;
+  min-height: 96px;
   padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  background: #f8fafc;
-  color: #142b49;
-  -webkit-text-fill-color: #142b49;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: #191c26;
+  color: #f3f4f6;
+  -webkit-text-fill-color: #f3f4f6;
 }
 
 ion-alert.rentease-messagebox .alert-input::placeholder {
-  color: #64748b;
-  -webkit-text-fill-color: #64748b;
+  color: #7c8498;
+  -webkit-text-fill-color: #7c8498;
   opacity: 1;
 }
 
-ion-alert.rentease-messagebox .alert-button {
-  color: #0b7068;
-  font-weight: 700;
-}
-
-ion-alert.rentease-messagebox .alert-button-role-cancel {
-  color: #52637a;
-}
-
-/* RentEase: keep Ionic modal backgrounds consistent with the light theme */
+/* Keep Ionic modals consistent with the dark onyx design system */
 ion-modal {
-  --background: #ffffff;
-  --ion-background-color: #ffffff;
-  --ion-text-color: #183153;
-  --border-radius: 16px;
-  color-scheme: light;
+  --background: #14161e;
+  --ion-background-color: #14161e;
+  --ion-text-color: #f3f4f6;
+  --border-radius: 20px;
+  color-scheme: dark;
 }
 
 ion-modal::part(content) {
-  background: #ffffff !important;
-  color: #183153 !important;
+  background: #14161e !important;
+  color: #f3f4f6 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 ion-modal .modal-content {
-  background: #ffffff !important;
-  color: #183153 !important;
+  background: #14161e !important;
+  color: #f3f4f6 !important;
 }
 
 ion-modal .modal-heading h2 {
-  color: #183153 !important;
+  color: #ffffff !important;
 }
 
 ion-modal .modal-heading p {
-  color: #8190a3 !important;
+  color: #9ca3af !important;
 }
 
-ion-modal .details-row strong {
-  color: #536780 !important;
+ion-modal .details-row strong,
+ion-modal .modal-content label {
+  color: #cbd5e1 !important;
 }
 
 ion-modal .details-row span {
-  color: #273e5b !important;
-}
-
-ion-modal input,
-ion-modal select {
-  background: #ffffff !important;
-  color: #273e5b !important;
+  color: #ffffff !important;
 }

@@ -6,7 +6,7 @@
 
     <base href="/" />
 
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark" />
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -27,6 +27,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
     <style>
+      body {
+        background: #0b0c10;
+        color: #f3f4f6;
+      }
+
       #rentease-startup {
         position: fixed;
         inset: 0;
@@ -35,7 +40,9 @@
         place-content: center;
         justify-items: center;
         gap: 14px;
-        background: linear-gradient(150deg, #102f65, #176cb1 64%, #087884);
+        background:
+          radial-gradient(circle at 50% 35%, rgba(34, 211, 238, 0.2), transparent 48%),
+          linear-gradient(150deg, #06090f 0%, #0e1320 64%, #090b10 100%);
         color: #fff;
         text-align: center;
         font-family: Inter, system-ui, sans-serif;
@@ -67,13 +74,19 @@
 
       .startup-brand {
         font-size: 2.5rem;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: -0.05em;
+        color: #ffffff;
+      }
+
+      .startup-brand em {
+        font-style: normal;
+        color: #22d3ee;
       }
 
       .startup-message {
         font-size: 0.9rem;
-        color: #e0f4ff;
+        color: #8b92a5;
       }
 
       @keyframes startup-rise {
@@ -101,33 +114,35 @@
 
     <div id="rentease-startup" role="status">
       <svg class="startup-properties" viewBox="0 0 300 158" aria-hidden="true">
-        <circle cx="150" cy="75" r="66" fill="#ffffff18" />
+        <circle cx="150" cy="75" r="66" fill="#22d3ee22" />
 
         <g class="startup-building">
-          <path d="M108 145V45h79v100" fill="#c2ecff" />
-          <path d="M108 45l13-14h53l13 14z" fill="#edfaff" />
+          <path d="M108 145V45h79v100" fill="#1b1f2e" />
+          <path d="M108 45l13-14h53l13 14z" fill="#22d3ee" />
           <path
-            d="M122 60h17v15h-17zM156 60h17v15h-17zM122 86h17v15h-17zM156 86h17v15h-17zM139 116h18v29h-18z"
-            fill="#216195"
+            d="M122 60h17v15h-17zM156 60h17v15h-17zM122 86h17v15h-17zM156 86h17v15h-17z"
+            fill="#22d3ee"
           />
+          <path d="M139 116h18v29h-18z" fill="#a78bfa" />
         </g>
 
         <g class="startup-building">
-          <path d="M29 145V92l36-28 36 28v53z" fill="#effbff" />
-          <path d="M21 94l44-38 44 38-7 8-37-31-37 31z" fill="#72ded9" />
-          <path d="M42 106h15v14H42zM67 108h17v37H67z" fill="#216195" />
+          <path d="M29 145V92l36-28 36 28v53z" fill="#161925" />
+          <path d="M21 94l44-38 44 38-7 8-37-31-37 31z" fill="#a78bfa" />
+          <path d="M42 106h15v14H42zM67 108h17v37H67z" fill="#22d3ee" />
         </g>
 
         <g class="startup-building">
-          <path d="M198 145V88h63v57z" fill="#9ce6ee" />
-          <path d="M193 90l8-14h57l8 14z" fill="#e1fbff" />
-          <path d="M208 100h13v12h-13zM238 100h13v12h-13zM223 122h14v23h-14z" fill="#216195" />
+          <path d="M198 145V88h63v57z" fill="#161925" />
+          <path d="M193 90l8-14h57l8 14z" fill="#38bdf8" />
+          <path d="M208 100h13v12h-13zM238 100h13v12h-13z" fill="#38bdf8" />
+          <path d="M223 122h14v23h-14z" fill="#a78bfa" />
         </g>
 
-        <path d="M18 146h264" stroke="#a5fff0" stroke-width="4" stroke-linecap="round" />
+        <path d="M18 146h264" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" />
       </svg>
 
-      <span class="startup-brand">RentEase.</span>
+      <span class="startup-brand">RentEase<em>.</em></span>
       <span class="startup-message">Getting your space ready…</span>
     </div>
 
