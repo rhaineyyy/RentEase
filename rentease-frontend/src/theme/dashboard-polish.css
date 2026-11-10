@@ -1346,3 +1346,42 @@
 .portal .property-card {
   overflow: hidden;
 }
+
+@media (max-width: 800px) {
+  .topbar {
+    --min-height: 64px;
+  }
+
+  .portal .sidebar.sidebar-open,
+  .portal .sidebar.mobile-open {
+    position: fixed !important;
+    top: 64px !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    box-sizing: border-box;
+    width: min(300px, calc(100vw - 48px)) !important;
+    height: calc(100dvh - 64px) !important;
+    max-height: calc(100dvh - 64px) !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .portal .tenant-backdrop,
+  .portal .owner-nav-backdrop,
+  .portal .mobile-nav-backdrop {
+    position: fixed !important;
+    top: 64px !important;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100dvh - 64px);
+  }
+
+  .portal .sidebar.sidebar-open nav button,
+  .portal .sidebar.mobile-open nav button {
+    min-height: 46px;
+    touch-action: manipulation;
+  }
+}
