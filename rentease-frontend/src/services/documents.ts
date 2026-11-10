@@ -2,6 +2,15 @@ import api from './api';
 
 export type DocumentKind = 'leases' | 'bills' | 'payments';
 
+function blobText(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+    reader.onerror = () => reject(reader.error || new Error('The document response could not be read.'));
+    reader.readAsText(blob);
+  });
+}
+
 function filenameFrom(header: string | undefined, fallback: string) {
   const match = /filename="([^"]+)"/.exec(header || '');
   return match?.[1] || fallback;
@@ -11,7 +20,7 @@ async function messageFrom(error: unknown) {
   const data = (error as { response?: { data?: unknown } })?.response?.data;
   if (data instanceof Blob) {
     try {
-      const parsed = JSON.parse(await data.text()) as { message?: string };
+      const parsed = JSON.parse(await blobText(data)) as { message?: string };
       if (parsed.message) return parsed.message;
     } catch {
       /* The server returned a file error without a readable message. */
@@ -27,7 +36,7 @@ export async function loadDocument(kind: DocumentKind, id: number, download: boo
       responseType: 'blob',
     });
     const blob = response.data as Blob;
-    if (blob.type && !blob.type.includes('pdf') && blob.type.includes('json')) {
+    if ((await blobText(blob.slice(0, 5))) !== '%PDF-') {
       throw new Error(await messageFrom({ response: { data: blob } }));
     }
     const fallback = {
